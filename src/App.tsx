@@ -10,8 +10,10 @@ function App() {
     <div className="flex min-h-screen flex-col bg-gray-50">
       <Header />
 
-      {/* max-w-6xl + px-4 md:px-8 is the same as in Header and Footer, so they line up. */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-8">
+      {/* <main> sets no width, so pages can have full-width backgrounds.
+          Each page centres its own content with max-w-6xl, like Header and Footer.
+          flex flex-col lets a page fill all of <main> by giving its section flex-1. */}
+      <main className="flex flex-1 flex-col">
         <HomePage />
       </main>
 
