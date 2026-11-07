@@ -3,7 +3,7 @@ import { useState } from "react";
 const navLinks = [
   { label: "Hjem", href: "#" },
   { label: "Oppskrifter", href: "#" },
-  { label: "Om meg", href: "#" },
+  { label: "Pizza-kalkulator", href: "#" },
 ];
 
 function Header() {

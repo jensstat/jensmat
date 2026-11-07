@@ -1,5 +1,6 @@
-import Header from './components/Header'
-import Footer from './components/Footer'
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import HomePage from "./pages/HomePage";
 
 // App is the top component. It puts the big pieces of the page together.
 function App() {
@@ -11,12 +12,12 @@ function App() {
 
       {/* max-w-6xl + px-4 md:px-8 is the same as in Header and Footer, so they line up. */}
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-8">
-        <p className="text-gray-500">Her kommer innholdet.</p>
+        <HomePage />
       </main>
 
       <Footer />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
