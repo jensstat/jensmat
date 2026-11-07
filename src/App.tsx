@@ -1,7 +1,7 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import HomePage from "./pages/HomePage";
-
+// import HomePage from "./pages/HomePage";
+import PizzaCalculatorPage from "./pages/PizzaCalculatorPage";
 // App is the top component. It puts the big pieces of the page together.
 function App() {
   return (
@@ -14,7 +14,8 @@ function App() {
           Each page centres its own content with max-w-6xl, like Header and Footer.
           flex flex-col lets a page fill all of <main> by giving its section flex-1. */}
       <main className="flex flex-1 flex-col">
-        <HomePage />
+        {/*<HomePage />*/}
+        <PizzaCalculatorPage />
       </main>
 
       <Footer />
