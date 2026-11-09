@@ -25,7 +25,7 @@ function Header() {
           onClick={() => setActiveLink("Hjem")}
           className="font-display text-2xl uppercase md:text-3xl"
         >
-          🍕 Min matnettside
+          🍕 Jens matnettside
         </a>
 
         <nav className="flex gap-6 font-mono text-sm uppercase">
@@ -44,9 +44,7 @@ function Header() {
                 // {` `} = a template string: normal classes + ${...} picks extra classes.
                 // Inactive links get a transparent border so the text doesn't move when clicked.
                 className={`border-b-2 pb-1 transition-colors hover:text-red-600 ${
-                  isActive
-                    ? "border-black font-semibold"
-                    : "border-transparent"
+                  isActive ? "border-black font-semibold" : "border-transparent"
                 }`}
               >
                 {link.label}

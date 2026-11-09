@@ -1,10 +1,12 @@
 import { useState } from "react";
+import ChoiceTags from "../components/ChoiceTags";
 import FieldGroup from "../components/FieldGroup";
 import NumberField from "../components/NumberField";
 import ResultPanel from "../components/ResultPanel";
 import type { ResultRow } from "../components/ResultPanel";
 import SelectField from "../components/SelectField";
 import type { SelectOption } from "../components/SelectField";
+import { idyPercent, yeastStrength } from "../pizza/yeast";
 
 // Everything below is outside the component: it never changes,
 // so it doesn't need to be made again on every render.
@@ -23,6 +25,18 @@ const yeastOptions: SelectOption[] = [
   { value: "surdeig", label: "Surdeig" },
 ];
 
+// Two ways to work out the yeast amount (see idyPercent in pizza/yeast.ts).
+const yeastModelOptions: SelectOption[] = [
+  { value: "hjemme", label: "Hjemmeoppskrift" },
+  { value: "forum", label: "Forum-basert" },
+];
+
+// The hint under the tags explains the chosen way.
+const yeastModelHints: Record<string, string> = {
+  hjemme: "Tilpasset husoppskriften: 3 g tørrgjær, 3 t, 24 °C",
+  forum: "Basert på data fra Pizza Making Forum",
+};
+
 // All the settings on the page. One object instead of ten separate states,
 // so the whole set can be passed to the calculation in one go.
 interface PizzaSettings {
@@ -31,6 +45,7 @@ interface PizzaSettings {
   ballWeight: number;
   hydration: number;
   yeastType: string;
+  yeastModel: string;
   riseHours: number;
   riseTemp: number;
   salt: number;
@@ -48,28 +63,13 @@ const defaults: PizzaSettings = {
   ballWeight: 372, // (450 + 275 + 10 + 5 + 3) / 2 = 371.5
   hydration: 61, // 275 / 450
   yeastType: "tørr",
+  yeastModel: "hjemme", // gives the house recipe's 3 g
   riseHours: 3,
-  riseTemp: 20, // the recipe doesn't say; 3 h with this much yeast means room temperature
+  riseTemp: 24, // room temperature
   salt: 2.2, // 10 / 450
   sugar: 1.1, // 5 / 450
   oil: 0,
 };
-
-// How much yeast you need compared with fresh yeast.
-const yeastStrength: Record<string, number> = {
-  fersk: 1,
-  tørr: 1 / 3,
-  surdeig: 10, // rough guess in grams of starter. Sourdough really needs its own calculation later.
-};
-
-// Fresh yeast in % of the flour weight. A simple model, tuned to the house recipe
-// (3 h at 20 °C → 2 % fresh = 0.67 % dry = 3 g):
-// - double the time → half the yeast
-// - 10 °C colder → the yeast is half as fast → double the yeast
-function freshYeastPercent(hours: number, tempC: number) {
-  const speed = 2 ** ((tempC - 20) / 10);
-  return 6 / (hours * speed);
-}
 
 // Turns the settings into grams for each ingredient.
 // A "pure" function: the same settings always give the same result, and it doesn't touch React.
@@ -90,8 +90,10 @@ function calculateDough(s: PizzaSettings): ResultRow[] {
     return [];
   }
 
+  // The yeast amount comes from rise time, temperature and the chosen way of calculating (see pizza/yeast.ts).
   const yeastPercent =
-    freshYeastPercent(s.riseHours, s.riseTemp) * yeastStrength[s.yeastType];
+    idyPercent(s.riseHours, s.riseTemp, s.yeastModel) *
+    yeastStrength[s.yeastType];
 
   const totalDough = s.pizzaCount * s.ballWeight;
   // Everything is a % of the flour: flour × (100 % + all the other %) = total dough.
@@ -127,16 +129,19 @@ function PizzaCalculatorPage() {
   return (
     // The section fills <main> and carries the white background.
     // The inner div is centred with the same width and padding as the header, so they line up.
-    // Phones: one column. From lg: settings on the left, the result (360px) on the right.
     <section className="flex-1 bg-white font-mono">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 md:px-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-16 lg:py-14">
-        {/* Left column: the heading and the settings */}
-        <div>
-          <h1 className="font-display text-5xl md:text-6xl">Pizzakalkulator</h1>
-          <p className="mt-2 text-neutral-600">
-            Regn ut deigen til en perfekt pizza
-          </p>
-          <div className="mt-10 flex flex-col gap-10">
+      <div className="mx-auto max-w-6xl px-4 py-10 md:px-8 lg:py-14">
+        {/* The heading spans both columns */}
+        <h1 className="font-display text-5xl md:text-6xl">Pizzakalkulator</h1>
+        <p className="mt-2 text-neutral-600">
+          Regn ut deigen til en perfekt pizza
+        </p>
+
+        {/* Phones: one column. From lg: settings on the left, the result (320px) on the right.
+            Both columns start at the same height, so "Deig" and "Resultat" line up. */}
+        <div className="mt-10 grid gap-12 lg:mt-14 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-24">
+          {/* Left column: the settings */}
+          <div className="flex flex-col gap-12">
             <FieldGroup title="Deig">
               <SelectField
                 label="Pizzatype"
@@ -183,6 +188,15 @@ function PizzaCalculatorPage() {
             </FieldGroup>
 
             <FieldGroup title="Gjær og heving">
+              <ChoiceTags
+                label="Gjærberegning"
+                value={settings.yeastModel}
+                onChange={(value) =>
+                  setSettings({ ...settings, yeastModel: value })
+                }
+                options={yeastModelOptions}
+                hint={yeastModelHints[settings.yeastModel]}
+              />
               <SelectField
                 label="Gjærtype"
                 value={settings.yeastType}
@@ -213,7 +227,7 @@ function PizzaCalculatorPage() {
                 min={2}
                 max={30}
                 step={1}
-                hint="Kjøleskap: 4 °C, rom: 20 °C"
+                hint="Kjøleskap: 4 °C, rom: 24 °C"
               />
             </FieldGroup>
 
@@ -251,14 +265,14 @@ function PizzaCalculatorPage() {
               />
             </FieldGroup>
           </div>
-        </div>
 
-        {/* Right column (under the settings on phones) */}
-        <ResultPanel
-          rows={rows}
-          pizzaCount={settings.pizzaCount}
-          ballWeight={settings.ballWeight}
-        />
+          {/* Right column (under the settings on phones) */}
+          <ResultPanel
+            rows={rows}
+            pizzaCount={settings.pizzaCount}
+            ballWeight={settings.ballWeight}
+          />
+        </div>
       </div>
     </section>
   );
