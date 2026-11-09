@@ -11,13 +11,12 @@ interface ResultPanelProps {
 }
 
 // Phones: a black box under the settings.
-// From lg: a plain list like the fields on the left, sticky while you scroll.
+// From lg: a plain list like the fields on the left.
+// (Not sticky: the method below would end up hidden behind it while scrolling.)
 // The lg: classes "undo" the black box, so both looks share the same markup.
 function ResultPanel({ rows, pizzaCount, ballWeight }: ResultPanelProps) {
   return (
-    // self-start: without it the box stretches to the full height of the
-    // grid row, and sticky has nowhere to move.
-    <aside className="bg-black p-6 text-white lg:sticky lg:top-28 lg:self-start lg:bg-transparent lg:p-0 lg:text-black">
+    <aside className="bg-black p-6 text-white lg:bg-transparent lg:p-0 lg:text-black">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="font-display text-2xl uppercase">Resultat</h2>
         <p className="text-sm text-neutral-400 lg:text-neutral-600">
