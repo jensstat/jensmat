@@ -94,11 +94,12 @@ export const pizzaStyleOptions: SelectOption[] = Object.entries(pizzaStyles).map
 // Yeast
 // ---------------------------------------------------------------------------
 
-// The values ("fersk", "tørr", "surdeig") are the keys in yeastStrength in pizza/yeast.ts.
+// The values ("fersk", "tørr") are the keys in yeastStrength in pizza/yeast.ts.
+// Sourdough is hidden for now: a starter also contains flour and water,
+// so it needs its own calculation before it can come back.
 export const yeastOptions: SelectOption[] = [
   { value: "fersk", label: "Fersk gjær" },
   { value: "tørr", label: "Tørrgjær" },
-  { value: "surdeig", label: "Surdeig" },
 ];
 
 // Two ways to work out the yeast amount (see idyPercent in pizza/yeast.ts),
@@ -110,7 +111,7 @@ const yeastModels: Record<string, { label: string; hint: string }> = {
   },
   forum: {
     label: "Forum-basert",
-    hint: "Basert på data fra Pizza Making Forum",
+    hint: "Basert på gjærtabellen fra Pizza Making Forum",
   },
 };
 
