@@ -1,3 +1,5 @@
+import NumberField from "../components/NumberField";
+
 function PizzaCalculatorPage() {
   return (
     // The grid fills <main> (flex-1) and the full width.
@@ -18,9 +20,31 @@ function PizzaCalculatorPage() {
                 Deig
               </legend>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <p>Antall pizzaer: </p>
-                <p>Vekt pr. bolle</p>
-                <p> Hydrering</p>
+                <NumberField
+                  label="Antall pizzaer"
+                  unit="stk"
+                  defaultValue={4}
+                  min={1}
+                  max={20}
+                  step={1}
+                />
+                <NumberField
+                  label="Vekt pr. bolle"
+                  unit="g"
+                  defaultValue={250}
+                  min={150}
+                  max={400}
+                  step={5}
+                />
+                <NumberField
+                  label="Hydrering"
+                  unit="%"
+                  defaultValue={65}
+                  min={50}
+                  max={80}
+                  step={1}
+                  hint="Vanlig: 60-70%"
+                />
               </div>
             </fieldset>
 
@@ -28,11 +52,27 @@ function PizzaCalculatorPage() {
               <legend className="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-500">
                 Gjær og heving
               </legend>
-              {/* Later: yeast type, rising time, where it rises */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {/* Yeast type is a choice, not a number, so it needs another kind of field */}
                 <p>Gjærtype</p>
-                <p>Hevetid</p>
-                <p>Hevetemperatur</p>
+                <NumberField
+                  label="Hevetid"
+                  unit="t"
+                  defaultValue={24}
+                  min={1}
+                  max={72}
+                  step={1}
+                  hint="Lengre heving gir mer smak"
+                />
+                <NumberField
+                  label="Hevetemperatur"
+                  unit="°C"
+                  defaultValue={4}
+                  min={2}
+                  max={30}
+                  step={1}
+                  hint="Kjøleskap: 4 °C, romtemp: 20 °C"
+                />
               </div>
             </fieldset>
 
@@ -41,9 +81,34 @@ function PizzaCalculatorPage() {
                 Ekstra
               </legend>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <p>Salt</p>
-                <p>Sukker</p>
-                <p>Olje</p>
+                {/* The percentages are of the flour weight, like hydration */}
+                <NumberField
+                  label="Salt"
+                  unit="%"
+                  defaultValue={2.8}
+                  min={0}
+                  max={4}
+                  step={0.1}
+                  hint="Vanlig: 2,5-3%"
+                />
+                <NumberField
+                  label="Sukker"
+                  unit="%"
+                  defaultValue={0}
+                  min={0}
+                  max={5}
+                  step={0.5}
+                  hint="Valgfritt, gir mer farge"
+                />
+                <NumberField
+                  label="Olje"
+                  unit="%"
+                  defaultValue={0}
+                  min={0}
+                  max={6}
+                  step={0.5}
+                  hint="Napoletansk: 0%"
+                />
               </div>
             </fieldset>
           </div>
