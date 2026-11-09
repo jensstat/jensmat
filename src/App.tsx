@@ -1,7 +1,10 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-// import HomePage from "./pages/HomePage";
 import PizzaCalculatorPage from "./pages/PizzaCalculatorPage";
+import { Route, Routes } from "react-router";
+import HomePage from "./pages/HomePage";
+import RecipePage from "./pages/RecipePage";
+
 // App is the top component. It puts the big pieces of the page together.
 function App() {
   return (
@@ -9,15 +12,17 @@ function App() {
     // flex-1 on <main> lets it fill the leftover space, so the footer stays at the bottom.
     <div className="flex min-h-screen flex-col bg-gray-50">
       <Header />
-
       {/* <main> sets no width, so pages can have full-width backgrounds.
           Each page centres its own content with max-w-6xl, like Header and Footer.
           flex flex-col lets a page fill all of <main> by giving its section flex-1. */}
       <main className="flex flex-1 flex-col">
-        {/*<HomePage />*/}
-        <PizzaCalculatorPage />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/pizza" element={<PizzaCalculatorPage />} />
+          {/* :id is a placeholder: /oppskrifter/laksewrap gives id = "laksewrap" */}
+          <Route path="/oppskrifter/:id" element={<RecipePage />} />
+        </Routes>
       </main>
-
       <Footer />
     </div>
   );
