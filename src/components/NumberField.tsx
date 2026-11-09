@@ -1,7 +1,11 @@
+import FieldCard from "./FieldCard";
+
 interface NumberFieldProps {
   label: string;
   unit: string;
-  defaultValue: number;
+  value: number;
+  // A function the page gives us. We call it with the new number when the user types.
+  onChange: (value: number) => void;
   min: number;
   max: number;
   step: number;
@@ -11,34 +15,32 @@ interface NumberFieldProps {
 function NumberField({
   label,
   unit,
-  defaultValue,
+  value,
+  onChange,
   min,
   max,
   step,
   hint,
 }: NumberFieldProps) {
   return (
-    <label className="block cursor-text rounded-xl border border-stone-200 bg-white p-4 transition hover:border-stone-300">
-      <span className="block text-xs font-medium uppercase tracking-wider text-stone-500">
-        {label}
-      </span>
-      <span className="mt-1 flex items-baseline gap-1">
+    <FieldCard label={label} hint={hint}>
+      <span className="flex items-baseline gap-1 w-full">
         <input
           type="number"
           inputMode="decimal"
-          defaultValue={defaultValue}
+          // An empty field is NaN in state; show it as empty instead of "NaN".
+          value={Number.isNaN(value) ? "" : value}
+          // valueAsNumber gives a real number (61), .value would give text ("61").
+          onChange={(event) => onChange(event.target.valueAsNumber)}
           min={min}
           max={max}
           step={step}
-          className="w-full min-w-0 bg-transparent text-3xl font-semibold tabular-nums outline-none [appearance:textfield]
-  [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          // The last three classes hide the browser's up/down arrows.
+          className="w-full min-w-0 bg-transparent text-base tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
         <span>{unit}</span>
       </span>
-      {hint && (
-        <span className="mt-1 block text-xs text-stone-400">{hint}</span>
-      )}
-    </label>
+    </FieldCard>
   );
 }
 

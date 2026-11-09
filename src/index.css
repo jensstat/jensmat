@@ -1,1 +1,5 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@theme {
+  --font-display: "Anton", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
