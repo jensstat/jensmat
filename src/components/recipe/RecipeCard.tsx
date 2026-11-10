@@ -14,7 +14,8 @@ interface CardPhotoProps {
 }
 
 // The recipe's photo, or the first letter of the title if there's no photo yet.
-function CardPhoto({ recipe, className }: CardPhotoProps) {
+// Also used by RecipeSuggestion.
+export function CardPhoto({ recipe, className }: CardPhotoProps) {
   return (
     <div
       className={`flex items-center justify-center overflow-hidden bg-panel font-serif font-semibold text-ink/15 ${className}`}
@@ -34,7 +35,8 @@ function CardPhoto({ recipe, className }: CardPhotoProps) {
 
 // The line under the title: "30 min · Middag", and an "Uferdig" label on incomplete recipes.
 // Shows nothing if the recipe has neither (a recipe with only a title is always "Uferdig").
-function CardDetails({ recipe }: { recipe: Recipe }) {
+// Also used by RecipeSuggestion.
+export function CardDetails({ recipe }: { recipe: Recipe }) {
   const details = cardDetails(recipe);
   const incomplete = isIncomplete(recipe);
   if (!details && !incomplete) return null;

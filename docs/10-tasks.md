@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 10 November 2026. Search and incomplete recipes are done; "Hva med…?" (task 2) is under way, next up is 2.10 (styling).*
+*Last updated: 10 November 2026. Search and incomplete recipes are done; "Hva med…?" (task 2) is under way, next up is 2.11 (phone check).*
 
 ---
 
@@ -57,7 +57,7 @@ A suggestion at the top of the overview: one random dinner that suits the day (e
   - Sunday: dinners with "Helgemat" or "Ukedag"
   - If nothing fits: any dinner, then any complete recipe. The suggestion should never disappear just because a rule is too strict
 - [x] 2.9 **Friday is pizza day:** "Pizzatid!" with a link to the pizza calculator (`/pizza`) instead of a recipe, and no "Vis et annet forslag" button
-- [ ] 2.10 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe. And a nice Friday version
+- [x] 2.10 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe. And a nice Friday version
 - [ ] 2.11 Phone check at 360px, the Friday version too
 
 ### 3. More filters
