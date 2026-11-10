@@ -54,18 +54,24 @@ export interface Ingredient {
   group?: string;
 }
 
+// A recipe can be saved half-done (from the phone: maybe just a title and a photo)
+// and filled in later. So only the title is required content:
+// - id and createdAt are required too, but they're technical (a CMS makes them).
+// - Lists (tags, ingredients, steps) are always there, but may be empty: [] means "none yet".
+//   The code can then always write recipe.steps.map(...) without checking first.
+// - Everything else is optional (?), and every page must handle it being missing.
 export interface Recipe {
   id: string; // used in the address: /oppskrifter/pannekaker. Never change it once published.
-  title: string;
-  description: string;
-  image?: string; // optional: not every recipe has a photo yet. A file path now, a web address later.
-  category: Category;
+  title: string; // the only content that must be filled in
+  description?: string;
+  image?: string; // not every recipe has a photo yet. A file path now, a web address later.
+  category?: Category;
   protein?: Protein;
-  tags: Tag[]; // an empty list [] if none apply
-  servings: number; // how many portions the amounts are for
-  minutes: number; // total time
-  ingredients: Ingredient[];
-  steps: string[];
+  tags: Tag[]; // [] if none apply
+  servings?: number; // how many portions the amounts are for
+  minutes?: number; // total time
+  ingredients: Ingredient[]; // [] = not added yet
+  steps: string[]; // [] = no steps (not every recipe needs them)
   createdAt: string; // date as text, "2026-11-09" (the ISO format: year-month-day, sorts correctly as text)
   source?: string; // where the recipe comes from: "Mormor", a cookbook, a web address
   tips?: string; // your own notes
@@ -79,6 +85,15 @@ export interface Recipe {
 // Calculated from minutes, so it's never out of step with the time.
 export const quickMinutes = 30;
 
+// A recipe without a time is never "quick": we don't know.
 export function isQuick(recipe: Recipe) {
-  return recipe.minutes <= quickMinutes;
+  return recipe.minutes !== undefined && recipe.minutes <= quickMinutes;
+}
+
+// A recipe is incomplete ("Uferdig") until it has ingredients: without them you can't cook it.
+// Steps are not required, since some recipes are just the ingredients.
+// Calculated, not stored: it can never say "incomplete" about a recipe you've filled in.
+// To change what counts as incomplete, this is the only place to change.
+export function isIncomplete(recipe: Recipe) {
+  return recipe.ingredients.length === 0;
 }

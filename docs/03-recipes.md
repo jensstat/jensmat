@@ -26,16 +26,16 @@ The recipes ("Oppskrifter") are the main part of the site going forward: all my 
 ```ts
 interface Recipe {
   id: string;              // in the address: /oppskrifter/laksewrap. Lowercase, never change it.
-  title: string;
-  description: string;
-  image?: string;          // optional. A file path now, a web address from the CMS later.
-  category: Category;      // "Frokost" | "Lunsj" | "Middag" | "Dessert" | "Bakst" | "Tilbehør"
-  protein?: Protein;       // optional. "Kylling" | "Kjøtt" | "Fisk" | "Sjømat" | "Vegetar" | "Vegansk"
+  title: string;           // the ONLY content that must be filled in
+  description?: string;
+  image?: string;          // A file path now, a web address from the CMS later.
+  category?: Category;     // "Frokost" | "Lunsj" | "Middag" | "Dessert" | "Bakst" | "Tilbehør"
+  protein?: Protein;       // "Kylling" | "Kjøtt" | "Fisk" | "Sjømat" | "Vegetar" | "Vegansk"
   tags: Tag[];             // "Glutenfri" | "Laktosefri" | "Barnevennlig". [] if none.
-  servings: number;        // how many portions the amounts are for
-  minutes: number;         // total time
-  ingredients: Ingredient[];
-  steps: string[];
+  servings?: number;       // how many portions the amounts are for
+  minutes?: number;        // total time
+  ingredients: Ingredient[]; // [] = not added yet
+  steps: string[];         // [] = no steps (not every recipe needs them)
   createdAt: string;       // "2026-11-09" (year-month-day)
   source?: string;         // "Mormor", a cookbook, a web address
   tips?: string;
@@ -50,13 +50,24 @@ interface Ingredient {
 }
 ```
 
+### Incomplete recipes: only the title is required
+
+A recipe can be posted half-done, for example quickly from the phone with just a title and a photo, and filled in later. So:
+
+- **Required:** `title`, plus `id` and `createdAt`, which are technical (a CMS makes them).
+- **Lists are always there, but may be empty:** `tags`, `ingredients` and `steps` are `[]` when there's nothing yet. Then the code can always write `recipe.steps.map(...)` without checking first. When the CMS arrives, the translation in `recipes.ts` turns a missing list into `[]`, in one place.
+- **Everything else is optional,** and every part of the site only shows what's there: no "undefined min" on the cards, no portion selector without `servings`, no "Slik gjør du" without steps, no ingredient panel without ingredients.
+- **"Uferdig" (incomplete)** is worked out, not stored: `isIncomplete(recipe)` in `types.ts` is "no ingredients yet". The card gets an "Uferdig" label, and the recipe page says "Denne oppskriften er ikke ferdig ennå". To change what counts as incomplete, change that one function.
+- **The example:** "Fiskesuppe" in `data.ts` has only a title.
+
 ### Why it's built like this
 
 | Decision | Why |
 |---|---|
 | **`amount` is a number**, not text like "3 dl" | So portions can be scaled: 2 → 4 portions is just "× 2" |
 | **`protein` is its own field**, not a tag | A dish has *one* main ingredient. As a field it can't be forgotten (TypeScript checks), and it makes nice filter buttons |
-| **"Rask" (quick) isn't stored** | It's worked out: `isQuick(recipe)` is `minutes <= 30`. Then it can never be wrong if you change the time |
+| **"Rask" (quick) isn't stored** | It's worked out: `isQuick(recipe)` is `minutes <= 30`. Then it can never be wrong if you change the time. No time means not quick |
+| **"Uferdig" isn't stored either** | `isIncomplete(recipe)`, for the same reason: it can't still say "Uferdig" after you've added the ingredients |
 | **`createdAt` as `"2026-11-09"`** | The standard date format every database and CMS uses. It also sorts correctly as plain text |
 | **`note` on the ingredient** | Keeps `name` clean for search and a future shopping list |
 | **`group` on the ingredient** | Parts of a dish ("Til dippen", "Saus") get their own heading, without a separate list structure. Ingredients without a group come first |
@@ -148,6 +159,7 @@ Desktop (from lg:)                                        Phones
 ```
 Oppskrifter
 Finn noe godt å lage!
+[🔍 Søk etter oppskrift eller ingrediens       ✕]                 ← search field
 (Alle) (Frokost) (Lunsj) (Middag) (Dessert) (Bakst) (Tilbehør)   ← CategoryChips
 4 oppskrifter                                        [▦] [☰]      ← count + ViewToggle
 ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐
@@ -158,11 +170,13 @@ Finn noe godt å lage!
 ```
 
 **How it works:**
-- **The state** lives in `RecipeListPage`: `view` (`"standard"` or `"list"`) and `filters` (today only `category`; `null` means "Alle").
+- **The state** lives in `RecipeListPage`: `view` (`"standard"` or `"list"`) and `filters`, with `category` (`null` means "Alle") and `query` (the search text, `""` means no search).
+- **Search** looks in the title, the description and the ingredient names. It ignores upper/lower case and spaces at the ends, but the field still shows exactly what was typed: the cleaning happens in `filterRecipes`, not in the state. Search and category must both match. A recipe without a category only shows under "Alle".
+- **The search field** has a magnifying glass, a ✕ that clears it and puts the cursor back, and 16px text, so iPhones don't zoom in when you tap it. The browser's own ✕ is hidden, since we have our own.
 - **The recipes to show** are calculated on every render, never stored: `visibleRecipes = filterRecipes(recipes, filters)`. The count, the cards and the empty state all read from it.
 - **`filterRecipes`** (in `recipes/filter.ts`) is a pure function with tests, like `calculateDough`. **To add a filter** (search, main ingredient, "Rask"): one more field in `RecipeFilters`, one more rule in `filterRecipes`, and a control on the page.
 - **The views:** a `layouts` lookup in the page picks the grid's classes for each view. "Standard" is 2 cards per row on phones and up to 4 on desktop. "List" is compact rows (`RecipeCard` with `variant="row"`), in two columns on desktop. **To add a view:** one line in `ViewToggle`'s `options`, one line in `layouts`. TypeScript reminds you if you forget one.
-- **When nothing matches:** a message, "Ingen oppskrifter her ennå", with a "Vis alle oppskrifter" button that resets every filter.
+- **When nothing matches:** "Fant ingen oppskrifter", with the search text in the message ("Ingen oppskrifter passer med «laks» i Dessert."), and a "Vis alle oppskrifter" button that resets every filter, the search too.
 
 ## 7. The plan going forward
 
@@ -174,7 +188,8 @@ Finn noe godt å lage!
 | Change the number of portions | ✅ done (`PortionStepper`) |
 | An "Ingredienser" menu on phones (like Gladkokken) | ✅ done (`MobileIngredients`) |
 | The overview page `/oppskrifter`, with cards, grid/list view and category filter | ✅ done |
-| **Search** | ⏭ next. See [10 – Tasks](10-tasks.md) |
+| Search (title, description, ingredients) | ✅ done |
+| Incomplete recipes (only a title required, "Uferdig" label) | ✅ done |
 | More filters (main ingredient, "Rask", tags) | `filterRecipes` and the lists in `types.ts` are ready |
 | Photos | add `image` to a recipe, with the file in `public/images/recipes/`. Without one, a calm placeholder is shown |
 | CMS / phone app | see below |

@@ -2,8 +2,8 @@ import { formatMinutes } from "../../recipes/display";
 import LabelList from "./LabelList";
 
 interface RecipeMetaProps {
-  minutes: number;
-  servings: number;
+  minutes?: number; // left out if the recipe has no time yet
+  servings?: number; // left out if the recipe has no portions yet
   labels: string[];
 }
 
@@ -27,17 +27,24 @@ function PlateIcon() {
 }
 
 // The key facts in one calm line: time, portions, and the labels (Fisk, Rask …).
+// Each part is only shown when the recipe has it. With nothing to show, nothing is drawn.
 function RecipeMeta({ minutes, servings, labels }: RecipeMetaProps) {
+  if (minutes === undefined && servings === undefined && labels.length === 0) return null;
+
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-base text-ink/70">
-      <span className="flex items-center gap-2">
-        <ClockIcon />
-        {formatMinutes(minutes)}
-      </span>
-      <span className="flex items-center gap-2">
-        <PlateIcon />
-        {servings} porsjoner
-      </span>
+      {minutes !== undefined && (
+        <span className="flex items-center gap-2">
+          <ClockIcon />
+          {formatMinutes(minutes)}
+        </span>
+      )}
+      {servings !== undefined && (
+        <span className="flex items-center gap-2">
+          <PlateIcon />
+          {servings} porsjoner
+        </span>
+      )}
       <LabelList labels={labels} />
     </div>
   );

@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 10 November 2026. Type check, lint, 53 tests and the build all pass. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling.*
+*Last checked: 10 November 2026. Type check, lint, 76 tests and the build all pass. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling.*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -14,11 +14,12 @@ Where the project stands: what works, what's missing, and known issues. **Update
 |---|---|---|
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
 | Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises |
-| Recipe overview | `/oppskrifter` | ✅ Recipe cards, category filter, grid/list view, a message when nothing matches |
+| Recipe overview | `/oppskrifter` | ✅ Recipe cards, search (title, description, ingredients), category filter, grid/list view, a message when nothing matches |
+| Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken: wide layout, ingredient panel, portion selector, groups, an ingredient menu on phones, print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| Tests | `npm test` | ✅ 53 tests: yeast chart, dough maths, method, text formatting, the overview filter, and a check of every recipe in `data.ts` |
+| Tests | `npm test` | ✅ 76 tests: yeast chart, dough maths, method, text formatting, the overview filter and search, incomplete recipes, and a check of every recipe in `data.ts` |
 
 ---
 

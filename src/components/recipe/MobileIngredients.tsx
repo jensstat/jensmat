@@ -23,7 +23,8 @@ function MobileIngredients(props: Omit<IngredientsPanelProps, "headingId">) {
       >
         <span className="text-base font-medium uppercase tracking-wider">Ingredienser</span>
         <span className="text-sm text-white/70">
-          {props.ingredients.length} stk · {props.servings} porsjoner
+          {props.ingredients.length} stk
+          {props.baseServings !== undefined && ` · ${props.servings} porsjoner`}
         </span>
       </button>
 

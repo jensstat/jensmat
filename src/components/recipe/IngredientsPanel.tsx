@@ -5,7 +5,9 @@ import PortionStepper from "./PortionStepper";
 export interface IngredientsPanelProps {
   ingredients: Ingredient[];
   servings: number; // the chosen number of portions
-  baseServings: number; // the number of portions the recipe's amounts are for
+  // The number of portions the recipe's amounts are for.
+  // undefined when the recipe has no portions yet: then there's no portion selector, and no scaling.
+  baseServings?: number;
   onServingsChange: (servings: number) => void;
   headingId?: string; // lets the phone dialog say "my name is this heading"
 }
@@ -24,11 +26,16 @@ function IngredientsPanel({
       <h2 id={headingId} className="text-base font-medium uppercase tracking-wider">
         Ingredienser
       </h2>
-      <div className="mt-6 border-y-2 border-dotted border-ink/25 py-4">
-        <PortionStepper value={servings} onChange={onServingsChange} />
-      </div>
+      {baseServings !== undefined && (
+        <div className="mt-6 border-y-2 border-dotted border-ink/25 py-4">
+          <PortionStepper value={servings} onChange={onServingsChange} />
+        </div>
+      )}
       <div className="mt-6">
-        <IngredientList ingredients={ingredients} scale={servings / baseServings} />
+        <IngredientList
+          ingredients={ingredients}
+          scale={baseServings === undefined ? 1 : servings / baseServings}
+        />
       </div>
     </>
   );

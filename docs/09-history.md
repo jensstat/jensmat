@@ -127,3 +127,18 @@ The overview page `/oppskrifter` was built **as a tutorial, one small visible st
 7. **The category filter**, with chips and `.filter()`, and a message when nothing matches.
 8. **Refactor:** `CategoryChips` and `ViewToggle` became their own components; "Alle" became one option in the same list as the categories; the filtering moved to `recipes/filter.ts` (with tests), as one `filters` object. *Why:* the page went from 130 to 80 lines, and the next filter (search) becomes one field and one rule.
 
+
+## 11. Search, and recipes that don't have to be finished
+
+*Uncommitted work after `149adfd`*
+
+**Search** was built as a tutorial first (1.1–1.4: a field, `query` in `filters`, the title, then description and ingredients, then case and spaces), and then finished in one go:
+- **Tests** with made-up recipes (`makeRecipe` in `filter.test.ts`), so they don't break when the placeholder recipes are replaced or the CMS arrives.
+- **The field:** a magnifying glass, a ✕ to clear it, 16px text (so iPhones don't zoom), a hidden label for screen readers, and messages that name what you searched for.
+
+**Incomplete recipes.** The goal is to post a recipe quickly from the phone (maybe just a title and a photo) and fill it in later. Decided: **only the title is required.**
+- `types.ts`: everything except `id`, `title`, `createdAt` and the lists is optional. The lists may be empty.
+- `isIncomplete(recipe)` (no ingredients yet) gives an "Uferdig" label on the card and a note on the recipe page. *Why calculated:* it can never be out of date.
+- Every part of the site only shows what's there: the card line, the time/portion line, the portion selector, "Slik gjør du", and the ingredient panel. Without ingredients the recipe page is one column.
+- `data.test.ts` now checks that every recipe has a title, and only checks numbers that are filled in.
+- **Fixed along the way:** on a short recipe, the panel colour leaked out under the main column on desktop.

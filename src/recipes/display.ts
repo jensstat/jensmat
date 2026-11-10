@@ -50,6 +50,15 @@ export function formatMinutes(minutes: number): string {
   return `${hours} t ${rest} min`;
 }
 
+// The short line under a recipe card: "30 min · Middag".
+// Leaves out what the recipe doesn't have yet: "Middag", "30 min", or "" for neither.
+export function cardDetails(recipe: Recipe): string {
+  const parts: string[] = [];
+  if (recipe.minutes !== undefined) parts.push(formatMinutes(recipe.minutes));
+  if (recipe.category) parts.push(recipe.category);
+  return parts.join(" · ");
+}
+
 export interface IngredientGroup {
   title?: string; // undefined for the ingredients without a group
   ingredients: Ingredient[];

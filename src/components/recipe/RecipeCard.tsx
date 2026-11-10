@@ -1,5 +1,6 @@
 import { Link } from "react-router";
-import { formatMinutes } from "../../recipes/display";
+import { cardDetails } from "../../recipes/display";
+import { isIncomplete } from "../../recipes/types";
 import type { Recipe } from "../../recipes/types";
 
 interface RecipeCardProps {
@@ -31,6 +32,25 @@ function CardPhoto({ recipe, className }: CardPhotoProps) {
   );
 }
 
+// The line under the title: "30 min · Middag", and an "Uferdig" label on incomplete recipes.
+// Shows nothing if the recipe has neither (a recipe with only a title is always "Uferdig").
+function CardDetails({ recipe }: { recipe: Recipe }) {
+  const details = cardDetails(recipe);
+  const incomplete = isIncomplete(recipe);
+  if (!details && !incomplete) return null;
+
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink/60">
+      {details && <span>{details}</span>}
+      {incomplete && (
+        <span className="rounded-full border border-ink/25 px-2 leading-5 text-ink/70">
+          Uferdig
+        </span>
+      )}
+    </p>
+  );
+}
+
 function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
   if (variant === "row") {
     return (
@@ -43,9 +63,7 @@ function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
           <h2 className="font-serif text-lg leading-snug font-semibold group-hover:text-gold">
             {recipe.title}
           </h2>
-          <p className="mt-1 text-sm text-ink/60">
-            {formatMinutes(recipe.minutes)} · {recipe.category}
-          </p>
+          <CardDetails recipe={recipe} />
         </div>
       </Link>
     );
@@ -60,9 +78,7 @@ function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
       <h2 className="mt-2 font-serif text-base leading-snug font-semibold group-hover:text-gold sm:mt-3 sm:text-xl">
         {recipe.title}
       </h2>
-      <p className="mt-1 text-sm text-ink/60">
-        {formatMinutes(recipe.minutes)} · {recipe.category}
-      </p>
+      <CardDetails recipe={recipe} />
     </Link>
   );
 }

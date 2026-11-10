@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  cardDetails,
   formatAmount,
   formatMinutes,
   formatQuantity,
   groupIngredients,
   recipeLabels,
 } from "./display";
+import { isIncomplete, isQuick } from "./types";
 import type { Recipe } from "./types";
 
 describe("formatAmount", () => {
@@ -90,5 +92,46 @@ describe("recipeLabels", () => {
 
   it("leaves out what doesn't apply", () => {
     expect(recipeLabels(base)).toEqual([]);
+  });
+});
+
+// A recipe with only the required fields: like one posted quickly from the phone.
+const titleOnly: Recipe = {
+  id: "fiskesuppe",
+  title: "Fiskesuppe",
+  tags: [],
+  ingredients: [],
+  steps: [],
+  createdAt: "2026-11-10",
+};
+
+describe("cardDetails", () => {
+  it("writes time and category, and leaves out what's missing", () => {
+    expect(cardDetails({ ...titleOnly, minutes: 30, category: "Middag" })).toBe(
+      "30 min · Middag",
+    );
+    expect(cardDetails({ ...titleOnly, category: "Middag" })).toBe("Middag");
+    expect(cardDetails({ ...titleOnly, minutes: 75 })).toBe("1 t 15 min");
+    expect(cardDetails(titleOnly)).toBe("");
+  });
+});
+
+describe("isQuick", () => {
+  it("is never quick without a time", () => {
+    expect(isQuick(titleOnly)).toBe(false);
+    expect(isQuick({ ...titleOnly, minutes: 20 })).toBe(true);
+  });
+});
+
+describe("isIncomplete", () => {
+  it("is incomplete until the recipe has ingredients", () => {
+    expect(isIncomplete(titleOnly)).toBe(true);
+    expect(isIncomplete({ ...titleOnly, ingredients: [{ name: "torsk" }] })).toBe(false);
+  });
+
+  it("doesn't need steps to be complete", () => {
+    expect(
+      isIncomplete({ ...titleOnly, ingredients: [{ name: "torsk" }], steps: [] }),
+    ).toBe(false);
   });
 });

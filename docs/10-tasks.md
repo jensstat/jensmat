@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 10 November 2026.*
+*Last updated: 10 November 2026. Search and incomplete recipes are done; next up is 2, "Hva med…?".*
 
 ---
 
@@ -23,17 +23,17 @@ For the search field, for example:
 
 ## ▶ Now: the recipe overview
 
-### 1. Search field
+### 1. Search field ✅
 
 Make it possible to search for a recipe by name or ingredient. Builds on the filter that's already there. Suggested tutorial steps:
 
-- [ ] 1.1 A plain text field above the chips, with its own state, and the text shown under it (to check it works)
-- [ ] 1.2 Add `query` to `RecipeFilters` in `recipes/filter.ts`, and a rule in `filterRecipes` that matches the **title**
-- [ ] 1.3 Also match **ingredient names** and the description ("laks" finds Laksewrap)
-- [ ] 1.4 Ignore upper/lower case and spaces at the ends (`toLowerCase()`, `trim()`)
-- [ ] 1.5 A test in `filter.test.ts` for search, and for search + category together
-- [ ] 1.6 Style the field (search icon, a ✕ to clear it), and let "Vis alle oppskrifter" clear the search too
-- [ ] 1.7 Phone check: the field and the chips should fit nicely at 360px
+- [x] 1.1 A plain text field above the chips, with its own state, and the text shown under it (to check it works)
+- [x] 1.2 Add `query` to `RecipeFilters` in `recipes/filter.ts`, and a rule in `filterRecipes` that matches the **title**
+- [x] 1.3 Also match **ingredient names** and the description ("laks" finds Laksewrap)
+- [x] 1.4 Ignore upper/lower case and spaces at the ends (`toLowerCase()`, `trim()`)
+- [x] 1.5 A test in `filter.test.ts` for search, and for search + category together
+- [x] 1.6 Style the field (search icon, a ✕ to clear it), and let "Vis alle oppskrifter" clear the search too
+- [x] 1.7 Phone check: the field and the chips should fit nicely at 360px
 
 ### 2. "Hva med…?" – inspiration
 
@@ -66,7 +66,7 @@ From [08 – Status](08-status.md):
 
 ## Then: real content
 
-- [ ] Replace the three placeholder recipes (Havregrøt, Lasagne, Sjokolademousse) with your own
+- [ ] Replace the placeholder recipes (Havregrøt, Lasagne, Sjokolademousse, and Fiskesuppe, the incomplete example) with your own
 - [ ] Add more of your own recipes. `npm test` checks each one
 - [ ] Photos in `public/images/recipes/`, under ~300 KB each
 
@@ -111,3 +111,5 @@ From [08 – Status](08-status.md):
 - [x] Text size tuned (90 % on large screens)
 - [x] Documentation in `docs/`
 - [x] Recipe overview: cards, grid/list view, category filter, empty state
+- [x] Search on the overview: title, description and ingredients, with tests
+- [x] Incomplete recipes: only the title is required, an "Uferdig" label, and every page handles missing parts

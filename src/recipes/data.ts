@@ -44,8 +44,17 @@ export const recipes: Recipe[] = [
   // PLACEHOLDERS: example recipes for testing the overview page and the filters.
   // Replace them with your own, or delete them, when you have real recipes.
   // They're spread out on purpose: a breakfast, a long dinner and a dessert,
-  // with and without main ingredient and tags, under and over 30 minutes.
+  // with and without main ingredient and tags, under and over 30 minutes,
+  // and one incomplete recipe with only a title (like one posted quickly from the phone).
   // ---------------------------------------------------------------------------
+  {
+    id: "fiskesuppe",
+    title: "Fiskesuppe",
+    tags: [],
+    ingredients: [],
+    steps: [],
+    createdAt: "2026-11-10",
+  },
   {
     id: "havregrot-med-baer",
     title: "Havregrøt med bær",
