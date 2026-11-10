@@ -1,4 +1,5 @@
 import { useId, useRef, useState } from "react";
+import { Link } from "react-router";
 import CategoryChips from "../components/recipe/CategoryChips";
 import RecipeCard from "../components/recipe/RecipeCard";
 import ViewToggle from "../components/recipe/ViewToggle";
@@ -6,7 +7,7 @@ import type { RecipeView } from "../components/recipe/ViewToggle";
 import { filterRecipes, noFilters } from "../recipes/filter";
 import type { RecipeFilters } from "../recipes/filter";
 import { getAllRecipes } from "../recipes/recipes";
-import { pickSuggestion } from "../recipes/suggest";
+import { isPizzaDay, pickSuggestion } from "../recipes/suggest";
 
 // The grid's classes for each view.
 // Record<RecipeView, string>: TypeScript makes sure every view has a layout.
@@ -16,6 +17,13 @@ const layouts: Record<RecipeView, string> = {
   list: "grid gap-y-3 lg:grid-cols-2 lg:gap-x-10",
 };
 
+// Today's weekday: 0 = Sunday … 6 = Saturday.
+// Reading the clock gives a different answer at different times, so it's only called
+// once, as the starting value of the `day` state, never directly in the render.
+function today() {
+  return new Date().getDay();
+}
+
 // The overview of all recipes, at /oppskrifter. (One recipe is RecipePage.tsx.)
 // The page holds the state (view and filters) and puts the pieces together;
 // the pieces are in components/recipe/, and the filtering in recipes/filter.ts.
@@ -23,10 +31,17 @@ function RecipeListPage() {
   const recipes = getAllRecipes();
   const [view, setView] = useState<RecipeView>("standard");
   const [filters, setFilters] = useState<RecipeFilters>(noFilters);
+  // The weekday, read from the clock once when the page opens. It's state (never changed),
+  // so every render sees the same day, and the page and the suggestion always agree.
+  // The page passes it in, so the functions in recipes/suggest.ts stay pure and testable.
+  // To see another day while testing, write e.g. useState(() => 5) for a Friday.
+  const [day] = useState(today);
   // "Hva med…?": picked once when the page opens, and again only when the button is pressed.
   // undefined if there are no complete recipes; then the suggestion isn't shown.
-  // The rules (complete only, never the same twice) are in recipes/suggest.ts.
-  const [suggestion, setSuggestion] = useState(() => pickSuggestion(recipes));
+  // The rules (a complete dinner that suits the day, never the same twice) are in recipes/suggest.ts.
+  const [suggestion, setSuggestion] = useState(() =>
+    pickSuggestion(recipes, day),
+  );
   // A handle on the search field, so the ✕ button can put the cursor back in it.
   const searchRef = useRef<HTMLInputElement>(null);
   const searchId = useId();
@@ -50,19 +65,29 @@ function RecipeListPage() {
         <p className="mt-2 text-lg font-light text-ink/70 lg:text-[1.375rem]">
           Finn noe godt å lage!
         </p>
-        {suggestion && (
+        {/* "Hva med…?": on Fridays pizza, on other days a recipe (if there is one to suggest) */}
+        {isPizzaDay(day) ? (
           <div className="mt-4">
-            <p>Hva med… {suggestion.title}?</p>
-            <button
-              type="button"
-              onClick={() =>
-                setSuggestion(pickSuggestion(recipes, suggestion))
-              }
-              className="mt-1 text-sm underline"
-            >
-              Vis et annet forslag
-            </button>
+            <p>Det er fredag – pizzatid!</p>
+            <Link to="/pizza" className="mt-1 inline-block text-sm underline">
+              Til pizzakalkulatoren
+            </Link>
           </div>
+        ) : (
+          suggestion && (
+            <div className="mt-4">
+              <p>Hva med… {suggestion.title}?</p>
+              <button
+                type="button"
+                onClick={() =>
+                  setSuggestion(pickSuggestion(recipes, day, suggestion))
+                }
+                className="mt-1 text-sm underline"
+              >
+                Vis et annet forslag
+              </button>
+            </div>
+          )
         )}
         {/* Search: the text is stored in filters.query, and filterRecipes does the searching.
             A magnifying glass on the left, and a ✕ on the right once something is typed. */}

@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 10 November 2026. Search and incomplete recipes are done; "Hva med…?" (task 2) is under way, next up is 2.6.*
+*Last updated: 10 November 2026. Search and incomplete recipes are done; "Hva med…?" (task 2) is under way, next up is 2.10 (styling).*
 
 ---
 
@@ -49,14 +49,14 @@ A suggestion at the top of the overview: one random dinner that suits the day (e
 - [x] 2.3 Never the same recipe twice in a row
 - [x] 2.4 Only suggest **complete** recipes (`isIncomplete` in `types.ts`), and show nothing if there are none
 - [x] 2.5 Move the picking into a pure function in `recipes/` (like `filterRecipes`), with tests
-- [ ] 2.6 Only **dinners** (`category === "Middag"`). If there are none, fall back to any complete recipe. With tests
+- [x] 2.6 Only **dinners** (`category === "Middag"`). If there are none, fall back to any complete recipe. With tests
 - [x] 2.7 **"Ukedag"** (weekday food) and **"Helgemat"** (weekend food): a new `occasions` field in `types.ts`, not a tag, since it's only for the suggestion and never shown. Missing means "Ukedag" (`occasionsOf`). A dinner can be both. Marked: Laksewrap both, Lasagne and Fiskesuppe "Helgemat"
-- [ ] 2.8 **The day decides:** the page passes in the weekday (`new Date().getDay()`), so the function stays pure and tests can "pretend it's Saturday". Use `occasionsOf(recipe)`. With tests
+- [x] 2.8 **The day decides:** the page passes in the weekday (`new Date().getDay()`), so the function stays pure and tests can "pretend it's Saturday". Use `occasionsOf(recipe)`. With tests
   - Monday–Thursday: dinners with "Ukedag"
   - Saturday: dinners with "Helgemat" (also those that have "Ukedag" too)
   - Sunday: dinners with "Helgemat" or "Ukedag"
   - If nothing fits: any dinner, then any complete recipe. The suggestion should never disappear just because a rule is too strict
-- [ ] 2.9 **Friday is pizza day:** "Pizzatid!" with a link to the pizza calculator (`/pizza`) instead of a recipe, and no "Vis et annet forslag" button
+- [x] 2.9 **Friday is pizza day:** "Pizzatid!" with a link to the pizza calculator (`/pizza`) instead of a recipe, and no "Vis et annet forslag" button
 - [ ] 2.10 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe. And a nice Friday version
 - [ ] 2.11 Phone check at 360px, the Friday version too
 
