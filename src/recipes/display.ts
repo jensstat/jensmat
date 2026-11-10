@@ -1,0 +1,81 @@
+// How recipe data is shown as text: amounts, time and labels.
+// Only logic, no React, so it can be tested on its own (see display.test.ts)
+// and reused by the recipe page, the recipe cards and portion scaling.
+
+import type { Ingredient, Recipe } from "./types";
+import { isQuick } from "./types";
+
+// Common kitchen fractions, shown as fraction characters like in a cookbook.
+const fractions: [number, string][] = [
+  [1 / 4, "¼"],
+  [1 / 3, "⅓"],
+  [1 / 2, "½"],
+  [2 / 3, "⅔"],
+  [3 / 4, "¾"],
+];
+
+// Turns an amount into readable text: 0.5 → "½", 1.5 → "1 ½", 300 → "300", 1.2 → "1,2".
+// Also handles "odd" numbers from portion scaling later, like 0.4999 → "½".
+export function formatAmount(amount: number): string {
+  // Larger amounts (grams, millilitres …) as whole numbers.
+  if (amount >= 10) return String(Math.round(amount));
+
+  const whole = Math.floor(amount);
+  const rest = amount - whole;
+
+  // Close to a whole number: 2.02 → "2", 1.97 → "2".
+  if (rest < 0.05) return String(whole);
+  if (rest > 0.95) return String(whole + 1);
+
+  // Close to a common fraction: 0.5 → "½", 1.25 → "1 ¼".
+  const fraction = fractions.find(([value]) => Math.abs(rest - value) < 0.05);
+  if (fraction) return whole === 0 ? fraction[1] : `${whole} ${fraction[1]}`;
+
+  // Otherwise one decimal, with a Norwegian comma: 1.2 → "1,2".
+  return (Math.round(amount * 10) / 10).toLocaleString("nb-NO");
+}
+
+// Amount and unit together: "½ pose", "300 g", "4" (no unit), "" (no amount).
+export function formatQuantity(amount?: number, unit?: string): string {
+  if (amount === undefined) return "";
+  return unit ? `${formatAmount(amount)} ${unit}` : formatAmount(amount);
+}
+
+// Minutes as readable time: 30 → "30 min", 60 → "1 t", 75 → "1 t 15 min".
+export function formatMinutes(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours === 0) return `${rest} min`;
+  if (rest === 0) return `${hours} t`;
+  return `${hours} t ${rest} min`;
+}
+
+export interface IngredientGroup {
+  title?: string; // undefined for the ingredients without a group
+  ingredients: Ingredient[];
+}
+
+// Collects the ingredients into groups for showing: first the ones without a group,
+// then each group ("Til dippen" …) in the order it first appears in the recipe.
+export function groupIngredients(ingredients: Ingredient[]): IngredientGroup[] {
+  const groups: IngredientGroup[] = [];
+  for (const ingredient of ingredients) {
+    let group = groups.find((g) => g.title === ingredient.group);
+    if (!group) {
+      group = { title: ingredient.group, ingredients: [] };
+      groups.push(group);
+    }
+    group.ingredients.push(ingredient);
+  }
+  // The ungrouped ones first, even if a grouped ingredient happens to be written above them.
+  return groups.sort((a, b) => (a.title === undefined ? -1 : b.title === undefined ? 1 : 0));
+}
+
+// The short labels shown on a recipe: main ingredient, "Rask" (worked out from the time), then the tags.
+export function recipeLabels(recipe: Recipe): string[] {
+  return [
+    ...(recipe.protein ? [recipe.protein] : []),
+    ...(isQuick(recipe) ? ["Rask"] : []),
+    ...recipe.tags,
+  ];
+}

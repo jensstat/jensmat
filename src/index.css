@@ -1,5 +1,37 @@
 @import "tailwindcss";
+
+/* The site's design values. Each variable becomes Tailwind classes:
+   --font-display → font-display, --color-panel → bg-panel / text-panel / border-panel … */
 @theme {
+  /* The calculator and the site's frame (header, menu, front page) */
   --font-display: "Anton", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* The recipe pages, modelled on Gladkokken (which uses the commercial fonts eskorte and motiva-sans):
+     Source Serif 4 for headings, Figtree for reading. Both free, from Google Fonts. */
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+
+  /* The recipe pages' colours */
+  --color-ink: #122222; /* text: a very dark green-black, softer than pure black */
+  --color-panel: #efefe9; /* the ingredient panel: a light, slightly green gray */
+  --color-gold: #b0892a; /* the one accent: step numbers. Dark enough for white text on it */
+}
+
+/* Larger screens: everything 10 % smaller (90 %), chosen after testing on a 14" MacBook Pro.
+   Almost every size in Tailwind is in rem (text, spacing, widths), and 1 rem = the font size of <html>,
+   so this one rule scales the whole layout together and keeps the proportions.
+   Phones and tablets keep the normal 16px, where smaller text would be hard to read.
+   (80rem = 1280px. Media queries always count rem from the browser's default 16px,
+   so this breakpoint isn't affected by the size it sets.)
+   To change the size: change the percentage. Rule for the code: write sizes in rem, not px. */
+@media (width >= 80rem) {
+  html {
+    font-size: 90%;
+  }
+}
+
+/* While a <dialog> is open (the ingredient panel on phones), the page behind it shouldn't scroll. */
+body:has(dialog[open]) {
+  overflow: hidden;
 }

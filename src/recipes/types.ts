@@ -48,6 +48,10 @@ export interface Ingredient {
   unit?: string; // optional: "3 egg" has no unit. "g", "dl", "ss" …
   name: string; // kept clean ("løk"), so it can be searched and used in a shopping list
   note?: string; // "finhakket", "romtemperert" … shown after the name
+  // Optional: ingredients for one part of the dish, like "Til dippen" or "Saus".
+  // Ingredients with the same group are shown together under that heading.
+  // Ingredients without a group come first, under no heading.
+  group?: string;
 }
 
 export interface Recipe {

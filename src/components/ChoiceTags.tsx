@@ -23,7 +23,9 @@ function ChoiceTags({ label, options, value, onChange, hint }: ChoiceTagsProps) 
     <div className="grid gap-1 py-3 sm:grid-cols-[1fr_16rem] sm:items-baseline sm:gap-6">
       <span id={id}>{label}</span>
       <span>
-        <span role="radiogroup" aria-labelledby={id} className="grid grid-cols-2 gap-2">
+        {/* Phones: side by side (the box is the full screen width).
+            From sm:, the box is only 16rem wide, so the tags go on top of each other. */}
+        <span role="radiogroup" aria-labelledby={id} className="grid grid-cols-2 gap-2 sm:grid-cols-1">
           {options.map((option) => (
             <label key={option.value} className="cursor-pointer">
               <input
@@ -35,8 +37,8 @@ function ChoiceTags({ label, options, value, onChange, hint }: ChoiceTagsProps) 
                 // peer: lets the span below change style when this radio is checked or focused.
                 className="peer sr-only"
               />
-              {/* py-3: the same height as the input boxes (text-xs is smaller, so it needs more padding) */}
-              <span className="block border border-black px-1 py-3 text-center text-xs uppercase transition-colors hover:bg-neutral-100 peer-checked:bg-black peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-red-600">
+              {/* py-2.5: the same height as the input boxes */}
+              <span className="block border border-black px-1 py-2.5 text-center text-sm uppercase transition-colors hover:bg-neutral-100 peer-checked:bg-black peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-red-600">
                 {option.label}
               </span>
             </label>

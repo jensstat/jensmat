@@ -1,0 +1,99 @@
+# 07 – How to …
+
+Common tasks, step by step. After each one: `npm test` and `npm run build`.
+
+---
+
+## … add a recipe
+
+1. Open `src/recipes/data.ts` and copy an existing recipe inside the list.
+2. Change the fields. Pay attention to:
+   - **`id`**: lowercase, hyphens instead of spaces, no æøå: `"kylling-i-karri"`. It becomes the address `/oppskrifter/kylling-i-karri`. Never change it once it's in use.
+   - **`category`, `protein`, `tags`**: must be from the lists in `types.ts`. A typo gives a red underline.
+   - **Ingredients**: `amount` as a number (`0.5`, not `"½"`), and descriptions like "finhakket" (finely chopped) in `note`.
+   - **`createdAt`**: today's date as `"2026-11-09"`.
+3. Open `localhost:5173/oppskrifter/<id>`.
+
+**With a photo:** put the file in `public/images/recipes/` (keep it under ~300 KB), and add `image: "/images/recipes/<file>.jpg"`.
+
+---
+
+## … add a new page
+
+1. Create `src/pages/MyPage.tsx`. Start from `NotFoundPage.tsx`: it's the smallest page, and uses `Container`.
+2. In `App.tsx`, import it and add a route **above** the `path="*"` route:
+   ```tsx
+   <Route path="/my-address" element={<MyPage />} />
+   ```
+3. If it should be in the menu, add it to `navLinks` in `Header.tsx`.
+
+---
+
+## … add a number field to the pizza calculator
+
+1. In `src/pizza/settings.ts`: add the field to `PizzaSettings`, and a value in `defaults`.
+2. In `PizzaCalculatorPage.tsx`, in the right `FieldGroup`:
+   ```tsx
+   <NumberField
+     label="Navn"
+     unit="%"
+     value={settings.myField}
+     onChange={(myField) => update({ myField })}
+     min={0}
+     max={10}
+     step={0.1}
+   />
+   ```
+3. If it affects the grams, use it in `pizza/calculateDough.ts`, and add it to the `NaN` check at the top.
+4. Add a test in `calculateDough.test.ts`.
+
+---
+
+## … add a pizza type
+
+Add an entry to `pizzaStyles` in `src/pizza/settings.ts`, with `label`, `hint` and `values`. The dropdown updates by itself.
+
+---
+
+## … add a category, main ingredient or tag
+
+Add the value to the list in `src/recipes/types.ts` (`categories`, `proteins` or `tags`). The type updates by itself.
+
+---
+
+## … change the yeast calculation
+
+Everything is in `src/pizza/yeast.ts`. Afterwards, `npm test` checks the chart, and that the house recipe still gives 3 g with "Hjemmeoppskrift".
+
+---
+
+## … write a test
+
+Tests live next to the file they test: `something.ts` → `something.test.ts`. The pattern:
+
+```ts
+import { describe, expect, it } from "vitest";
+import { formatMinutes } from "./display";
+
+describe("formatMinutes", () => {
+  it("writes hours and minutes", () => {
+    expect(formatMinutes(75)).toBe("1 t 15 min");
+  });
+});
+```
+
+- `describe` groups tests, and `it` is one test. Write the name as a sentence about what *should* happen.
+- `expect(actual).toBe(expected)`. Use `toEqual` for lists and objects, and `toBeCloseTo` for decimal numbers.
+- `npm run test:watch` runs the tests every time you save, which is handy while you work.
+
+**Is the test useful?** Break the code on purpose and check that the test fails. A test that never fails doesn't protect anything.
+
+---
+
+## … find out why something looks wrong
+
+1. **A style doesn't show up?** Check the spelling of the class. Tailwind ignores unknown classes without a warning.
+2. **Something is in the wrong place?** Check where `</div>` tags close. A grid only places its *direct* children.
+3. **A red underline?** Read the *last* line of the error message first; it usually says what's wrong.
+4. **Something wrong in the browser?** Open the developer tools (F12), and look at the *Console* tab for red messages.
+5. **Wrong on phones?** Developer tools → the phone icon → pick a phone, and check at 360px.

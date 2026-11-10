@@ -6,7 +6,7 @@ export const recipes: Recipe[] = [
     id: "laksewrap",
     title: "Laksewrap",
     description:
-      "Tandoori-krydret laks i wrap med mango, avocado, greens og søt pølsesennep i fullkornstortiall",
+      "Tandoori-krydret laks i wrap med mango, avocado, greens og søt pølsesennep i fullkornstortilla",
     category: "Middag",
     protein: "Fisk",
     tags: [],
@@ -25,14 +25,10 @@ export const recipes: Recipe[] = [
       { amount: 2, name: "tomat" },
       { amount: 4, name: "fullkornstortilla" },
       { name: "Begby pølsesennep", note: "god og søt" },
-      {
-        amount: 1,
-        unit: "dl",
-        name: "kesam eller crème fraiche",
-        note: "til dippen",
-      },
-      { amount: 1, unit: "ss", name: "Begby pølsesennep", note: "til dippen" },
       { name: "guacamole" },
+      // The dip: shown under its own heading, "Til dippen"
+      { amount: 1, unit: "dl", name: "kesam eller crème fraiche", group: "Til dippen" },
+      { amount: 1, unit: "ss", name: "Begby pølsesennep", group: "Til dippen" },
     ],
     steps: [
       "Ha tandoori-krydder over laksen og stek den i ovnen på 200 °C i ca. 22 minutter.",

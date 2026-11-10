@@ -46,7 +46,7 @@ function PizzaCalculatorPage() {
 
         {/* Phones: one column. From lg: settings on the left, the result (320px) on the right.
             Both columns start at the same height, so "Deig" and "Resultat" line up. */}
-        <div className="mt-10 grid gap-12 lg:mt-14 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-24">
+        <div className="mt-10 grid gap-12 lg:mt-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-24">
           {/* Left column: the settings.
               (pizzaCount) => update({ pizzaCount }) is short for
               (value) => update({ pizzaCount: value }): when the name of the value and the
