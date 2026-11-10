@@ -20,6 +20,7 @@ src/App.tsx           The frame that's the same on every page:
    │                  <Routes> picks the page that matches the address:
    │                    /                  → HomePage
    │                    /pizza             → PizzaCalculatorPage
+   │                    /oppskrifter       → RecipeListPage (all recipes)
    │                    /oppskrifter/:id   → RecipePage   (:id = "laksewrap")
    │                    *  (anything else) → NotFoundPage
    ▼
@@ -85,9 +86,11 @@ Think of the code as three layers, where each layer only **uses** the layers bel
 |---|---|---|
 | All pizza settings (`settings`) | `PizzaCalculatorPage` | Both the fields **and** the result need it, so it lives in the page above them |
 | The baking time (`bakeTime`) | `Instructions` | Only the method needs it |
+| The chosen portions (`servings`) | `RecipeView` (in `RecipePage`) | Both the desktop panel and the phone menu show it |
+| The overview's view and filters (`view`, `filters`) | `RecipeListPage` | The chips, the toggle, the count and the cards all depend on them |
 | Which page is shown | The address bar (React Router) | So the back button, bookmarks and reload work |
 
-Everything else (grams, steps, labels) is **calculated from state** every time the page is drawn, never stored. *If you can calculate it, don't store it*: then it can never be out of date.
+Everything else (grams, steps, labels, the filtered recipes) is **calculated from state** every time the page is drawn, never stored. *If you can calculate it, don't store it*: then it can never be out of date.
 
 ---
 

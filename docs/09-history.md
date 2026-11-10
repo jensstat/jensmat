@@ -111,3 +111,19 @@ The text size was tuned on a 14" MacBook Pro, by trying browser zoom levels:
 3. **90 %** was the one that felt right. It's now one rule in `index.css`, for screens 1280px and wider. Phones keep the normal size.
 
 Along the way, fixed `px` sizes were converted to `rem`, so they follow the rule, and the last 12px text (the yeast tags in the calculator) became `text-sm`. See [05 – Design](05-design.md), section 4b.
+
+## 10. The recipe overview, built step by step
+
+*Commits `4b33a9c` → `216a818`*
+
+The overview page `/oppskrifter` was built **as a tutorial, one small visible step at a time**, the way a developer works without AI help: first the raw data on screen, then structure, then styling, and a component only once the code asked for it.
+
+1. **The route and the page** (`RecipeListPage`, named so it isn't confused with `RecipePage`). This fixed the three links that led to "Fant ikke siden".
+2. **Three placeholder recipes** (breakfast, a long dinner, a dessert) to test with.
+3. **Titles → links → time and category → a grid → a photo area → whole card clickable.**
+4. **Two cards per row on phones**, to cut down on scrolling.
+5. **`RecipeCard` became a component** once the `<li>` had grown big, with a `CardPhoto` helper for real photos.
+6. **A grid/list toggle**, with the view in state and a `layouts` lookup for the grid classes. The buttons were first written by hand, then made from a list, then given icons.
+7. **The category filter**, with chips and `.filter()`, and a message when nothing matches.
+8. **Refactor:** `CategoryChips` and `ViewToggle` became their own components; "Alle" became one option in the same list as the categories; the filtering moved to `recipes/filter.ts` (with tests), as one `filters` object. *Why:* the page went from 130 to 80 lines, and the next filter (search) becomes one field and one rule.
+

@@ -2,7 +2,9 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 9 November 2026. Type check, lint, 38 tests and the build all pass. Every page was checked in the browser at 360px and 1400px: no errors, no sideways scrolling.*
+*Last checked: 10 November 2026. Type check, lint, 53 tests and the build all pass. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling.*
+
+**What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
 ---
 
@@ -12,10 +14,11 @@ Where the project stands: what works, what's missing, and known issues. **Update
 |---|---|---|
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
 | Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises |
+| Recipe overview | `/oppskrifter` | ✅ Recipe cards, category filter, grid/list view, a message when nothing matches |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken: wide layout, ingredient panel, portion selector, groups, an ingredient menu on phones, print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| Tests | `npm test` | ✅ 38 tests: yeast chart, dough maths, method, text formatting, and a check of every recipe in `data.ts` |
+| Tests | `npm test` | ✅ 53 tests: yeast chart, dough maths, method, text formatting, the overview filter, and a check of every recipe in `data.ts` |
 
 ---
 
@@ -25,8 +28,7 @@ Found during a full review of the code. Sorted by how much they matter.
 
 ### Important
 
-**1. `/oppskrifter` has no page yet.**
-Three places link there: **the "Oppskrifter" menu link**, the **"Oppskrifter →" button on the front page**, and **"← Alle oppskrifter"** on the recipe page. All three show "Fant ikke siden" today. → *Fixed by the next step: the overview page with recipe cards.*
+**1. ~~`/oppskrifter` has no page yet.~~** ✅ Fixed: the overview page exists, so the menu link, the front page button and "← Alle oppskrifter" all work.
 
 ### Small
 
@@ -57,7 +59,6 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **11. Publishing needs one setting.** When the site is put online (Netlify, Vercel …), the server must send every address to `index.html`, otherwise reloading on `/pizza` gives the host's own 404 page. Each host has a short guide for "single page apps".
 
-
 **12. The recipe pages are wider than the header.** The recipe content can start further left than the logo, because the recipe pages are up to 1500px wide and the header 1152px. That was agreed ("more widescreen"). If it bothers you, the header could follow the page width.
 
 **13. Printing prints the whole page.** "Skriv ut" prints the header, the menu and the photo placeholder too. A print style (`print:hidden` on more elements) can make it tidier.
@@ -66,21 +67,4 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 ## Next steps
 
-In the order I'd suggest:
-
-1. **The overview page `/oppskrifter`** with recipe cards, in the recipe section's look. Fixes issue 1. Reuses `LabelList`, `RecipeImage` and `formatMinutes`.
-2. **The small fixes 2–5.** About 10 minutes in total.
-3. ~~**Change the number of portions**~~ ✅ Done.
-4. **Search and filter** recipes.
-5. **Test-bake** "Forum-basert" vs "Hjemmeoppskrift", and adjust the yeast.
-6. **Publish the site** (remember issue 11).
-7. **CMS / phone app** for posting recipes with photos. See [03](03-recipes.md).
-
-### Ideas for later
-
-- [ ] Remember the pizza settings when the page is reloaded (`localStorage`)
-- [ ] Share a pizza recipe as a link (settings in the address)
-- [ ] The 48 h+ yeast chart (forum reply #406), for very long rises
-- [ ] Sourdough, with its own calculation (hidden for now)
-- [ ] Front page: "Nyeste oppskrifter" (newest recipes) and "Hva skal vi spise i dag?" (a random recipe)
-- [ ] A tab bar at the bottom on phones (fits with a phone app)
+Moved to **[10 – Tasks](10-tasks.md)**, which is kept up to date as the to-do list.

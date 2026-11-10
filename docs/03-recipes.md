@@ -13,8 +13,11 @@ The recipes ("Oppskrifter") are the main part of the site going forward: all my 
 | `recipes/recipes.ts` | knowledge | **The data layer**: `getAllRecipes()` and `getRecipe(id)`. The pages get recipes through these |
 | `recipes/display.ts` | knowledge | **How things are shown as text**: amounts (½), time (1 t 15 min), labels |
 | `recipes/display.test.ts` | test | Checks `display.ts` |
-| `pages/RecipePage.tsx` | page | One recipe, at `/oppskrifter/:id` |
-| `components/recipe/…` | components | The building blocks of the recipe page (see section 5) |
+| `recipes/filter.ts` (+ test) | knowledge | **Which recipes to show** in the overview: `filterRecipes(recipes, filters)` |
+| `recipes/data.test.ts` | test | Checks every recipe in `data.ts` (ids, dates, numbers) |
+| `pages/RecipeListPage.tsx` | page | **The overview** of all recipes, at `/oppskrifter` (section 6) |
+| `pages/RecipePage.tsx` | page | **One** recipe, at `/oppskrifter/:id` (section 5) |
+| `components/recipe/…` | components | The building blocks of both pages |
 
 ---
 
@@ -140,18 +143,40 @@ Desktop (from lg:)                                        Phones
 
 **Actions:** "Skriv ut" opens the browser's print dialog. "Kopier lenke" copies the address and shows "Lenke kopiert" for 2 seconds.
 
-## 6. The plan going forward
+## 6. The overview page (`/oppskrifter`)
+
+```
+Oppskrifter
+Finn noe godt å lage!
+(Alle) (Frokost) (Lunsj) (Middag) (Dessert) (Bakst) (Tilbehør)   ← CategoryChips
+4 oppskrifter                                        [▦] [☰]      ← count + ViewToggle
+┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐
+│ photo│ │ photo│ │ photo│ │ photo│                              ← RecipeCard (variant "card")
+│Title │ │Title │ │Title │ │Title │
+│10 min│ │30 min│ │1 t 30│ │20 min│
+└──────┘ └──────┘ └──────┘ └──────┘
+```
+
+**How it works:**
+- **The state** lives in `RecipeListPage`: `view` (`"standard"` or `"list"`) and `filters` (today only `category`; `null` means "Alle").
+- **The recipes to show** are calculated on every render, never stored: `visibleRecipes = filterRecipes(recipes, filters)`. The count, the cards and the empty state all read from it.
+- **`filterRecipes`** (in `recipes/filter.ts`) is a pure function with tests, like `calculateDough`. **To add a filter** (search, main ingredient, "Rask"): one more field in `RecipeFilters`, one more rule in `filterRecipes`, and a control on the page.
+- **The views:** a `layouts` lookup in the page picks the grid's classes for each view. "Standard" is 2 cards per row on phones and up to 4 on desktop. "List" is compact rows (`RecipeCard` with `variant="row"`), in two columns on desktop. **To add a view:** one line in `ViewToggle`'s `options`, one line in `layouts`. TypeScript reminds you if you forget one.
+- **When nothing matches:** a message, "Ingen oppskrifter her ennå", with a "Vis alle oppskrifter" button that resets every filter.
+
+## 7. The plan going forward
 
 | Step | Status |
 |---|---|
 | Data model, example data, data layer | ✅ done |
 | The recipe page, with its own look | ✅ done |
 | Ingredient groups | ✅ done (`group`) |
-| **The overview page** `/oppskrifter`, with recipe cards | ⏭ next. Today, the menu link leads to "Fant ikke siden" |
 | Change the number of portions | ✅ done (`PortionStepper`) |
-| Search and filter (category, main ingredient, tags, "Rask") | the lists in `types.ts` are ready |
-| Photos | add `image` to a recipe, with the file in `public/images/recipes/`. Without one, a calm placeholder is shown |
 | An "Ingredienser" menu on phones (like Gladkokken) | ✅ done (`MobileIngredients`) |
+| The overview page `/oppskrifter`, with cards, grid/list view and category filter | ✅ done |
+| **Search** | ⏭ next. See [10 – Tasks](10-tasks.md) |
+| More filters (main ingredient, "Rask", tags) | `filterRecipes` and the lists in `types.ts` are ready |
+| Photos | add `image` to a recipe, with the file in `public/images/recipes/`. Without one, a calm placeholder is shown |
 | CMS / phone app | see below |
 
 ### Later: CMS and a phone app

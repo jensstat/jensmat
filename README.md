@@ -3,7 +3,7 @@
 A personal food website, built to learn React while making something useful:
 
 - **Pizzakalkulator** (`/pizza`): choose pizza type, number, rise time and temperature, and get grams, a method and clock times.
-- **Oppskrifter** (`/oppskrifter/…`): my own recipes, one page per recipe. The overview page is the next thing to build.
+- **Oppskrifter** (`/oppskrifter`): an overview of my recipes, with category filter and grid/list view, and a page per recipe with portions, ingredients and steps.
 
 The site's text is in Norwegian. Code, comments and documentation are in English.
 
@@ -46,8 +46,11 @@ Everything is in [`docs/`](docs/). Each file stands on its own, so read the one 
 | [07 – How to …](docs/07-how-to.md) | do a common task step by step: add a page, a field, a recipe, a test |
 | [08 – Status](docs/08-status.md) | see what works, what's missing, known issues, and what's next |
 | [09 – History](docs/09-history.md) | see what was built when, and **why** the code was refactored |
+| [10 – Tasks](docs/10-tasks.md) | see **what to do next**, and how to start a new working session |
 
 **New to the project, or lost track?** Read 01, then 09, then 08. That's about 15 minutes.
+
+**Starting a new working session?** Open [10 – Tasks](docs/10-tasks.md): it says what's next, and has a ready-made opening line.
 
 ---
 

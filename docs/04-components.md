@@ -14,6 +14,7 @@ One per address. A page puts components together and holds the state for that pa
 |---|---|---|
 | `HomePage` | `/` | Big heading, subtitle, and two buttons: "Oppskrifter" and "Pizzakalkulator" |
 | `PizzaCalculatorPage` | `/pizza` | Holds the pizza `settings` in state, and draws the fields, the result and the method. See [02](02-pizza-calculator.md) |
+| `RecipeListPage` | `/oppskrifter` | The overview: category chips, grid/list toggle, recipe cards. Holds `view` and `filters` in state. See [03](03-recipes.md), section 6 |
 | `RecipePage` | `/oppskrifter/:id` | One recipe. See [03](03-recipes.md) |
 | `NotFoundPage` | everything else | "Fant ikke siden". Props: `title?`, `message?`. Also used by `RecipePage` for unknown recipes |
 
@@ -114,6 +115,34 @@ The method, with the time field "Stekes kl." and clock times. Holds **its own** 
 
 These use the recipe section's own look (Source Serif 4, Figtree, the panel colour and gold). See [05 – Design](05-design.md).
 
+### `RecipeCard`
+One recipe in the overview. The whole card is a link to the recipe.
+- `variant="card"` (default): a 4:3 photo, the title in serif, and "time · category".
+- `variant="row"`: a small square photo on the left, with the title and info beside it (the list view).
+
+The photo, or the first letter when there's no photo, comes from a small helper in the same file, `CardPhoto`.
+
+| Prop | Type | |
+|---|---|---|
+| `recipe` | `Recipe` | |
+| `variant?` | `"card"` \| `"row"` | default `"card"` |
+
+### `CategoryChips`
+Rounded chips: "Alle" first, then one per category from `types.ts`. The chosen one is dark. Controlled.
+
+| Prop | Type | |
+|---|---|---|
+| `value` | `Category` \| `null` | `null` = "Alle" |
+| `onChange` | `(category) => void` | |
+
+### `ViewToggle`
+Icon buttons for the overview's view (grid ▦ / list ☰). The chosen one is dark. Also exports the `RecipeView` type.
+
+| Prop | Type |
+|---|---|
+| `value` | `RecipeView` (`"standard"` \| `"list"`) |
+| `onChange` | `(view) => void` |
+
 ### `RecipeImage`
 The photo (16:9). Without a photo: a lower placeholder (5:2) in the panel colour, with the first letter of the title.
 
@@ -195,6 +224,9 @@ App
 │   │   └── ChoiceTags    │  (same layout, own code)
 │   ├── ResultPanel
 │   └── Instructions
+├── RecipeListPage (holds view and filters)
+│   ├── CategoryChips, ViewToggle
+│   └── RecipeCard (× each recipe) ── CardPhoto
 ├── RecipePage
 │   ├── RecipeView (in the same file; holds the portions)
 │   │   ├── RecipeImage, RecipeActions, RecipeMeta ── LabelList
