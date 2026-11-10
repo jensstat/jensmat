@@ -4,6 +4,7 @@ import PizzaCalculatorPage from "./pages/PizzaCalculatorPage";
 import { Route, Routes } from "react-router";
 import HomePage from "./pages/HomePage";
 import RecipePage from "./pages/RecipePage";
+import RecipeListPage from "./pages/RecipeListPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // App is the top component. It puts the big pieces of the page together.
@@ -20,7 +21,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/pizza" element={<PizzaCalculatorPage />} />
-          {/* :id is a placeholder: /oppskrifter/laksewrap gives id = "laksewrap" */}
+          np
+          <Route path="/oppskrifter" element={<RecipeListPage />} />
           <Route path="/oppskrifter/:id" element={<RecipePage />} />
           {/* * = every other address: shows "Fant ikke siden" instead of an empty page */}
           <Route path="*" element={<NotFoundPage />} />
