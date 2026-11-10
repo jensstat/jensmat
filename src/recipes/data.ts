@@ -39,4 +39,91 @@ export const recipes: Recipe[] = [
     ],
     createdAt: "2026-11-09",
   },
+
+  // ---------------------------------------------------------------------------
+  // PLACEHOLDERS: example recipes for testing the overview page and the filters.
+  // Replace them with your own, or delete them, when you have real recipes.
+  // They're spread out on purpose: a breakfast, a long dinner and a dessert,
+  // with and without main ingredient and tags, under and over 30 minutes.
+  // ---------------------------------------------------------------------------
+  {
+    id: "havregrot-med-baer",
+    title: "Havregrøt med bær",
+    description: "Kremet havregrøt med bær, honning og ristede nøtter. Rask og mettende frokost.",
+    category: "Frokost",
+    protein: "Vegetar",
+    tags: ["Barnevennlig"],
+    servings: 2,
+    minutes: 10,
+    ingredients: [
+      { amount: 2, unit: "dl", name: "havregryn" },
+      { amount: 4, unit: "dl", name: "melk" },
+      { amount: 1, unit: "klype", name: "salt" },
+      { amount: 2, unit: "dl", name: "bær", note: "friske eller frosne" },
+      { amount: 2, unit: "ss", name: "honning" },
+      { amount: 2, unit: "ss", name: "nøtter", note: "grovhakket" },
+    ],
+    steps: [
+      "Kok opp havregryn, melk og salt under omrøring.",
+      "La grøten småkoke i 3–4 minutter til den er kremet.",
+      "Server med bær, honning og ristede nøtter på toppen.",
+    ],
+    createdAt: "2026-11-10",
+  },
+  {
+    id: "lasagne",
+    title: "Lasagne",
+    description: "Klassisk lasagne med kjøttsaus, hvit saus og gyllen ost på toppen.",
+    category: "Middag",
+    protein: "Kjøtt",
+    tags: [],
+    servings: 4,
+    minutes: 90,
+    ingredients: [
+      { amount: 400, unit: "g", name: "kjøttdeig" },
+      { amount: 1, name: "løk", note: "finhakket" },
+      { amount: 2, unit: "fedd", name: "hvitløk", note: "finhakket" },
+      { amount: 1, unit: "boks", name: "hakkede tomater" },
+      { amount: 2, unit: "ss", name: "tomatpuré" },
+      { amount: 9, name: "lasagneplater" },
+      { amount: 150, unit: "g", name: "revet ost" },
+      // The white sauce: its own heading
+      { amount: 3, unit: "ss", name: "smør", group: "Hvit saus" },
+      { amount: 3, unit: "ss", name: "hvetemel", group: "Hvit saus" },
+      { amount: 5, unit: "dl", name: "melk", group: "Hvit saus" },
+      { name: "salt, pepper og muskat", group: "Hvit saus" },
+    ],
+    steps: [
+      "Brun kjøttdeigen med løk og hvitløk. Tilsett tomater og tomatpuré, og la sausen småkoke i 20 minutter.",
+      "Smelt smøret, rør inn melet, og spe med melk litt etter litt. Kok i 5 minutter og smak til med salt, pepper og muskat.",
+      "Legg lag med kjøttsaus, lasagneplater og hvit saus i en ildfast form. Avslutt med hvit saus og ost.",
+      "Stek på 200 °C i ca. 40 minutter, til osten er gyllen. La lasagnen hvile i 10 minutter før servering.",
+    ],
+    createdAt: "2026-11-08",
+    tips: "Lasagnen blir enda bedre dagen etter, og kan fryses i porsjoner.",
+  },
+  {
+    id: "sjokolademousse",
+    title: "Sjokolademousse",
+    description: "Luftig mousse av mørk sjokolade. Lages dagen før, så den rekker å stivne.",
+    category: "Dessert",
+    tags: ["Glutenfri"],
+    servings: 4,
+    minutes: 20,
+    ingredients: [
+      { amount: 150, unit: "g", name: "mørk sjokolade" },
+      { amount: 3, name: "egg", note: "delt i plomme og hvite" },
+      { amount: 2, unit: "dl", name: "kremfløte" },
+      { amount: 1, unit: "ss", name: "sukker" },
+    ],
+    steps: [
+      "Smelt sjokoladen over vannbad og la den avkjøles litt.",
+      "Rør eggeplommene inn i sjokoladen, én om gangen.",
+      "Pisk fløten løs, og pisk eggehvitene stive med sukkeret.",
+      "Vend først fløten og så eggehvitene forsiktig inn i sjokoladen.",
+      "Fordel i glass og sett moussen i kjøleskapet i minst 4 timer.",
+    ],
+    createdAt: "2026-11-07",
+    source: "Eksempeloppskrift",
+  },
 ];
