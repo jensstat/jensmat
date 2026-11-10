@@ -36,6 +36,15 @@ describe("every recipe in data.ts", () => {
   });
 
   it.each(recipes)(
+    "$id: has Ukedag/Helgemat only if it's a dinner (or has no category yet), and no doubles",
+    (recipe) => {
+      if (recipe.occasions === undefined) return;
+      if (recipe.category !== undefined) expect(recipe.category).toBe("Middag");
+      expect(new Set(recipe.occasions).size).toBe(recipe.occasions.length);
+    },
+  );
+
+  it.each(recipes)(
     "$id: has sensible numbers (portions, time, amounts above 0)",
     (recipe) => {
       // Only checked when filled in: an incomplete recipe may have no portions or time yet.

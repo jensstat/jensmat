@@ -32,6 +32,7 @@ interface Recipe {
   category?: Category;     // "Frokost" | "Lunsj" | "Middag" | "Dessert" | "Bakst" | "Tilbehør"
   protein?: Protein;       // "Kylling" | "Kjøtt" | "Fisk" | "Sjømat" | "Vegetar" | "Vegansk"
   tags: Tag[];             // "Glutenfri" | "Laktosefri" | "Barnevennlig". [] if none.
+  occasions?: Occasion[];  // "Ukedag" | "Helgemat", only on dinners. Missing = ["Ukedag"]
   servings?: number;       // how many portions the amounts are for
   minutes?: number;        // total time
   ingredients: Ingredient[]; // [] = not added yet
@@ -69,6 +70,7 @@ A recipe can be posted half-done, for example quickly from the phone with just a
 | **"Rask" (quick) isn't stored** | It's worked out: `isQuick(recipe)` is `minutes <= 30`. Then it can never be wrong if you change the time. No time means not quick |
 | **"Uferdig" isn't stored either** | `isIncomplete(recipe)`, for the same reason: it can't still say "Uferdig" after you've added the ingredients |
 | **`createdAt` as `"2026-11-09"`** | The standard date format every database and CMS uses. It also sorts correctly as plain text |
+| **`occasions` is its own field**, not a tag | It's only for picking the "Hva med…?" suggestion, and tags are shown as labels on the recipe. Every dinner is weekday food unless it says otherwise: `occasionsOf(recipe)` in `types.ts` gives `["Ukedag"]` when it's missing. So only weekend food needs marking: `["Helgemat"]`, or `["Ukedag", "Helgemat"]` for both |
 | **`note` on the ingredient** | Keeps `name` clean for search and a future shopping list |
 | **`group` on the ingredient** | Parts of a dish ("Til dippen", "Saus") get their own heading, without a separate list structure. Ingredients without a group come first |
 

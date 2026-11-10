@@ -10,6 +10,7 @@ export const recipes: Recipe[] = [
     category: "Middag",
     protein: "Fisk",
     tags: [],
+    occasions: ["Ukedag", "Helgemat"],
     servings: 2,
     minutes: 30,
     ingredients: [
@@ -51,6 +52,7 @@ export const recipes: Recipe[] = [
     id: "fiskesuppe",
     title: "Fiskesuppe",
     tags: [],
+    occasions: ["Helgemat"],
     ingredients: [],
     steps: [],
     createdAt: "2026-11-10",
@@ -86,6 +88,7 @@ export const recipes: Recipe[] = [
     category: "Middag",
     protein: "Kjøtt",
     tags: [],
+    occasions: ["Helgemat"],
     servings: 4,
     minutes: 90,
     ingredients: [

@@ -42,15 +42,23 @@ Make it possible to search for a recipe by name or ingredient. Builds on the fil
 
 ### 2. "Hva med…?" – inspiration
 
-A suggestion at the top of the overview: one random recipe, big, with a "Vis et annet forslag" (show another) button. Suggested tutorial steps:
+A suggestion at the top of the overview: one random dinner that suits the day (easy weekday food, weekend food on Saturdays, pizza on Fridays), big, with a "Vis et annet forslag" (show another) button. Suggested tutorial steps:
 
 - [x] 2.1 Pick one random recipe with `Math.random()` and show its title above the chips (to check it works)
 - [x] 2.2 Put the suggestion in state, and a "Vis et annet forslag" button that picks a new one
 - [x] 2.3 Never the same recipe twice in a row
 - [x] 2.4 Only suggest **complete** recipes (`isIncomplete` in `types.ts`), and show nothing if there are none
 - [x] 2.5 Move the picking into a pure function in `recipes/` (like `filterRecipes`), with tests
-- [ ] 2.6 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe
-- [ ] 2.7 Phone check at 360px
+- [ ] 2.6 Only **dinners** (`category === "Middag"`). If there are none, fall back to any complete recipe. With tests
+- [x] 2.7 **"Ukedag"** (weekday food) and **"Helgemat"** (weekend food): a new `occasions` field in `types.ts`, not a tag, since it's only for the suggestion and never shown. Missing means "Ukedag" (`occasionsOf`). A dinner can be both. Marked: Laksewrap both, Lasagne and Fiskesuppe "Helgemat"
+- [ ] 2.8 **The day decides:** the page passes in the weekday (`new Date().getDay()`), so the function stays pure and tests can "pretend it's Saturday". Use `occasionsOf(recipe)`. With tests
+  - Monday–Thursday: dinners with "Ukedag"
+  - Saturday: dinners with "Helgemat" (also those that have "Ukedag" too)
+  - Sunday: dinners with "Helgemat" or "Ukedag"
+  - If nothing fits: any dinner, then any complete recipe. The suggestion should never disappear just because a rule is too strict
+- [ ] 2.9 **Friday is pizza day:** "Pizzatid!" with a link to the pizza calculator (`/pizza`) instead of a recipe, and no "Vis et annet forslag" button
+- [ ] 2.10 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe. And a nice Friday version
+- [ ] 2.11 Phone check at 360px, the Friday version too
 
 ### 3. More filters
 

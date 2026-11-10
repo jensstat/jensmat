@@ -39,6 +39,12 @@ export type Protein = (typeof proteins)[number];
 export const tags = ["Glutenfri", "Laktosefri", "Barnevennlig"] as const;
 export type Tag = (typeof tags)[number];
 
+// When a dinner suits: easy weekday food, or weekend food. A dinner can be both.
+// Only used to pick the "Hva med…?" suggestion, never shown on the recipe,
+// so it's its own field and not a tag (tags are shown as labels).
+export const occasions = ["Ukedag", "Helgemat"] as const;
+export type Occasion = (typeof occasions)[number];
+
 // ---------------------------------------------------------------------------
 // The recipe
 // ---------------------------------------------------------------------------
@@ -68,6 +74,7 @@ export interface Recipe {
   category?: Category;
   protein?: Protein;
   tags: Tag[]; // [] if none apply
+  occasions?: Occasion[]; // only on dinners. Missing = ["Ukedag"] (see occasionsOf at the bottom)
   servings?: number; // how many portions the amounts are for
   minutes?: number; // total time
   ingredients: Ingredient[]; // [] = not added yet
@@ -96,4 +103,13 @@ export function isQuick(recipe: Recipe) {
 // To change what counts as incomplete, this is the only place to change.
 export function isIncomplete(recipe: Recipe) {
   return recipe.ingredients.length === 0;
+}
+
+// When a dinner suits. Every dinner is weekday food unless it says otherwise,
+// so only weekend food needs marking: ["Helgemat"], or ["Ukedag", "Helgemat"] for both.
+// The default lives here, in one place, so a recipe posted with just a title still works.
+export const defaultOccasions: Occasion[] = ["Ukedag"];
+
+export function occasionsOf(recipe: Recipe): Occasion[] {
+  return recipe.occasions ?? defaultOccasions;
 }
