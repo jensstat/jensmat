@@ -6,6 +6,7 @@ import type { RecipeView } from "../components/recipe/ViewToggle";
 import { filterRecipes, noFilters } from "../recipes/filter";
 import type { RecipeFilters } from "../recipes/filter";
 import { getAllRecipes } from "../recipes/recipes";
+import { pickSuggestion } from "../recipes/suggest";
 
 // The grid's classes for each view.
 // Record<RecipeView, string>: TypeScript makes sure every view has a layout.
@@ -22,6 +23,10 @@ function RecipeListPage() {
   const recipes = getAllRecipes();
   const [view, setView] = useState<RecipeView>("standard");
   const [filters, setFilters] = useState<RecipeFilters>(noFilters);
+  // "Hva med…?": picked once when the page opens, and again only when the button is pressed.
+  // undefined if there are no complete recipes; then the suggestion isn't shown.
+  // The rules (complete only, never the same twice) are in recipes/suggest.ts.
+  const [suggestion, setSuggestion] = useState(() => pickSuggestion(recipes));
   // A handle on the search field, so the ✕ button can put the cursor back in it.
   const searchRef = useRef<HTMLInputElement>(null);
   const searchId = useId();
@@ -45,7 +50,20 @@ function RecipeListPage() {
         <p className="mt-2 text-lg font-light text-ink/70 lg:text-[1.375rem]">
           Finn noe godt å lage!
         </p>
-
+        {suggestion && (
+          <div className="mt-4">
+            <p>Hva med… {suggestion.title}?</p>
+            <button
+              type="button"
+              onClick={() =>
+                setSuggestion(pickSuggestion(recipes, suggestion))
+              }
+              className="mt-1 text-sm underline"
+            >
+              Vis et annet forslag
+            </button>
+          </div>
+        )}
         {/* Search: the text is stored in filters.query, and filterRecipes does the searching.
             A magnifying glass on the left, and a ✕ on the right once something is typed. */}
         <div className="relative mt-8 max-w-xl">
@@ -98,7 +116,6 @@ function RecipeListPage() {
             </button>
           )}
         </div>
-
         <div className="mt-4">
           <CategoryChips
             value={filters.category}

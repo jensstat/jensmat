@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 10 November 2026. Search and incomplete recipes are done; next up is 2, "Hva med…?".*
+*Last updated: 10 November 2026. Search and incomplete recipes are done; "Hva med…?" (task 2) is under way, next up is 2.6.*
 
 ---
 
@@ -11,17 +11,22 @@ Known bugs and quirks are in [08 – Status](08-status.md); this file is about w
 
 Start each new task in a fresh Claude Code session (`/clear`): it's cheaper, and nothing old gets in the way. Paste an opening line like this:
 
-> We're working on **[the task]**. Read `docs/10-tasks.md` and the files it mentions. I want to build it myself as a **tutorial**: one small change per message, shown in full, then "save and look", and wait for me before the next step.
+> We're working on **[the task]**. Read `docs/10-tasks.md` and the files it mentions. I want to build it myself as a **tutorial**: one small change per message, shown in full, then "save and look", and wait for me before the next step. **Teach me the ideas behind the code**, not just the code.
 
-For the search field, for example:
+For "Hva med…?", for example:
 
-> We're working on **the search field on the recipe overview** (task 1 in `docs/10-tasks.md`). Read `docs/03-recipes.md` section 6, `src/pages/RecipeListPage.tsx` and `src/recipes/filter.ts`. Tutorial, one small step per message.
+> We're working on **"Hva med…?"** (task 2 in `docs/10-tasks.md`). Read `docs/03-recipes.md` sections 2 and 6, `src/pages/RecipeListPage.tsx`, `src/components/recipe/RecipeCard.tsx` and `src/recipes/types.ts`. Tutorial, one small step per message, and teach me the ideas behind the code.
+
+**Keep in mind for every task:**
+- The recipes will later come from a **CMS**, posted from a phone app. So logic works on the `Recipe` type, never on where the data comes from.
+- **Only the title is required.** Any feature must work for a recipe that has nothing but a title (like "Fiskesuppe" in `data.ts`).
+- **Checking the code:** the AI's sandbox can't run your Mac's `node_modules`. It can make its own Linux copy in its scratchpad to run the checks, or ask you to run `npm test` and `npm run build`.
 
 **Before you `/clear`:** commit, and tick off what's done here.
 
 ---
 
-## ▶ Now: the recipe overview
+## ▶ Now: the recipe overview (task 2 next)
 
 ### 1. Search field ✅
 
@@ -37,8 +42,15 @@ Make it possible to search for a recipe by name or ingredient. Builds on the fil
 
 ### 2. "Hva med…?" – inspiration
 
-- [ ] A suggestion at the top of the overview: one random recipe with a big photo, and a "Vis et annet forslag" (show another) button
-- [ ] Make sure it doesn't suggest the same recipe twice in a row
+A suggestion at the top of the overview: one random recipe, big, with a "Vis et annet forslag" (show another) button. Suggested tutorial steps:
+
+- [x] 2.1 Pick one random recipe with `Math.random()` and show its title above the chips (to check it works)
+- [x] 2.2 Put the suggestion in state, and a "Vis et annet forslag" button that picks a new one
+- [x] 2.3 Never the same recipe twice in a row
+- [x] 2.4 Only suggest **complete** recipes (`isIncomplete` in `types.ts`), and show nothing if there are none
+- [x] 2.5 Move the picking into a pure function in `recipes/` (like `filterRecipes`), with tests
+- [ ] 2.6 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe
+- [ ] 2.7 Phone check at 360px
 
 ### 3. More filters
 
