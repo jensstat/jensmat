@@ -63,7 +63,10 @@ function RecipeView({ recipe }: RecipeViewProps) {
       <div className="mx-auto grid w-full max-w-[93.75rem] lg:grid-cols-[minmax(0,1fr)_26.25rem] xl:grid-cols-[minmax(0,1fr)_30rem]">
         {/* The main column */}
         <div className="bg-white px-5 pt-5 pb-12 lg:px-10 lg:pt-6 lg:pb-20 xl:pr-16">
-          <Link to="/oppskrifter" className="text-sm text-ink/60 hover:text-gold">
+          <Link
+            to="/oppskrifter"
+            className="text-sm text-ink/60 hover:text-gold"
+          >
             ← Alle oppskrifter
           </Link>
 
@@ -85,7 +88,11 @@ function RecipeView({ recipe }: RecipeViewProps) {
           </p>
 
           <div className="mt-6">
-            <RecipeMeta minutes={recipe.minutes} servings={servings} labels={recipeLabels(recipe)} />
+            <RecipeMeta
+              minutes={recipe.minutes}
+              servings={servings}
+              labels={recipeLabels(recipe)}
+            />
           </div>
 
           <h2 className="mt-12 mb-8 font-serif text-[1.375rem] font-semibold lg:mt-16 lg:text-[1.75rem]">
@@ -100,11 +107,19 @@ function RecipeView({ recipe }: RecipeViewProps) {
             <aside className="mt-12 max-w-3xl bg-panel p-6">
               {recipe.tips && (
                 <>
-                  <p className="text-sm font-medium uppercase tracking-wider">Tips</p>
-                  <p className="mt-2 text-base leading-7 lg:text-lg lg:leading-8">{recipe.tips}</p>
+                  <p className="text-sm font-medium uppercase tracking-wider">
+                    Tips
+                  </p>
+                  <p className="mt-2 text-base leading-7 lg:text-lg lg:leading-8">
+                    {recipe.tips}
+                  </p>
                 </>
               )}
-              {recipe.source && <p className="mt-3 text-sm text-ink/60">Kilde: {recipe.source}</p>}
+              {recipe.source && (
+                <p className="mt-3 text-sm text-ink/60">
+                  Kilde: {recipe.source}
+                </p>
+              )}
             </aside>
           )}
         </div>
