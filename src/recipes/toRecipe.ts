@@ -75,12 +75,18 @@ function manyOf<T extends string>(
 }
 
 // A date written as year-month-day ("2026-11-09"), or missing.
+// Sanity gives a full time ("2026-11-11T13:20:13Z", the ISO format with time and
+// timezone); only the date part, the first 10 characters, is kept.
 function date(value: unknown): string | undefined {
   const written = text(value);
-  if (written === undefined || !/^\d{4}-\d{2}-\d{2}$/.test(written)) {
+  if (
+    written === undefined ||
+    !/^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:\d{2})?)?$/.test(written)
+  ) {
     return undefined;
   }
-  return Number.isNaN(Date.parse(written)) ? undefined : written;
+  const day = written.slice(0, 10);
+  return Number.isNaN(Date.parse(day)) ? undefined : day;
 }
 
 // ---------------------------------------------------------------------------

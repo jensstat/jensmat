@@ -9,6 +9,30 @@ describe("toRecipe", () => {
     expect(recipe?.ingredients).toEqual([]);
   });
 
+  // What Sanity really answered for Fiskesuppe (6.6): an empty field comes as null
+  it("reads a recipe from Sanity, where missing fields are null", () => {
+    const recipe = toRecipe({
+      id: "fiskesuppe",
+      title: "Fiskesuppe",
+      createdAt: "2026-11-11T13:20:13Z",
+      description: null,
+      image: null,
+      category: null,
+      themes: null,
+      ingredients: null,
+      steps: null,
+      minutes: null,
+    });
+    expect(recipe).toEqual({
+      id: "fiskesuppe",
+      title: "Fiskesuppe",
+      createdAt: "2026-11-11",
+      tags: [],
+      ingredients: [],
+      steps: [],
+    });
+  });
+
   it("gives undefined without a title or an id", () => {
     expect(toRecipe({ id: "fiskesuppe" })).toBeUndefined();
     expect(toRecipe({ title: "Fiskesuppe" })).toBeUndefined();
@@ -95,6 +119,10 @@ describe("toRecipe", () => {
     const read = (createdAt: unknown) =>
       toRecipe({ id: "a", title: "A", createdAt })?.createdAt;
     expect(read("2026-11-09")).toBe("2026-11-09");
+    // Sanity's _createdAt: a full time, only the date is kept
+    expect(read("2026-11-11T13:20:13Z")).toBe("2026-11-11");
+    expect(read("2026-11-11T13:20:13.512+01:00")).toBe("2026-11-11");
+    expect(read("2026-11-11 and some text")).toBe("");
     expect(read("9. november")).toBe("");
     expect(read("2026-13-45")).toBe("");
     expect(read(undefined)).toBe("");
