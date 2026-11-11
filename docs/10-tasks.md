@@ -62,7 +62,7 @@ Suggested tutorial steps:
 - [x] 6.8 **Photos in the right size.** `imageUrl(recipe, width)`: Sanity's image service resizes on request (`?w=600&auto=format`), so a card gets a small photo and the recipe page a large one. Used in `RecipeImage` and `RecipeCard`. *The idea:* image CDNs, and why you never send a 4 MB phone photo to a small card
 - [x] 6.9 **Move the recipes over.** Type Laksewrap into the Studio (good practice for the form), decide what to do with the placeholders, and check the Datasjekk and "Like ingrediensnavn" with the real data
 - [x] 6.10 **The Studio on the phone.** `npx sanity deploy` puts the Studio online at `https://<name>.sanity.studio`. Log in on the phone, post a recipe with only a title and a photo from the camera, and fill it in later from the computer. *The idea:* a hosted Studio, logins and who may edit
-- [ ] 6.11 **The site online.** Publish it (Vercel or Netlify): the setting that sends every address to `index.html` (see 08, issue 11), the `.env` values on the host, and the real address under CORS origins. Then a recipe posted from the phone shows up on the real site
+- [x] 6.11 **The site online.** Publish it (Vercel or Netlify): the setting that sends every address to `index.html` (see 08, issue 11), the `.env` values on the host, and the real address under CORS origins. Then a recipe posted from the phone shows up on the real site
 - [ ] 6.12 Check: a title-only recipe, a recipe with a photo, an unpublished draft (shouldn't show), no internet (the error page), and on the phone
 
 **Maybe later, with Sanity:**
