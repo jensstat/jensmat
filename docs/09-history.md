@@ -178,7 +178,7 @@ Built as a tutorial (2.1–2.11): first a random recipe with `Math.random()`, th
 
 ## 14. Tidying up after task 3
 
-A refactor before starting task 4, so the code is easy to come back to. Nothing changed for the user (checked with the same browser checks as above).
+A refactor before the next tasks, so the code is easy to come back to. Nothing changed for the user (checked with the same browser checks as above).
 - **`FilterPanel.tsx` was split.** The panel (button, dialog, heading, bottom bar) stayed; one group's section (heading, options, "Vis alle") moved to `FilterGroupSection.tsx`. The long class string on the dialog became a commented list (`panelClasses`). *Why:* the file was 340 lines doing two jobs.
 - **"Which options are used most"** moved out of the component into `mostUsedOptions` in `recipes/filter.ts`, with tests. *Why:* logic belongs with the other filter logic, where it can be tested and survives a CMS.
 - **`SearchField`** became its own component, and the "nothing matches" message a small function (`noResultsText`). *Why:* `RecipeListPage` now reads as an outline of the page (227 → 177 lines).

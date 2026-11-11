@@ -65,7 +65,13 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **13. Printing prints the whole page.** "Skriv ut" prints the header, the menu and the photo placeholder too. A print style (`print:hidden` on more elements) can make it tidier.
 
-**14. The filters are forgotten on reload.** The search and the filters are `useState` in `RecipeListPage`, so reloading the page or pressing back from a recipe clears them, and a filtered list can't be shared as a link. → Task 4 in [10](10-tasks.md) puts them in the address.
+**14. The filters are forgotten on reload.** The search and the filters are `useState` in `RecipeListPage`, so reloading the page or pressing back from a recipe clears them, and a filtered list can't be shared as a link. → Task 5 in [10](10-tasks.md) puts them in the address.
+
+**15. Nothing checks recipe data while the site runs.** TypeScript checks the code and `data.test.ts` checks `data.ts`, but data from a CMS would arrive unchecked: a recipe without an `ingredients` list would crash the page. → Task 4.1–4.2 in [10](10-tasks.md): `toRecipe`, a translation at the border.
+
+**16. The data layer answers instantly.** `getAllRecipes()` returns at once, so the pages have no "loading" or "couldn't load" state. Fine for `data.ts`, not for a CMS. → Task 4.3–4.5.
+
+**17. Almost-the-same ingredient names become separate filter options.** "tomat" and "tomater" are two options, and "Uten tomat" misses the other. → Task 4.6 lists them on the Datasjekk; later, the CMS can offer existing names to pick from.
 
 ---
 

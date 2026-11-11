@@ -92,7 +92,7 @@ Think of the code as three layers, where each layer only **uses** the layers bel
 | All pizza settings (`settings`) | `PizzaCalculatorPage` | Both the fields **and** the result need it, so it lives in the page above them |
 | The baking time (`bakeTime`) | `Instructions` | Only the method needs it |
 | The chosen portions (`servings`) | `RecipeView` (in `RecipePage`) | Both the desktop panel and the phone menu show it |
-| The overview's view and filters (`view`, `filters`) | `RecipeListPage` | The search, the filter panel, the chips, the toggle, the count and the cards all depend on them. (Task 4 moves `filters` into the address) |
+| The overview's view and filters (`view`, `filters`) | `RecipeListPage` | The search, the filter panel, the chips, the toggle, the count and the cards all depend on them. (Task 5 moves `filters` into the address) |
 | Which filter sections are open, "Vis alle" (`open`, `showAll`) | `FilterGroupSection` | Only that section cares |
 | Which page is shown | The address bar (React Router) | So the back button, bookmarks and reload work |
 

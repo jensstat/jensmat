@@ -64,7 +64,7 @@ interface Ingredient {
 A recipe can be posted half-done, for example quickly from the phone with just a title and a photo, and filled in later. So:
 
 - **Required:** `title`, plus `id` and `createdAt`, which are technical (a CMS makes them).
-- **Lists are always there, but may be empty:** `tags`, `ingredients` and `steps` are `[]` when there's nothing yet. Then the code can always write `recipe.steps.map(...)` without checking first. When the CMS arrives, the translation in `recipes.ts` turns a missing list into `[]`, in one place.
+- **Lists are always there, but may be empty:** `tags`, `ingredients` and `steps` are `[]` when there's nothing yet. Then the code can always write `recipe.steps.map(...)` without checking first. Data from outside (a CMS) will go through one translation, `toRecipe` (task 4 in [10](10-tasks.md)), which turns a missing list into `[]`, in one place.
 - **Everything else is optional,** and every part of the site only shows what's there: no "undefined min" on the cards, no portion selector without `servings`, no "Slik gjør du" without steps, no ingredient panel without ingredients.
 - **"Uferdig" (incomplete)** is worked out, not stored: `isIncomplete(recipe)` in `types.ts` is "no ingredients yet". The card gets an "Uferdig" label, and the recipe page says "Denne oppskriften er ikke ferdig ennå". To change what counts as incomplete, change that one function.
 - **The example:** "Fiskesuppe" in `data.ts` has only a title.
@@ -285,3 +285,5 @@ To post recipes with a photo from the phone, the recipes have to live somewhere 
 | **Database + image store** | Supabase, Firebase | Building your own app and forms. More work, more learning |
 
 Either way, the **shape** in `types.ts` moves over to the CMS or database, and `recipes.ts` starts fetching from there. That's why those two files were made first.
+
+**Before the switch** (task 4 in [10](10-tasks.md)): a translation at the border (`toRecipe`, so data from outside can't crash a page), a data layer that waits for its data (with loading and error states on the pages), and a Datasjekk line for almost-the-same ingredient names. After that, the switch is mostly configuration; the plan is under "Later: online" in [10](10-tasks.md).
