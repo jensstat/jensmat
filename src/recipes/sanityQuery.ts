@@ -12,6 +12,7 @@
 // doesn't need to know anything about Sanity:
 // - "id": slug.current        Sanity stores the slug as { current: "fiskesuppe" }
 // - "image": image.asset->url  the photo is a reference to an asset; -> follows it
+// - "imageFocus": image.hotspot{ x, y }  the hotspot's middle, only x and y (see image.ts)
 // - "createdAt": _createdAt   Sanity's own time, "2026-11-11T13:20:13Z"
 // - title, category …         same name in Sanity and on the site, so just the name
 //
@@ -22,6 +23,7 @@ export const recipesQuery = `*[_type == "recipe" && defined(slug.current)] | ord
   title,
   description,
   "image": image.asset->url,
+  "imageFocus": image.hotspot{ x, y },
   category,
   protein,
   cuisine,

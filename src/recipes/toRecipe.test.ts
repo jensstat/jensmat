@@ -128,6 +128,17 @@ describe("toRecipe", () => {
     expect(read(undefined)).toBe("");
   });
 
+  it("reads the photo's focus point (the hotspot) only if it's sensible", () => {
+    const read = (imageFocus: unknown, image: unknown = "https://x/a.jpg") =>
+      toRecipe({ id: "a", title: "A", image, imageFocus })?.imageFocus;
+    expect(read({ x: 0.5, y: 0.3 })).toEqual({ x: 0.5, y: 0.3 });
+    expect(read({ x: 0.5, y: 0.3, height: 0.2 })).toEqual({ x: 0.5, y: 0.3 });
+    expect(read({ x: 1.5, y: 0.3 })).toBeUndefined();
+    expect(read({ x: "0.5", y: 0.3 })).toBeUndefined();
+    expect(read(null)).toBeUndefined();
+    expect(read({ x: 0.5, y: 0.3 }, null)).toBeUndefined(); // no photo
+  });
+
   it("leaves out ingredients without a name, and empty steps", () => {
     const recipe = toRecipe({
       id: "a",

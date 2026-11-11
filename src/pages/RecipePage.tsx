@@ -99,7 +99,7 @@ function RecipeView({ recipe }: RecipeViewProps) {
           </Link>
 
           <div className="mt-3">
-            <RecipeImage src={recipe.image} alt={recipe.title} />
+            <RecipeImage recipe={recipe} />
           </div>
 
           <div className="mt-5">

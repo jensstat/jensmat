@@ -114,7 +114,11 @@ export interface Recipe {
   id: string; // used in the address: /oppskrifter/pannekaker. Never change it once published.
   title: string; // the only content that must be filled in
   description?: string;
-  image?: string; // not every recipe has a photo yet. A file path now, a web address later.
+  image?: string; // not every recipe has a photo yet. A web address (Sanity's image service).
+  // The important part of the photo (the hotspot chosen in the Studio): x from the left,
+  // y from the top, each from 0 to 1. Kept in view when the photo is cut to fit a card.
+  // Missing = the middle. See recipes/image.ts.
+  imageFocus?: { x: number; y: number };
   category?: Category;
   protein?: Protein;
   cuisine?: Cuisine;

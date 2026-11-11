@@ -69,6 +69,7 @@ function RecipeSuggestion({ recipe, onShowAnother }: RecipeSuggestionProps) {
       picture={
         <CardPhoto
           recipe={recipe}
+          sizes="128px"
           className={`${squareSize} text-4xl sm:text-5xl`}
         />
       }

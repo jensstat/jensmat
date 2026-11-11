@@ -74,6 +74,15 @@ function manyOf<T extends string>(
   return [...new Set(known)];
 }
 
+// A point on a photo: x and y, each a number from 0 to 1. Anything else is missing.
+function focusPoint(value: unknown): { x: number; y: number } | undefined {
+  if (!isObject(value)) return undefined;
+  const { x, y } = value;
+  const isFraction = (n: unknown): n is number =>
+    typeof n === "number" && n >= 0 && n <= 1;
+  return isFraction(x) && isFraction(y) ? { x, y } : undefined;
+}
+
 // A date written as year-month-day ("2026-11-09"), or missing.
 // Sanity gives a full time ("2026-11-11T13:20:13Z", the ISO format with time and
 // timezone); only the date part, the first 10 characters, is kept.
@@ -122,6 +131,8 @@ export function toRecipe(raw: unknown): Recipe | undefined {
     title,
     description: text(raw.description),
     image: text(raw.image),
+    // Only with a photo: a hotspot on no photo means nothing
+    imageFocus: text(raw.image) ? focusPoint(raw.imageFocus) : undefined,
     category: oneOf(categories, raw.category),
     protein: oneOf(proteins, raw.protein),
     cuisine: oneOf(cuisines, raw.cuisine),

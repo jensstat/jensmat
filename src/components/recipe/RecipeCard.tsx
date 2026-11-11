@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { cardDetails } from "../../recipes/display";
+import { imagePosition, imageSrcSet, imageUrl } from "../../recipes/image";
 import { isIncomplete } from "../../recipes/types";
 import type { Recipe } from "../../recipes/types";
 
@@ -11,19 +12,27 @@ interface RecipeCardProps {
 interface CardPhotoProps {
   recipe: Recipe;
   className: string; // the box's size and letter size, which differ between card and row
+  // How wide the photo is shown, for <img sizes>: "80px", or "50vw" (half the screen).
+  // The browser uses it to fetch the smallest photo that's sharp enough (see recipes/image.ts).
+  sizes: string;
 }
 
 // The recipe's photo, or the first letter of the title if there's no photo yet.
 // Also used by RecipeSuggestion.
-export function CardPhoto({ recipe, className }: CardPhotoProps) {
+export function CardPhoto({ recipe, className, sizes }: CardPhotoProps) {
   return (
     <div
       className={`flex items-center justify-center overflow-hidden bg-panel font-serif font-semibold text-ink/15 ${className}`}
     >
       {recipe.image ? (
         <img
-          src={recipe.image}
+          src={imageUrl(recipe, 640)}
+          srcSet={imageSrcSet(recipe)}
+          sizes={sizes}
           alt={recipe.title}
+          // lazy: photos further down the list are only fetched when you scroll near them
+          loading="lazy"
+          style={{ objectPosition: imagePosition(recipe) }}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       ) : (
@@ -60,7 +69,11 @@ function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
         to={`/oppskrifter/${recipe.id}`}
         className="group flex items-center gap-4"
       >
-        <CardPhoto recipe={recipe} className="h-20 w-20 shrink-0 text-2xl" />
+        <CardPhoto
+          recipe={recipe}
+          sizes="80px"
+          className="h-20 w-20 shrink-0 text-2xl"
+        />
         <div>
           <h2 className="font-serif text-lg leading-snug font-semibold group-hover:text-gold">
             {recipe.title}
@@ -72,8 +85,10 @@ function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
   }
   return (
     <Link to={`/oppskrifter/${recipe.id}`} className="group block">
+      {/* Two cards per row (half the screen), three from 1024 px, four (about 300 px each) from 1280 px */}
       <CardPhoto
         recipe={recipe}
+        sizes="(min-width: 1280px) 320px, (min-width: 1024px) 33vw, 50vw"
         className="aspect-[4/3] text-4xl sm:text-6xl"
       />
 
