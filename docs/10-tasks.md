@@ -73,8 +73,8 @@ A **"Filter (2)"** button next to the search (the number is how many filters are
 
 **Suggested tutorial steps:**
 
-- [ ] 3.1 `ingredientNames(recipes)`: every unique ingredient name, cleaned (lower case, no spaces at the ends) and sorted the Norwegian way (æ, ø, å last). A pure function, with tests
-- [ ] 3.2 Main ingredient by hand: `proteins: Protein[]` in `RecipeFilters`, and a rule in `filterRecipes` ("or" within the group). With tests. *(Just one, to see what a filter needs)*
+- [x] 3.1 `ingredientNames(recipes)`: every unique ingredient name, cleaned (lower case, no spaces at the ends) and sorted the Norwegian way (æ, ø, å last). A pure function, with tests
+- [x] 3.2 Main ingredient by hand: `proteins: Protein[]` in `RecipeFilters`, and a rule in `filterRecipes` ("or" within the group). With tests. *(Just one, to see what a filter needs)*
 - [ ] 3.3 Spot the repetition, and turn the filters into a list, `filterGroups`: label, options, rule. `filterRecipes` loops over it. All the old tests must still pass (they're the safety net when moving code around)
 - [ ] 3.4 Add **ingredients** ("all of them") and **properties** (Rask + the tags) as entries in the list. With tests. *(This is the proof that extending is easy)*
 - [ ] 3.5 **How many** recipes each option would give ("Fisk (2)"), so options that give 0 can be greyed out. With tests

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { recipes } from "./data";
-import { filterRecipes, noFilters } from "./filter";
+import { filterRecipes, noFilters, ingredientNames } from "./filter";
 import type { Recipe } from "./types";
 
 // A made-up recipe for the tests. Give only the fields the test is about;
@@ -126,12 +126,112 @@ describe("search", () => {
 
   it("finds an incomplete recipe (only a title) by its title", () => {
     const soup = makeRecipe({ id: "soup", title: "Fiskesuppe" });
-    expect(filterRecipes([soup, wrap], { ...noFilters, query: "suppe" })).toEqual([
-      soup,
-    ]);
+    expect(
+      filterRecipes([soup, wrap], { ...noFilters, query: "suppe" }),
+    ).toEqual([soup]);
     // ...and doesn't crash on the missing description when searching for something else
-    expect(filterRecipes([soup, wrap], { ...noFilters, query: "laks" })).toEqual([
+    expect(
+      filterRecipes([soup, wrap], { ...noFilters, query: "laks" }),
+    ).toEqual([wrap]);
+  });
+});
+
+describe("ingredientNames", () => {
+  it("collects the names from every recipe, each only once", () => {
+    const wrap = makeRecipe({
+      ingredients: [{ name: "laks" }, { name: "løk" }],
+    });
+    const lasagne = makeRecipe({
+      ingredients: [{ name: "løk" }, { name: "kjøttdeig" }],
+    });
+    expect(ingredientNames([wrap, lasagne])).toEqual([
+      "kjøttdeig",
+      "laks",
+      "løk",
+    ]);
+  });
+
+  it("counts different spellings of the same name as one, and leaves the recipe untouched", () => {
+    const recipe = makeRecipe({
+      ingredients: [{ name: "Løk" }, { name: " løk " }, { name: "løk" }],
+    });
+    expect(ingredientNames([recipe])).toEqual(["løk"]);
+    // Only the list of options is cleaned; the recipe page still shows "Løk"
+    expect(recipe.ingredients[0].name).toBe("Løk");
+  });
+
+  it("sorts the Norwegian way, with æ, ø and å last", () => {
+    const recipe = makeRecipe({
+      ingredients: [
+        { name: "ål" },
+        { name: "ørret" },
+        { name: "ærter" },
+        { name: "aprikos" },
+      ],
+    });
+    expect(ingredientNames([recipe])).toEqual([
+      "aprikos",
+      "ærter",
+      "ørret",
+      "ål",
+    ]);
+  });
+
+  it("gives an empty list when there are no recipes, or no ingredients yet", () => {
+    expect(ingredientNames([])).toEqual([]);
+    // An incomplete recipe, posted with just a title
+    expect(ingredientNames([makeRecipe({ title: "Fiskesuppe" })])).toEqual([]);
+  });
+});
+
+describe("main ingredient (proteins)", () => {
+  const wrap = makeRecipe({
+    id: "wrap",
+    category: "Middag",
+    protein: "Fisk",
+  });
+  const lasagne = makeRecipe({
+    id: "lasagne",
+    category: "Middag",
+    protein: "Kjøtt",
+  });
+  const porridge = makeRecipe({
+    id: "porridge",
+    category: "Frokost",
+    protein: "Vegetar",
+  });
+  const mousse = makeRecipe({ id: "mousse", category: "Dessert" }); // no main ingredient
+  const all = [wrap, lasagne, porridge, mousse];
+
+  it("shows every recipe when nothing is ticked, also those without a main ingredient", () => {
+    expect(filterRecipes(all, noFilters)).toEqual(all);
+  });
+
+  it("shows only the ticked main ingredient", () => {
+    expect(filterRecipes(all, { ...noFilters, proteins: ["Fisk"] })).toEqual([
       wrap,
     ]);
+  });
+
+  it("shows recipes with any of the ticked main ingredients ('or')", () => {
+    expect(
+      filterRecipes(all, { ...noFilters, proteins: ["Fisk", "Kjøtt"] }),
+    ).toEqual([wrap, lasagne]);
+  });
+
+  it("hides recipes without a main ingredient once one is ticked", () => {
+    expect(
+      filterRecipes(all, { ...noFilters, proteins: ["Vegetar"] }),
+    ).not.toContain(mousse);
+  });
+
+  it("combines with the category: both must match ('and')", () => {
+    expect(
+      filterRecipes(all, {
+        ...noFilters,
+        category: "Middag",
+        proteins: ["Fisk", "Vegetar"],
+      }),
+    ).toEqual([wrap]); // the porridge is Vegetar, but breakfast
   });
 });

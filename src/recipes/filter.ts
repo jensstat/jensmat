@@ -1,16 +1,21 @@
 // Which recipes to show in the overview, based on the chosen filters.
 // Only logic, no React, so it can be tested on its own (see filter.test.ts).
 
-import type { Category, Recipe } from "./types";
+import type { Category, Protein, Recipe } from "./types";
 
 // All the filters on the overview page. One object, so new filters (like search)
 // are one more field here, and one more rule in filterRecipes below.
 export interface RecipeFilters {
   category: Category | null; // null = "Alle"
   query: string; // "" = no search
+  proteins: Protein[]; // the ticked main ingredients; [] = no filter
 }
 // No filters chosen: every recipe is shown.
-export const noFilters: RecipeFilters = { category: null, query: "" };
+export const noFilters: RecipeFilters = {
+  category: null,
+  query: "",
+  proteins: [],
+};
 
 // The recipes that match every chosen filter. Gives a new list; the original is untouched.
 // Search looks in the title, the description and the ingredient names.
@@ -33,6 +38,28 @@ export function filterRecipes(
       recipe.ingredients.some((ingredient) =>
         ingredient.name.toLowerCase().includes(query),
       );
-    return categoryMatches && queryMatches;
+    // "Or" within the group: the recipe's main ingredient is one of the ticked ones.
+    // A recipe without a main ingredient is hidden as soon as one is ticked.
+    const proteinMatches =
+      filters.proteins.length === 0 ||
+      (recipe.protein !== undefined &&
+        filters.proteins.includes(recipe.protein));
+    return categoryMatches && queryMatches && proteinMatches;
   });
+}
+
+// Every ingredient name in the recipes, each only once, sorted alphabetically.
+// Used for the ingredient filter, so the options come from the recipes themselves
+// and there's no list to keep up to date.
+// The names are cleaned (lower case, no spaces at the ends) before the duplicates are
+// removed, so "Løk" and "løk " count as the same ingredient as "løk".
+export function ingredientNames(recipes: Recipe[]): string[] {
+  const names = recipes.flatMap((recipe) =>
+    recipe.ingredients.map((ingredient) =>
+      ingredient.name.trim().toLowerCase(),
+    ),
+  );
+  // A Set keeps each value only once; [...] turns it back into a normal array.
+  // localeCompare with "nb": Norwegian alphabetical order, with æ, ø, å last.
+  return [...new Set(names)].sort((a, b) => a.localeCompare(b, "nb"));
 }
