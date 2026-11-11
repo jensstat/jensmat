@@ -21,10 +21,11 @@ Common tasks, step by step. After each one: `npm test` and `npm run build`.
 ## … add a new page
 
 1. Create `src/pages/MyPage.tsx`. Start from `NotFoundPage.tsx`: it's the smallest page, and uses `Container`.
-2. In `App.tsx`, import it and add a route **above** the `path="*"` route:
+2. In `routes.tsx`, import it and add a route **above** the `path: "*"` route:
    ```tsx
-   <Route path="/my-address" element={<MyPage />} />
+   { path: "/my-address", element: <MyPage /> },
    ```
+   If the page needs data (recipes), add a `loader` in `loaders.ts` too, and read it in the page with `useLoaderData()`.
 3. If it should be in the menu, add it to `navLinks` in `Header.tsx`.
 
 ---

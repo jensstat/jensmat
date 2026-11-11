@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 11 November 2026. Tasks 1–3 on the overview (search, "Hva med…?", the filter panel) are done. Next up is 4, a CMS-ready data layer, then 5, the filters in the address.*
+*Last updated: 11 November 2026. Tasks 1–3 on the overview (search, "Hva med…?", the filter panel) are done. Tasks 1–4 are done (task 4: the border `toRecipe`, a data layer that waits, loaders, loading and error states, similar ingredient names). Left of task 4 is the check, 4.7. Next up is 5, the filters in the address.*
 
 ---
 
@@ -15,7 +15,7 @@ Start each new task in a fresh Claude Code session (`/clear`): it's cheaper, and
 
 For the next task, for example:
 
-> We're working on **a CMS-ready data layer** (task 4 in `docs/10-tasks.md`). Read `docs/03-recipes.md` sections 2 and 3, `docs/06-react-and-typescript.md` (React Router), `src/recipes/types.ts`, `src/recipes/recipes.ts`, `src/recipes/data.ts`, `src/recipes/data.test.ts`, `src/main.tsx`, `src/App.tsx` and the three pages that read recipes (`RecipeListPage`, `RecipePage`, `DataCheckPage`). Tutorial, one small step per message, and teach me the ideas behind the code. Start with step 4.1.
+> We're working on **the filters in the address** (task 5 in `docs/10-tasks.md`). Read `docs/03-recipes.md` sections 3 and 6, `docs/06-react-and-typescript.md` (React Router), `src/routes.tsx`, `src/loaders.ts`, `src/recipes/filter.ts`, `src/recipes/filter.test.ts` and `src/pages/RecipeListPage.tsx`. Tutorial, one small step per message, and teach me the ideas behind the code. Start with step 5.1.
 
 If you're not interested in a part, say so ("just build this part"), and ask for a tutorial again for the next.
 
@@ -29,7 +29,7 @@ If you're not interested in a part, say so ("just build this part"), and ask for
 
 ---
 
-## ▶ Now: the recipe overview (task 4 next, then 5)
+## ▶ Now: the recipe overview (task 5 next)
 
 **Done** (what was built, and why, is in [09 – History](09-history.md), sections 11–14):
 - ✅ **1. Search** in the title, the description and the ingredients
@@ -47,12 +47,12 @@ Plus one thing for typing recipes on a phone: **ingredient names that are almost
 
 Suggested tutorial steps:
 
-- [ ] 4.1 **`toRecipe(raw)`**, the translation at the border, in a new `recipes/toRecipe.ts`, with tests. It takes `unknown` (anything) and gives a valid `Recipe`, or `undefined` if there's no id or title. A missing list becomes `[]`; a value that isn't in its fixed list (a category "Midag", a cuisine that doesn't exist) is left out; a number that isn't a number is left out; the title is trimmed. *The idea:* `unknown`, and checking data while the site runs (`typeof`, `.includes` on the fixed lists)
-- [ ] 4.2 **`data.ts` goes through the border too.** `recipes.ts` runs every recipe through `toRecipe`, so today's data takes the same path as CMS data will. A recipe that can't be read is skipped and named in the browser console (and listed on the Datasjekk), never crashing the page
-- [ ] 4.3 **A data layer that waits.** `getAllRecipes()` and `getRecipe(id)` return a `Promise`, still reading `data.ts` (with a short pretend delay while testing, to see the loading). *The idea:* `Promise`, `async`/`await`
-- [ ] 4.4 **React Router loads the data before showing the page.** `main.tsx` switches from `<BrowserRouter>` to `createBrowserRouter`, and `/oppskrifter`, `/oppskrifter/:id` and `/oppskrifter/datasjekk` each get a `loader`. The pages read it with `useLoaderData()`. An unknown recipe id still shows "Fant ikke siden". "Hva med…?" picks from the loaded recipes
-- [ ] 4.5 **Loading and error states.** A calm "Laster…" while a page waits (`useNavigation`), and "Kunne ikke hente oppskriftene" with a "Prøv igjen" button when it fails (`errorElement`). Test by making the pretend fetch fail on purpose
-- [ ] 4.6 **Similar ingredient names on the Datasjekk**: `similarIngredientNames(recipes)` in `completeness.ts`, with tests. Names that are the same apart from a Norwegian plural ending ("tomat"/"tomater", "paprika"/"paprikaer") or one letter ("hvitlauk"/"hvitløk"), shown with the recipes that use each, so they're easy to make the same
+- [x] 4.1 **`toRecipe(raw)`**, the translation at the border, in a new `recipes/toRecipe.ts`, with tests. It takes `unknown` (anything) and gives a valid `Recipe`, or `undefined` if there's no id or title. A missing list becomes `[]`; a value that isn't in its fixed list (a category "Midag", a cuisine that doesn't exist) is left out; a number that isn't a number is left out; the title is trimmed. *The idea:* `unknown`, and checking data while the site runs (`typeof`, `.includes` on the fixed lists)
+- [x] 4.2 **`data.ts` goes through the border too.** `recipes.ts` runs every recipe through `toRecipe`, so today's data takes the same path as CMS data will. A recipe that can't be read is skipped and named in the browser console (and listed on the Datasjekk), never crashing the page
+- [x] 4.3 **A data layer that waits.** `getAllRecipes()` and `getRecipe(id)` return a `Promise`, still reading `data.ts` (with a short pretend delay while testing, to see the loading). *The idea:* `Promise`, `async`/`await`
+- [x] 4.4 **React Router loads the data before showing the page.** `main.tsx` switches from `<BrowserRouter>` to `createBrowserRouter`, and `/oppskrifter`, `/oppskrifter/:id` and `/oppskrifter/datasjekk` each get a `loader`. The pages read it with `useLoaderData()`. An unknown recipe id still shows "Fant ikke siden". "Hva med…?" picks from the loaded recipes
+- [x] 4.5 **Loading and error states.** A calm "Laster…" while a page waits (`useNavigation`), and "Kunne ikke hente oppskriftene" with a "Prøv igjen" button when it fails (`errorElement`). Test by making the pretend fetch fail on purpose
+- [x] 4.6 **Similar ingredient names on the Datasjekk**: `similarIngredientNames(recipes)` in `completeness.ts`, with tests. Names that are the same apart from a Norwegian plural ending ("tomat"/"tomater", "paprika"/"paprikaer") or one letter ("hvitlauk"/"hvitløk"), shown with the recipes that use each, so they're easy to make the same
 - [ ] 4.7 Check: `npm test`, every page on the phone and desktop, a slow connection (the browser's dev tools can pretend to be on a slow network), and the error state
 
 ### 5. The filters in the address

@@ -185,3 +185,13 @@ A refactor before the next tasks, so the code is easy to come back to. Nothing c
 - **Shared icons** (`components/icons.tsx`: ✕, ✓, chevron, filter, search) and **one `focusRing`** (`components/focusRing.ts`). *Why:* the same ✕ was drawn in four places.
 - **One `makeRecipe`** for the tests (`recipes/testRecipe.ts`), instead of a copy in three test files.
 - **Prettier** was added (`npm run format`, Prettier's default settings) and every file in `src/` formatted once. *Why:* the files were formatted in slightly different ways; now there's one style, and nobody has to think about it. Only line breaks changed.
+
+## 15. A CMS-ready data layer (task 4)
+
+*Built in one go (the user wasn't interested in coding the data plumbing), with tests and browser checks.*
+- **The border, `toRecipe(raw)`** (`recipes/toRecipe.ts`): takes `unknown` and gives a real `Recipe`. Only a missing id or title makes a recipe unreadable; anything else wrong is left out, as if not filled in, so the Datasjekk asks for it. Unreadable recipes and doubled ids are skipped, named in the console and on the Datasjekk. *Why:* TypeScript can't check data that arrives while the site runs. `data.test.ts` checks that every recipe in `data.ts` goes through unchanged, so a new field can't be forgotten in `toRecipe`.
+- **A data layer that waits:** `getAllRecipes()`, `getRecipe(id)` and `getSkippedRecipes()` return a `Promise`, with a pretend delay (and a pretend failure switch) while developing. *Why:* a CMS takes time and can fail; now only `fetchRecipes` changes when it comes.
+- **React Router loaders:** `createBrowserRouter` in `main.tsx`, the routes as a list in `routes.tsx`, the loaders in `loaders.ts`, and the pages read with `useLoaderData()`. `App` became the frame with `<Outlet />`. *Why:* the page is only shown when its data is there, so the pages don't need their own "not loaded yet" code.
+- **"Laster…"** (`useNavigation`, fades in after a moment so quick loads don't flicker), `LoadingPage` on the first load, and **`RouteErrorPage`** with "Prøv igjen" (`useRevalidator`). Plus `<ScrollRestoration />`: a new page starts at the top, back returns to where you were.
+- **"Like ingrediensnavn" on the Datasjekk:** `similarIngredientNames` in `completeness.ts` finds names that are the same without a Norwegian ending (tomat/tomater) or one letter apart (5+ letters).
+

@@ -10,7 +10,8 @@ The recipes ("Oppskrifter") are the main part of the site going forward: all my 
 |---|---|---|
 | `recipes/types.ts` | knowledge | **What a recipe is**: the fields, the fixed lists (categories, main ingredients, tags, themes, cuisines, difficulties), and what's worked out (`isQuick`, `isIncomplete`, `timeRangeOf`, `occasionsOf`) |
 | `recipes/data.ts` | knowledge | **The recipes themselves**, as a list |
-| `recipes/recipes.ts` | knowledge | **The data layer**: `getAllRecipes()` and `getRecipe(id)`. The pages get recipes through these |
+| `recipes/toRecipe.ts` (+ test) | knowledge | **The border**: `toRecipe(raw)` checks a recipe from outside and gives a real `Recipe` (section 3) |
+| `recipes/recipes.ts` (+ test) | knowledge | **The data layer**: `getAllRecipes()` and `getRecipe(id)`, which return a `Promise`. The loaders (`src/loaders.ts`) call these, and the pages get the answer with `useLoaderData()` |
 | `recipes/display.ts` | knowledge | **How things are shown as text**: amounts (½), time (1 t 15 min), labels |
 | `recipes/display.test.ts` | test | Checks `display.ts` |
 | `recipes/filter.ts` (+ test) | knowledge | **Which recipes to show** in the overview: `filterRecipes(recipes, filters)`, the filter groups (`filterGroups`), and the counts and helpers the panel uses |
@@ -64,7 +65,7 @@ interface Ingredient {
 A recipe can be posted half-done, for example quickly from the phone with just a title and a photo, and filled in later. So:
 
 - **Required:** `title`, plus `id` and `createdAt`, which are technical (a CMS makes them).
-- **Lists are always there, but may be empty:** `tags`, `ingredients` and `steps` are `[]` when there's nothing yet. Then the code can always write `recipe.steps.map(...)` without checking first. Data from outside (a CMS) will go through one translation, `toRecipe` (task 4 in [10](10-tasks.md)), which turns a missing list into `[]`, in one place.
+- **Lists are always there, but may be empty:** `tags`, `ingredients` and `steps` are `[]` when there's nothing yet. Then the code can always write `recipe.steps.map(...)` without checking first. Every recipe goes through one translation, `toRecipe` (section 3), which turns a missing list into `[]`, in one place.
 - **Everything else is optional,** and every part of the site only shows what's there: no "undefined min" on the cards, no portion selector without `servings`, no "Slik gjør du" without steps, no ingredient panel without ingredients.
 - **"Uferdig" (incomplete)** is worked out, not stored: `isIncomplete(recipe)` in `types.ts` is "no ingredients yet". The card gets an "Uferdig" label, and the recipe page says "Denne oppskriften er ikke ferdig ennå". To change what counts as incomplete, change that one function.
 - **The example:** "Fiskesuppe" in `data.ts` has only a title.
@@ -113,23 +114,49 @@ The ingredient options in the filter ("Har ingredienser", "Uten ingredienser") a
 
 **When are two things different ingredients?** When you'd buy them separately, or when someone might want one but not the other. `rødløk` and `løk` are two ingredients, and so are `hvitløk` and `løk`: "Uten løk" does **not** hide a recipe with only rødløk or hvitløk, because the filter compares whole names. Likewise `tomat` (fresh) and `hakkede tomater` (a can) are two products. If someone should be able to avoid both, tick both.
 
-**To check:** open the filter, "Har ingredienser" → "Vis alle". Two names for the same thing (`tomat` and `tomater`) show up next to each other there.
+**To check:** the **Datasjekk** lists "Like ingrediensnavn": names that are probably the same thing, with the recipes that use each (`similarIngredientNames` in `completeness.ts`). Two names count as similar when they're the same without a Norwegian ending (`tomat`/`tomater`/`tomatene`, `paprika`/`paprikaer`, `pære`/`pærer`), or, for names of 5 letters or more, one letter apart (`kremfløte`/`kremfløde`). `løk` and `rødløk` aren't similar: they're two ingredients.
 
 ## 3. The data layer (`recipes.ts`)
 
-The pages **never** read `data.ts` directly. They ask:
+The pages **never** read `data.ts` directly. Their loaders (`src/loaders.ts`) ask:
 
 ```ts
-getAllRecipes()       // all the recipes, newest first
-getRecipe("laksewrap") // one recipe, or undefined if there's none with that id
+await getAllRecipes()        // all the recipes, newest first
+await getRecipe("laksewrap") // one recipe, or undefined if there's none with that id
+await getSkippedRecipes()    // the ones that couldn't be read (for the Datasjekk)
 ```
 
-**Why:** when the recipes move to a CMS or database, only this file changes. The pages stay the same:
+They return a **`Promise`** ("the answer comes later"), like a fetch over the internet does, even though `data.ts` is right there. So the pages already handle waiting and failing, and nothing changes when the CMS comes:
 
 ```
-Now:    RecipePage ──▶ getRecipe(id) ──▶ data.ts (a list in the code)
-Later:  RecipePage ──▶ getRecipe(id) ──▶ the CMS / database over the internet
+Now:    loader ──▶ getRecipe(id) ──▶ fetchRecipes() ──▶ data.ts        ──▶ toRecipe ──▶ the page
+Later:  loader ──▶ getRecipe(id) ──▶ fetchRecipes() ──▶ fetch(the CMS) ──▶ toRecipe ──▶ the page
 ```
+
+Only `fetchRecipes` in `recipes.ts` changes (the comment there shows how).
+
+**Waiting and failing:**
+- **React Router runs the loader before showing the page.** The page reads the answer with `useLoaderData()`, so it never has a "not loaded yet" state of its own.
+- **"Laster…"**: while the next page loads, the old one stays on screen and a small "Laster…" fades in at the top (only if it takes more than a moment). On the very first load, `LoadingPage` is shown.
+- **"Kunne ikke hente oppskriftene"**: if a loader fails, `RouteErrorPage` is shown, with a "Prøv igjen" button that runs the loaders again. The header and footer stay.
+- **Pretending, while developing** (`npm run dev` only): `pretendDelayMs` in `recipes.ts` waits 300 ms, so you see "Laster…". Set `pretendToFail` to `true` to see the error page (and back to `false` afterwards).
+
+### The border (`toRecipe.ts`)
+
+Every recipe goes through **`toRecipe(raw)`** on the way in, the recipes in `data.ts` too, so they take the same path as CMS recipes will. TypeScript only checks the code before it runs; data that arrives while the site runs has to be checked by the code itself. `toRecipe` takes `unknown` (anything) and gives a real `Recipe`, or `undefined`.
+
+| What arrives | What happens |
+|---|---|
+| No id or title (or only spaces) | The recipe is **skipped**: named in the browser console and in a red box on the Datasjekk. The page never crashes |
+| Two recipes with the same id | The second is skipped the same way (two recipes can't have the same address) |
+| A missing list (`ingredients`, `steps`, `tags`) | Becomes `[]` |
+| A value that isn't in its fixed list (`category: "Midag"`) | Left out, as if not filled in. The Datasjekk then asks for it |
+| A number that isn't a number above 0 (`minutes: "30"`, `-5`) | Left out |
+| An ingredient without a name, an empty step | Left out of the list |
+| Text | Trimmed; empty text counts as missing |
+| A date that isn't year-month-day | `createdAt: ""`, so the recipe sorts last |
+
+`readRecipes(list)` runs a whole list through and returns `{ recipes, skipped }`. `data.test.ts` checks that every recipe in `data.ts` goes through **unchanged**: if it fails, a value there is something the border leaves out, or a new field was added to `Recipe` but not to `toRecipe`. **When you add a field to `Recipe`, add a line to `toRecipe` too.**
 
 (One thing *will* change then: fetching over the internet takes time, so the functions will become `async`, and the pages will need a "loading…" state. That's a normal next step, and the data layer is where it starts.)
 
@@ -170,7 +197,7 @@ Desktop (from lg:)                                        Phones
 ```
 
 **Two components in one file:**
-- `RecipePage` finds the recipe from the address (`useParams()` → `getRecipe(id)`). Unknown recipe → `NotFoundPage`.
+- `RecipePage` gets the recipe from its loader (`recipeLoader` reads `:id` from the address and calls `getRecipe(id)`). Unknown recipe → `NotFoundPage`.
 - `RecipeView` draws it, and holds the **number of portions** in state.
 - `RecipePage` gives `RecipeView` a `key={recipe.id}`. When you move to another recipe, React starts `RecipeView` afresh, so the portions start at the new recipe's own number.
 

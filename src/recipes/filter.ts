@@ -55,7 +55,7 @@ export interface FilterGroup {
 // no spaces at the ends ("Løk " → "løk"). One place, so the options in the panel
 // (ingredientNames) and the rule that checks them (the ingredient groups)
 // always clean the same way.
-function cleanName(name: string) {
+export function cleanName(name: string) {
   return name.trim().toLowerCase();
 }
 

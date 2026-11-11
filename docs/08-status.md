@@ -15,12 +15,13 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
 | Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises |
 | Recipe overview | `/oppskrifter` | ✅ Recipe cards, search (title, description, ingredients), "Hva med…?" (pizza on Fridays), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, grid/list view, a message when nothing matches |
-| Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first |
+| Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same |
+| Loading and errors | | ✅ Each recipe page loads its data first ("Laster…"), and "Kunne ikke hente oppskriftene" + "Prøv igjen" if it fails. Every recipe is checked at the border (`toRecipe`) |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken: wide layout, ingredient panel, portion selector, groups, an ingredient menu on phones, print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| Tests | `npm test` | ✅ 151 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, incomplete recipes, and a check of every recipe in `data.ts` |
+| Tests | `npm test` | ✅ 194 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, incomplete recipes, the border (`toRecipe`), the data layer, and a check of every recipe in `data.ts` |
 
 ---
 
@@ -67,11 +68,11 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **14. The filters are forgotten on reload.** The search and the filters are `useState` in `RecipeListPage`, so reloading the page or pressing back from a recipe clears them, and a filtered list can't be shared as a link. → Task 5 in [10](10-tasks.md) puts them in the address.
 
-**15. Nothing checks recipe data while the site runs.** TypeScript checks the code and `data.test.ts` checks `data.ts`, but data from a CMS would arrive unchecked: a recipe without an `ingredients` list would crash the page. → Task 4.1–4.2 in [10](10-tasks.md): `toRecipe`, a translation at the border.
+**15. ~~Nothing checks recipe data while the site runs.~~** ✅ Fixed in task 4.1–4.2: every recipe goes through `toRecipe`.
 
-**16. The data layer answers instantly.** `getAllRecipes()` returns at once, so the pages have no "loading" or "couldn't load" state. Fine for `data.ts`, not for a CMS. → Task 4.3–4.5.
+**16. ~~The data layer answers instantly.~~** ✅ Fixed in task 4.3–4.5: a `Promise`, loaders, "Laster…" and an error page.
 
-**17. Almost-the-same ingredient names become separate filter options.** "tomat" and "tomater" are two options, and "Uten tomat" misses the other. → Task 4.6 lists them on the Datasjekk; later, the CMS can offer existing names to pick from.
+**17. Almost-the-same ingredient names become separate filter options.** ✅ The Datasjekk lists them now (task 4.6); fixing them is still by hand. "tomat" and "tomater" are two options, and "Uten tomat" misses the other. Later, the CMS can offer existing names to pick from.
 
 ---
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLoaderData } from "react-router";
 import ActiveFilters from "../components/recipe/ActiveFilters";
 import CategoryChips from "../components/recipe/CategoryChips";
 import FilterPanel from "../components/recipe/FilterPanel";
@@ -9,6 +10,7 @@ import RecipeSuggestion, {
 import SearchField from "../components/recipe/SearchField";
 import ViewToggle from "../components/recipe/ViewToggle";
 import type { RecipeView } from "../components/recipe/ViewToggle";
+import type { recipeListLoader } from "../loaders";
 import {
   activeFilterCount,
   clearGroup,
@@ -18,7 +20,6 @@ import {
   toggleOption,
 } from "../recipes/filter";
 import type { RecipeFilters } from "../recipes/filter";
-import { getAllRecipes } from "../recipes/recipes";
 import { isPizzaDay, pickSuggestion } from "../recipes/suggest";
 
 // The grid's classes for each view.
@@ -57,7 +58,9 @@ function today() {
 // meal chips, the chosen filters, the count + view buttons, and the cards.
 // The pieces are in components/recipe/, and the filtering in recipes/filter.ts.
 function RecipeListPage() {
-  const recipes = getAllRecipes();
+  // The recipes, already fetched by the loader before the page is shown (loaders.ts).
+  // <typeof recipeListLoader>: TypeScript gets the type from what the loader returns.
+  const recipes = useLoaderData<typeof recipeListLoader>();
   const [view, setView] = useState<RecipeView>("standard");
   const [filters, setFilters] = useState<RecipeFilters>(noFilters);
   // The weekday, read from the clock once when the page opens. It's state (never changed),

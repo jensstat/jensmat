@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import IngredientsPanel from "../components/recipe/IngredientsPanel";
 import MobileIngredients from "../components/recipe/MobileIngredients";
 import RecipeActions from "../components/recipe/RecipeActions";
@@ -7,7 +7,7 @@ import RecipeImage from "../components/recipe/RecipeImage";
 import RecipeMeta from "../components/recipe/RecipeMeta";
 import StepList from "../components/recipe/StepList";
 import { recipeLabels } from "../recipes/display";
-import { getRecipe } from "../recipes/recipes";
+import type { recipeLoader } from "../loaders";
 import { isIncomplete } from "../recipes/types";
 import type { Recipe } from "../recipes/types";
 import NotFoundPage from "./NotFoundPage";
@@ -15,9 +15,9 @@ import NotFoundPage from "./NotFoundPage";
 // One recipe, at /oppskrifter/:id.
 // This part only finds the recipe; RecipeView below draws it.
 function RecipePage() {
-  // Reads the :id part of the address: /oppskrifter/laksewrap → id = "laksewrap"
-  const { id } = useParams();
-  const recipe = id ? getRecipe(id) : undefined;
+  // The recipe for the :id in the address (/oppskrifter/laksewrap), fetched by the
+  // loader before the page is shown (loaders.ts). undefined if there's no such recipe.
+  const recipe = useLoaderData<typeof recipeLoader>();
 
   // An address with no recipe behind it
   if (!recipe) {

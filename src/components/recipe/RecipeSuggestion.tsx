@@ -84,7 +84,7 @@ function RecipeSuggestion({ recipe, onShowAnother }: RecipeSuggestionProps) {
       <button
         type="button"
         onClick={onShowAnother}
-        className="relative z-10 mt-3 inline-flex min-h-11 items-center gap-1.5 border border-ink/25 px-2.5 py-1.5 text-sm transition-colors sm:gap-2 sm:px-3 hover:border-ink hover:bg-ink hover:text-white"
+        className="relative z-10 mt-3 inline-flex min-h-11 items-center gap-1.5 border border-ink/25 px-2.5 py-1.5 text-sm transition-colors sm:gap-2 sm:px-3 hover:border-ink hover:bg-ink hover:text-white "
       >
         <svg
           viewBox="0 0 24 24"

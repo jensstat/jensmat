@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { recipes } from "./data";
+import { toRecipe } from "./toRecipe";
 
 // Checks every recipe in data.ts. TypeScript already checks the shape (fields, categories …);
 // these catch the mistakes TypeScript can't see. Run `npm test` after adding a recipe.
@@ -66,4 +67,11 @@ describe("every recipe in data.ts", () => {
       }
     },
   );
+
+  // The site reads every recipe through toRecipe (the border). If this fails, a value
+  // here is something the border leaves out (like an empty description or a minus
+  // number), or a new field was added to Recipe but not to toRecipe.
+  it.each(recipes)("$id: goes through the border unchanged", (recipe) => {
+    expect(toRecipe(recipe)).toEqual(recipe);
+  });
 });

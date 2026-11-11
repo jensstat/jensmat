@@ -1,13 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import "./index.css";
-import App from "./App.tsx";
-import { BrowserRouter } from "react-router";
+import { routes } from "./routes.tsx";
+
+// createBrowserRouter: React Router with loaders (data that's fetched before a page
+// is shown). The addresses and pages are in routes.tsx.
+const router = createBrowserRouter(routes);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </StrictMode>,
 );

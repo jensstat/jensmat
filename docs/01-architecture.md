@@ -12,21 +12,23 @@ What happens when you open `localhost:5173/oppskrifter/laksewrap`:
 index.html            The only HTML file. Has an empty <div id="root"> and loads main.tsx.
    │
    ▼
-src/main.tsx          Starts React and draws <App /> into #root.
-   │                  Wraps everything in <BrowserRouter>, which follows the address bar.
+src/main.tsx          Starts React, and starts React Router (createBrowserRouter) with the routes.
    ▼
-src/App.tsx           The frame that's the same on every page:
-   │                    <Header />  →  <main> with the current page  →  <Footer />
-   │                  <Routes> picks the page that matches the address:
+src/routes.tsx        Every address, its page, and its loader (what it needs first, loaders.ts):
    │                    /                  → HomePage
    │                    /pizza             → PizzaCalculatorPage
-   │                    /oppskrifter       → RecipeListPage (all recipes)
-   │                    /oppskrifter/:id   → RecipePage   (:id = "laksewrap")
-   │                    /oppskrifter/datasjekk → DataCheckPage (not in the menu)
+   │                    /oppskrifter       → RecipeListPage (all recipes)        loader
+   │                    /oppskrifter/:id   → RecipePage   (:id = "laksewrap")    loader
+   │                    /oppskrifter/datasjekk → DataCheckPage (not in the menu) loader
    │                    *  (anything else) → NotFoundPage
+   │                  If a loader fails: RouteErrorPage ("Kunne ikke hente oppskriftene").
+   ▼
+src/App.tsx           The frame that's the same on every page:
+   │                    <Header />  →  <main> with the current page (<Outlet />)  →  <Footer />
+   │                  Shows "Laster…" while the next page's loader waits.
    ▼
 src/pages/RecipePage.tsx
-   │                  Reads "laksewrap" from the address, asks the data layer for that recipe,
+   │                  Gets the recipe from its loader (useLoaderData), already fetched,
    │                  and puts the page together from smaller components.
    ▼
 src/components/…      The building blocks: IngredientList, StepList, PortionStepper …
@@ -40,11 +42,12 @@ src/components/…      The building blocks: IngredientList, StepList, PortionSt
 
 ```
 src/
-├── main.tsx, App.tsx, index.css     Start-up, the frame and routes, global styles
+├── main.tsx, App.tsx, index.css     Start-up, the frame, global styles
+├── routes.tsx, loaders.ts           The addresses, and what each page loads first
 │
 ├── pages/          ONE FILE PER ADDRESS. Puts a whole page together, and holds its state.
 │                   HomePage, PizzaCalculatorPage, RecipeListPage, RecipePage,
-│                   DataCheckPage, NotFoundPage
+│                   DataCheckPage, NotFoundPage, LoadingPage, RouteErrorPage
 │
 ├── components/     UI BUILDING BLOCKS. Get data through props, report changes through onChange.
 │   │               Header, Footer, Container, the input fields, ResultPanel, Instructions,
@@ -107,7 +110,7 @@ Everything else (grams, steps, labels, the filtered recipes, the counts in the f
 | **React** | Builds the pages out of components | – |
 | **TypeScript** | Checks that data has the right shape before the code runs. A red underline in the editor is TypeScript catching a mistake | `tsconfig*.json` |
 | **Vite** | Runs the dev server (`npm run dev`) and builds the finished site (`npm run build`) | `vite.config.ts` |
-| **React Router** | Connects addresses to pages, and gives you `Link`, `NavLink` and `useParams` | set up in `main.tsx` and `App.tsx` |
+| **React Router** | Connects addresses to pages, loads their data first (loaders), and gives you `Link`, `NavLink` and `useLoaderData` | set up in `main.tsx` and `routes.tsx` |
 | **Tailwind CSS** | Styling with classes directly in the JSX (`className="mt-4 text-sm"`) | `src/index.css` (fonts in `@theme`) |
 | **Vitest** | Runs the tests in `*.test.ts` | uses `vite.config.ts` |
 | **Oxlint** | Finds common mistakes and bad habits | `.oxlintrc.json` |

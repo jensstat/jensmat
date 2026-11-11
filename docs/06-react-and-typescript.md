@@ -95,11 +95,16 @@ Makes an id that's unique on the page, to connect a label to a field.
 
 | Piece | What it does | 📁 |
 |---|---|---|
-| `<BrowserRouter>` | Follows the address bar. Must be outermost | `main.tsx` |
-| `<Routes>` + `<Route path element>` | Shows the page whose `path` matches the address | `App.tsx` |
-| `:id` in a path | A placeholder: one route for every recipe | `App.tsx` |
-| `path="*"` | Catches every address no other route matched | `App.tsx` |
-| `useParams()` | Reads the placeholders: `{ id: "laksewrap" }` | `RecipePage.tsx` |
+| `createBrowserRouter(routes)` + `<RouterProvider>` | Follows the address bar, and can load data before a page is shown | `main.tsx` |
+| A route `{ path, element, loader }` | Shows the page whose `path` matches the address. `children` + `<Outlet />`: pages inside a frame | `routes.tsx`, `App.tsx` |
+| `:id` in a path | A placeholder: one route for every recipe. The loader gets it as `params.id` | `routes.tsx`, `loaders.ts` |
+| `path: "*"` | Catches every address no other route matched | `routes.tsx` |
+| `loader` | A function that fetches what the page needs. The page is only shown when it's done | `loaders.ts` |
+| `useLoaderData<typeof loader>()` | Reads what the loader returned, with the right type | the recipe pages |
+| `useNavigation()` | `state` is `"loading"` while the next page's loader waits ("Laster…") | `App.tsx` |
+| `errorElement` + `useRouteError()` | Shown instead of the page when a loader throws | `routes.tsx`, `RouteErrorPage.tsx` |
+| `useRevalidator()` | `revalidate()` runs the loaders again ("Prøv igjen") | `RouteErrorPage.tsx` |
+| `<ScrollRestoration />` | A new page starts at the top; back goes to where you were | `App.tsx` |
 | `<Link to>` | A link that changes page without reloading the site | `HomePage.tsx`, `RecipePage.tsx` |
 | `<NavLink>` | A `Link` that knows whether it's the current page (`isActive`) | `Header.tsx` |
 

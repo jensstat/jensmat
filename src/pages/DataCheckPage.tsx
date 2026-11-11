@@ -1,12 +1,20 @@
-import { Link } from "react-router";
-import { checks, completenessReport } from "../recipes/completeness";
-import { getAllRecipes } from "../recipes/recipes";
+import { Link, useLoaderData } from "react-router";
+import {
+  checks,
+  completenessReport,
+  similarIngredientNames,
+} from "../recipes/completeness";
+import type { dataCheckLoader } from "../loaders";
 
 // The "Datasjekk", at /oppskrifter/datasjekk (not in the menu): what each recipe is missing.
 // A recipe without e.g. a cuisine is hidden when you filter on cuisine, so this is the
 // list of what to fill in. The rules are in recipes/completeness.ts.
 function DataCheckPage() {
-  const report = completenessReport(getAllRecipes());
+  // Fetched by the loader before the page is shown (loaders.ts)
+  const { recipes, skipped } = useLoaderData<typeof dataCheckLoader>();
+  const report = completenessReport(recipes);
+  // "tomat" and "tomater": probably the same ingredient, written two ways
+  const similarNames = similarIngredientNames(recipes);
   const withGaps = report.filter((row) => row.missing.length > 0);
 
   // How many recipes are missing each thing: "Kjøkken: 4"
@@ -28,6 +36,27 @@ function DataCheckPage() {
             ? `Alle ${report.length} oppskriftene er fylt ut.`
             : `${withGaps.length} av ${report.length} oppskrifter mangler noe. En oppskrift som mangler for eksempel kjøkken, vises ikke når du filtrerer på kjøkken.`}
         </p>
+
+        {/* Recipes that couldn't be read at all (no id or title), so they're not on the site */}
+        {skipped.length > 0 && (
+          <div className="mt-6 rounded-lg border border-red-700/30 bg-red-50 p-4">
+            <h2 className="font-semibold text-red-900">
+              {skipped.length === 1
+                ? "1 oppskrift kunne ikke leses"
+                : `${skipped.length} oppskrifter kunne ikke leses`}
+            </h2>
+            <p className="mt-1 text-sm text-ink/70">
+              De vises ikke på siden før dette er rettet.
+            </p>
+            <ul className="mt-2 text-sm">
+              {skipped.map(({ position, name, problem }) => (
+                <li key={position}>
+                  <span className="font-semibold">{name}</span> {problem}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {perCheck.length > 0 && (
           <ul
@@ -69,6 +98,44 @@ function DataCheckPage() {
             </li>
           ))}
         </ul>
+
+        {similarNames.length > 0 && (
+          <div className="mt-10">
+            <h2 className="font-serif text-xl font-semibold">
+              Like ingrediensnavn
+            </h2>
+            <p className="mt-1 text-sm text-ink/70">
+              Er dette det samme? Skriv dem likt, så finner filteret alle
+              oppskriftene med ingrediensen.
+            </p>
+            <ul className="mt-4 divide-y divide-ink/10 border-y border-ink/10">
+              {similarNames.map((pair) => (
+                <li
+                  key={pair.map((use) => use.name).join("|")}
+                  className="grid gap-1 py-3 text-sm sm:grid-cols-2 sm:gap-4"
+                >
+                  {pair.map(({ name, recipes }) => (
+                    <p key={name}>
+                      <span className="font-semibold">{name}</span>{" "}
+                      <span className="text-ink/60">i </span>
+                      {recipes.map((recipe, index) => (
+                        <span key={recipe.id}>
+                          {index > 0 && ", "}
+                          <Link
+                            to={`/oppskrifter/${recipe.id}`}
+                            className="underline-offset-4 hover:underline"
+                          >
+                            {recipe.title}
+                          </Link>
+                        </span>
+                      ))}
+                    </p>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </section>
   );
