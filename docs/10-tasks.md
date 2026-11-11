@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 10 November 2026. Search and incomplete recipes are done; "Hva med…?" (task 2) is under way, next up is 2.11 (phone check).*
+*Last updated: 11 November 2026. Search, incomplete recipes and "Hva med…?" are done; next up is 3, more filters.*
 
 ---
 
@@ -26,7 +26,7 @@ For "Hva med…?", for example:
 
 ---
 
-## ▶ Now: the recipe overview (task 2 next)
+## ▶ Now: the recipe overview (task 3 next)
 
 ### 1. Search field ✅
 
@@ -40,7 +40,7 @@ Make it possible to search for a recipe by name or ingredient. Builds on the fil
 - [x] 1.6 Style the field (search icon, a ✕ to clear it), and let "Vis alle oppskrifter" clear the search too
 - [x] 1.7 Phone check: the field and the chips should fit nicely at 360px
 
-### 2. "Hva med…?" – inspiration
+### 2. "Hva med…?" – inspiration ✅
 
 A suggestion at the top of the overview: one random dinner that suits the day (easy weekday food, weekend food on Saturdays, pizza on Fridays), big, with a "Vis et annet forslag" (show another) button. Suggested tutorial steps:
 
@@ -58,7 +58,7 @@ A suggestion at the top of the overview: one random dinner that suits the day (e
   - If nothing fits: any dinner, then any complete recipe. The suggestion should never disappear just because a rule is too strict
 - [x] 2.9 **Friday is pizza day:** "Pizzatid!" with a link to the pizza calculator (`/pizza`) instead of a recipe, and no "Vis et annet forslag" button
 - [x] 2.10 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe. And a nice Friday version
-- [ ] 2.11 Phone check at 360px, the Friday version too
+- [x] 2.11 Phone check at 360px, the Friday version too (nothing sticks out; tapping the box opens the recipe or the calculator, and the button doesn't)
 
 ### 3. More filters
 
@@ -133,3 +133,4 @@ From [08 – Status](08-status.md):
 - [x] Recipe overview: cards, grid/list view, category filter, empty state
 - [x] Search on the overview: title, description and ingredients, with tests
 - [x] Incomplete recipes: only the title is required, an "Uferdig" label, and every page handles missing parts
+- [x] "Hva med…?" on the overview: a complete dinner that suits the day ("Ukedag"/"Helgemat"), pizza on Fridays, with tests

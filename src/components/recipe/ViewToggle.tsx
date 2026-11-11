@@ -52,7 +52,7 @@ function ViewToggle({ value, onChange }: ViewToggleProps) {
             onClick={() => onChange(option.value)}
             aria-pressed={chosen}
             aria-label={option.label}
-            className={`p-2 transition-colors ${
+            className={`p-3 transition-colors ${
               chosen ? "bg-ink text-white" : "text-ink/60 hover:text-ink"
             }`}
           >

@@ -27,9 +27,11 @@ interface SuggestionBoxProps {
 // A button can't be inside a link, so the title is the only link, and it's "stretched":
 // its after: part is an invisible layer over the whole box (absolute, inset-0),
 // placed against the box (relative). A button can be lifted above it (relative z-10).
+// isolate: the box gets its own stack of layers, so that z-10 only counts inside the box.
+// Without it, the button would also be lifted above the sticky header (z-10) when you scroll.
 function SuggestionBox({ picture, label, title, to, children }: SuggestionBoxProps) {
   return (
-    <div className="group relative flex items-center gap-4 border border-ink/15 p-3 transition-colors hover:border-ink/40 sm:gap-6 sm:p-4">
+    <div className="group relative isolate flex items-center gap-4 border border-ink/15 p-3 transition-colors hover:border-ink/40 sm:gap-6 sm:p-4">
       {picture}
       <div>
         <p className="text-xs font-semibold tracking-widest text-ink/60 uppercase">
@@ -73,7 +75,7 @@ function RecipeSuggestion({ recipe, onShowAnother }: RecipeSuggestionProps) {
       <button
         type="button"
         onClick={onShowAnother}
-        className="relative z-10 mt-3 inline-flex items-center gap-1.5 border border-ink/25 px-2.5 py-1.5 text-sm transition-colors sm:gap-2 sm:px-3 hover:border-ink hover:bg-ink hover:text-white"
+        className="relative z-10 mt-3 inline-flex min-h-11 items-center gap-1.5 border border-ink/25 px-2.5 py-1.5 text-sm transition-colors sm:gap-2 sm:px-3 hover:border-ink hover:bg-ink hover:text-white"
       >
         <svg
           viewBox="0 0 24 24"

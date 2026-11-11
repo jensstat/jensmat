@@ -121,7 +121,7 @@ function RecipeListPage() {
                 type="button"
                 onClick={clearSearch}
                 aria-label="Tøm søket"
-                className="absolute top-1/2 right-1.5 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-ink/50 transition-colors hover:text-ink"
+                className="absolute top-1/2 right-0.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-ink/50 transition-colors hover:text-ink"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -166,7 +166,7 @@ function RecipeListPage() {
             <button
               type="button"
               onClick={() => setFilters(noFilters)}
-              className="mt-6 bg-ink px-5 py-2.5 text-sm text-white transition-colors hover:bg-gold"
+              className="mt-6 bg-ink px-5 py-3 text-sm text-white transition-colors hover:bg-gold"
             >
               Vis alle oppskrifter
             </button>

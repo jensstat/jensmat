@@ -26,7 +26,7 @@ function CategoryChips({ value, onChange }: CategoryChipsProps) {
             type="button"
             onClick={() => onChange(option.value)}
             aria-pressed={chosen}
-            className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
+            className={`rounded-full px-4 py-3 text-sm transition-colors ${
               chosen ? "bg-ink text-white" : "bg-panel hover:bg-ink/10"
             }`}
           >
