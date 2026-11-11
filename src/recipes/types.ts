@@ -76,6 +76,7 @@ export const cuisines = [
   "Japansk",
   "Koreansk",
   "Midtøsten",
+  "Fusion", // a mix of kitchens, like tandoori salmon in a wrap
 ] as const;
 export type Cuisine = (typeof cuisines)[number];
 

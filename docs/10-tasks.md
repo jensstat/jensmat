@@ -26,7 +26,7 @@ For the filters, for example:
 
 ---
 
-## ▶ Now: the recipe overview (task 3 next)
+## ▶ Now: the recipe overview (task 4 next)
 
 ### 1. Search field ✅
 
@@ -60,7 +60,7 @@ A suggestion at the top of the overview: one random dinner that suits the day (e
 - [x] 2.10 Style it: a big photo (or the placeholder letter), the title, the card line, linked to the recipe. And a nice Friday version
 - [x] 2.11 Phone check at 360px, the Friday version too (nothing sticks out; tapping the box opens the recipe or the calculator, and the button doesn't)
 
-### 3. More filters: a "Filter" button and panel
+### 3. More filters: a "Filter" button and panel ✅
 
 A **"Filter (2)"** button next to the search (the number is how many filters are on), on phones and desktop alike. It opens a panel where you filter without searching: **meal type, main ingredient, ingredients, and properties** (Rask, Glutenfri, Laktosefri, Barnevennlig). The category chips stay where they are, as a quick shortcut.
 
@@ -85,11 +85,11 @@ A **"Filter (2)"** button next to the search (the number is how many filters are
 - [x] 3.9a **Made more like Matprat** (2026-11-11): several meals at once (the chips are a shortcut to "Måltid"), new groups **Tid** (from `minutes`), **Vanskelighetsgrad**, **Kjøkken** and **Uten ingredienser** (`combine: "none"`), sections that open and close, an icon-only Filter button on phones. A recipe without the information a group needs is hidden while that group is in use (`hasInfo`). **Datasjekk** at `/oppskrifter/datasjekk`. Cleaned two ingredient names in `data.ts`
 - [x] 3.9a2 **"Passer til"** (2026-11-11): a new `themes` field (Sunn, Kos, Gjester, Barnevennlig, Tradisjon, Høytid, Matpakke og tur), "all of them" when several are ticked. Barnevennlig moved from the tags; "Egenskaper" is now "Tilpasninger" (Glutenfri, Laktosefri). In the Datasjekk too
 - [x] 3.9b **Style the panel**: a sheet from the bottom on phones, slides in and out, ✓ on ticked options, focus rings, a shadow on the bottom bar
-- [ ] 3.9c Fill in `difficulty`, `cuisine` and `themes` on Laksewrap (see the Datasjekk), and maybe show them on the recipe page
-- [ ] 3.10 **Documentation** in `docs/03-recipes.md`:
+- [x] 3.9c Fill in `difficulty`, `cuisine` and `themes` on Laksewrap (Enkel, Fusion, Sunn + Kos; "Fusion" added to the cuisine list) (see the Datasjekk), and maybe show them on the recipe page
+- [x] 3.10 **Documentation** in `docs/03-recipes.md`:
   - **How to add a filter group** (one entry in `filterGroups`, plus a test)
   - **How to write ingredients** so the filter works: one clean name per ingredient (`"løk"`, not `"løk, finhakket"`: that goes in `note`), the same name in every recipe, lower case, and when two things are different ingredients ("rødløk" vs "løk"). A new ingredient shows up in the filter by itself
-- [ ] 3.11 Phone check at 360px and desktop check: the panel, the button, the chips, and the keyboard (Tab, Esc)
+- [x] 3.11 Phone check at 360px and desktop check: the panel, the button, the chips, and the keyboard (Tab, Esc)
 
 **Maybe later:**
 - [ ] The third view, "Store" (big cards, 1 per row on phones)
@@ -161,4 +161,5 @@ From [08 – Status](08-status.md):
 - [x] Recipe overview: cards, grid/list view, category filter, empty state
 - [x] Search on the overview: title, description and ingredients, with tests
 - [x] Incomplete recipes: only the title is required, an "Uferdig" label, and every page handles missing parts
+- [x] Filter panel on the overview (like Matprat): meal type, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients, with counts and tests. Datasjekk at `/oppskrifter/datasjekk`
 - [x] "Hva med…?" on the overview: a complete dinner that suits the day ("Ukedag"/"Helgemat"), pizza on Fridays, with tests

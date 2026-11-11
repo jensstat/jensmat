@@ -31,7 +31,7 @@ interface Recipe {
   image?: string;          // A file path now, a web address from the CMS later.
   category?: Category;     // "Frokost" | "Lunsj" | "Middag" | "Dessert" | "Bakst" | "Tilbehør"
   protein?: Protein;       // "Kylling" | "Kjøtt" | "Fisk" | "Sjømat" | "Vegetar" | "Vegansk"
-  cuisine?: Cuisine;       // "Norsk" | "Italiensk" | "Indisk" | … (the list in types.ts)
+  cuisine?: Cuisine;       // "Norsk" | "Italiensk" | "Indisk" | … | "Fusion" (the list in types.ts)
   difficulty?: Difficulty; // "Superenkel" | "Enkel" | "Middels" | "Avansert"
   tags: Tag[];             // "Glutenfri" | "Laktosefri". [] if none.
   themes?: Theme[];        // "Sunn" | "Kos" | "Gjester" | "Barnevennlig" | "Tradisjon" | "Høytid" | "Matpakke og tur".
@@ -94,6 +94,22 @@ export type Category = (typeof categories)[number];
 This gives you **both** a type (TypeScript complains if a recipe says "Midag") **and** a list you can `.map()` over, for example to make filter buttons. A plain union type (`"Frokost" | "Lunsj"`) only exists for TypeScript and can't be looped over.
 
 ---
+
+### Writing ingredients so the filter works
+
+The ingredient options in the filter ("Har ingredienser", "Uten ingredienser") are made from the recipes themselves (`ingredientNames` in `filter.ts`): every unique `name`, cleaned (lower case, no spaces at the ends) and sorted the Norwegian way. **A new ingredient shows up in the filter by itself.** That only works well if the names are written the same way everywhere:
+
+| Rule | Write | Not |
+|---|---|---|
+| **Only the ingredient in `name`.** How it's cut, or alternatives, go in `note` | `{ name: "løk", note: "finhakket" }` | `{ name: "løk, finhakket" }` |
+| **One ingredient per line.** Split lists | `salt`, `pepper`, `muskat` (three lines) | `"salt, pepper og muskat"` |
+| **Alternatives in the note** | `{ name: "kesam", note: "eller crème fraiche" }` | `"kesam eller crème fraiche"` |
+| **The same name in every recipe.** Pick one form and stick to it | `tomat` everywhere | `tomat` here, `tomater` there |
+| **Lower case** (except names of brands, which the filter shows in lower case anyway) | `løk` | `Løk` |
+
+**When are two things different ingredients?** When you'd buy them separately, or when someone might want one but not the other. `rødløk` and `løk` are two ingredients, and so are `hvitløk` and `løk`: "Uten løk" does **not** hide a recipe with only rødløk or hvitløk, because the filter compares whole names. Likewise `tomat` (fresh) and `hakkede tomater` (a can) are two products. If someone should be able to avoid both, tick both.
+
+**To check:** open the filter, "Har ingredienser" → "Vis alle". Two names for the same thing (`tomat` and `tomater`) show up next to each other there.
 
 ## 3. The data layer (`recipes.ts`)
 
@@ -193,6 +209,49 @@ Finn noe godt å lage!
 - **"Hva med…?"** (under the subtitle): one suggested recipe, with a "Vis et annet forslag" button. The rules are in `recipes/suggest.ts`, as pure functions with tests. `pickSuggestion(recipes, day, current)` picks a complete dinner that suits the day (Monday–Friday "Ukedag", Saturday "Helgemat", Sunday either: see `occasions` in section 2), never the same one twice in a row. If nothing suits, it falls back to any dinner, then any complete recipe, and only shows nothing if there are no complete recipes. On **Fridays** (`isPizzaDay`) the page shows "Pizzatid!" with a link to the pizza calculator instead. **The look** is in `components/recipe/RecipeSuggestion.tsx`: `RecipeSuggestion` and `PizzaSuggestion` share one box (`SuggestionBox`: square picture, small label, title, thin border), reusing `CardPhoto` and `CardDetails` from the cards. The whole box is clickable through a "stretched link" on the title, with the "Vis et annet forslag" button lifted above it. The page decides the width: the box and the search field sit in one `max-w-xl` wrapper. The page reads the weekday **once**, into state (`day`), and passes it in, so the functions never read the clock and the tests can pretend it's any day.
 - **When nothing matches:** "Fant ingen oppskrifter", with the search text in the message ("Ingen oppskrifter passer med «laks» og filtrene du har valgt."), and a "Vis alle oppskrifter" button that resets every filter, the search too.
 
+### How to add a filter group
+
+Every group in the panel is **one entry** in `filterGroups` (`recipes/filter.ts`). The panel, the counts, the chips above the cards and the "Filter" number all read that list, so they pick up a new group by themselves.
+
+An example: a "Sesong" (season) filter.
+
+**1. If it's new information on the recipe, add it to `types.ts`:** a fixed list, a type made from it, and an optional field.
+
+```ts
+export const seasons = ["Vår", "Sommer", "Høst", "Vinter"] as const;
+export type Season = (typeof seasons)[number];
+
+// in interface Recipe:
+seasons?: Season[]; // missing = not filled in yet; [] = all year
+```
+
+**2. Add the entry to `filterGroups`**, where you want it in the panel:
+
+```ts
+{
+  id: "season",               // the name in the code (and later in the address)
+  label: "Sesong",            // the heading in the panel
+  combine: "any",             // "any" = or, "all" = every one, "none" = none of them
+  options: () => seasons,     // what you can tick
+  matches: (recipe, option) => (recipe.seasons ?? []).some((season) => season === option),
+  hasInfo: (recipe) => recipe.seasons !== undefined, // leave out if every recipe has an answer
+},
+```
+
+- **`combine`:** "any" when a recipe has *one* value, or when ticking more should give *more* recipes (Kylling or Fisk). "all" when ticking more should *narrow it down* (Glutenfri and Laktosefri). "none" to hide recipes (Uten løk).
+- **`hasInfo`:** a recipe without the information is hidden while something in this group is ticked, since we can't know if it fits. Leave it out when every recipe has an answer: `tags` is always there, and `[]` means "none apply".
+- **Worked out instead of stored?** Use a function in `matches`, like "Tid" does with `timeRangeOf(recipe)`. Then there's nothing to fill in.
+
+**3. Add it to the Datasjekk** (`checks` in `recipes/completeness.ts`), if it's something recipes should have filled in:
+
+```ts
+{ label: "Sesong", has: (recipe) => recipe.seasons !== undefined },
+```
+
+**4. A test** in `filter.test.ts`: a few made-up recipes with `makeRecipe`, one that matches, one that doesn't, and one without the information. See `describe("time, difficulty and cuisine")` for an example. Run `npm test`.
+
+**5. Fill it in** on the recipes in `data.ts`. The Datasjekk (`/oppskrifter/datasjekk`) shows which ones are missing it.
+
 ## 7. The plan going forward
 
 | Step | Status |
@@ -205,7 +264,8 @@ Finn noe godt å lage!
 | The overview page `/oppskrifter`, with cards, grid/list view and category filter | ✅ done |
 | Search (title, description, ingredients) | ✅ done |
 | Incomplete recipes (only a title required, "Uferdig" label) | ✅ done |
-| More filters (main ingredient, "Rask", tags) | `filterRecipes` and the lists in `types.ts` are ready |
+| The filter panel (meal type, main ingredient, time, difficulty, cuisine, "Passer til", diet, with and without ingredients) | ✅ done (`filterGroups`, `FilterPanel`) |
+| Datasjekk: which recipes are missing what | ✅ done (`/oppskrifter/datasjekk`) |
 | Photos | add `image` to a recipe, with the file in `public/images/recipes/`. Without one, a calm placeholder is shown |
 | CMS / phone app | see below |
 
