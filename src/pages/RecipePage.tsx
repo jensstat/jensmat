@@ -71,7 +71,7 @@ function RecipeView({ recipe }: RecipeViewProps) {
     <article
       className={`flex-1 bg-white font-sans text-ink ${
         hasIngredients
-          ? "lg:flex lg:flex-col lg:bg-[linear-gradient(to_right,white_50%,var(--color-panel)_50%)]"
+          ? "lg:flex lg:flex-col lg:bg-[linear-gradient(to_right,white_50%,var(--color-panel)_50%)] print:bg-none"
           : ""
       }`}
     >
@@ -80,7 +80,7 @@ function RecipeView({ recipe }: RecipeViewProps) {
       <div
         className={`mx-auto grid w-full max-w-[93.75rem] ${
           hasIngredients
-            ? "lg:flex-1 lg:grid-cols-[minmax(0,1fr)_26.25rem] xl:grid-cols-[minmax(0,1fr)_30rem]"
+            ? "lg:flex-1 lg:grid-cols-[minmax(0,1fr)_26.25rem] xl:grid-cols-[minmax(0,1fr)_30rem] print:grid-cols-1"
             : ""
         }`}
       >
@@ -93,7 +93,7 @@ function RecipeView({ recipe }: RecipeViewProps) {
         >
           <Link
             to="/oppskrifter"
-            className="text-sm text-ink/60 hover:text-gold"
+            className="text-sm text-ink/60 hover:text-gold print:hidden"
           >
             ← Alle oppskrifter
           </Link>
@@ -142,10 +142,19 @@ function RecipeView({ recipe }: RecipeViewProps) {
             </div>
           )}
 
+          {/* Paper only: the ingredients, before the steps, for the chosen number of portions.
+              On screen they're in the side panel (desktop) or behind the bar (phones),
+              and neither of those works on paper. */}
+          {hasIngredients && (
+            <div className="mt-10 hidden max-w-3xl print:block">
+              <IngredientsPanel {...panelProps} />
+            </div>
+          )}
+
           {/* Not every recipe has steps */}
           {recipe.steps.length > 0 && (
             <>
-              <h2 className="mt-12 mb-8 font-serif text-[1.375rem] font-semibold lg:mt-16 lg:text-[1.75rem]">
+              <h2 className="mt-12 mb-8 font-serif text-[1.375rem] font-semibold break-after-avoid lg:mt-16 lg:text-[1.75rem]">
                 Slik gjør du
               </h2>
               <div className="max-w-3xl">
@@ -179,7 +188,7 @@ function RecipeView({ recipe }: RecipeViewProps) {
         {/* The ingredient panel, desktop only. The content is sticky, so it stays in view while you
             read the steps, and scrolls on its own if the list is taller than the screen. */}
         {hasIngredients && (
-          <aside className="hidden bg-panel lg:block lg:px-10 lg:py-16 xl:px-16">
+          <aside className="hidden bg-panel lg:block lg:px-10 lg:py-16 xl:px-16 print:hidden">
             <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto">
               <IngredientsPanel {...panelProps} />
             </div>

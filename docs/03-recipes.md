@@ -304,6 +304,8 @@ seasons?: Season[]; // missing = not filled in yet; [] = all year
 
 ### Later: CMS and a phone app
 
+**Chosen: Sanity.** The plan, step by step, is task 6 in [10](10-tasks.md).
+
 To post recipes with a photo from the phone, the recipes have to live somewhere other than the code. Two common routes:
 
 | Route | Examples | Good for |

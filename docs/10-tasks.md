@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 11 November 2026. Tasks 1–3 on the overview (search, "Hva med…?", the filter panel) are done. Tasks 1–4 are done (task 4: the border `toRecipe`, a data layer that waits, loaders, loading and error states, similar ingredient names). Left of task 4 is the check, 4.7. Next up is 5, the filters in the address.*
+*Last updated: 11 November 2026. Tasks 1–4 are done (task 4: the border `toRecipe`, a data layer that waits, loaders, loading and error states, similar ingredient names). The small fixes are done too. Next: **task 6, Sanity** (the CMS, to learn it properly), then task 5, the filters in the address.*
 
 ---
 
@@ -14,6 +14,10 @@ Start each new task in a fresh Claude Code session (`/clear`): it's cheaper, and
 > We're working on **[the task]**. Read `docs/10-tasks.md` and the files it mentions. I want to build it myself as a **tutorial**: one small change per message, shown in full, then "save and look", and wait for me before the next step. **Teach me the ideas behind the code**, not just the code.
 
 For the next task, for example:
+
+> We're working on **Sanity, the CMS** (task 6 in `docs/10-tasks.md`). Read task 6 there, `docs/03-recipes.md` sections 2 and 3, `src/recipes/types.ts`, `src/recipes/toRecipe.ts` and `src/recipes/recipes.ts`. I want to **learn how Sanity works**: tutorial, one small step per message, and teach me the ideas (Studio, schemas, documents, GROQ …) before the code. Start with step 6.1.
+
+For task 5 later:
 
 > We're working on **the filters in the address** (task 5 in `docs/10-tasks.md`). Read `docs/03-recipes.md` sections 3 and 6, `docs/06-react-and-typescript.md` (React Router), `src/routes.tsx`, `src/loaders.ts`, `src/recipes/filter.ts`, `src/recipes/filter.test.ts` and `src/pages/RecipeListPage.tsx`. Tutorial, one small step per message, and teach me the ideas behind the code. Start with step 5.1.
 
@@ -29,12 +33,52 @@ If you're not interested in a part, say so ("just build this part"), and ask for
 
 ---
 
-## ▶ Now: the recipe overview (task 5 next)
+## ▶ Now: Sanity, the CMS (task 6)
 
-**Done** (what was built, and why, is in [09 – History](09-history.md), sections 11–14):
+**The goal:** post a recipe from the phone (maybe just a title and a photo), fill it in later, and see it on the site. **The focus is learning Sanity**, so each step starts with the idea, then the code.
+
+**What Sanity is, in short:** a *headless* CMS. "Headless" means it only stores and serves the content; it doesn't draw the website. That's still your React site. Sanity has three parts:
+- **The Content Lake:** Sanity's database, online. Your recipes live in a *project*, in a *dataset* (called `production`).
+- **Sanity Studio:** the editing tool, a React app you set up and change in code. It runs on your machine while you build it, and can be put online (`*.sanity.studio`) to use from the phone.
+- **The API:** the site asks for content with a query language, **GROQ**, and gets JSON back.
+
+**Why task 4 made this easy:** the site already waits for its data (loaders, "Laster…", the error page), and everything goes through `toRecipe`. So on the site's side, only `fetchRecipes` in `recipes.ts` changes. Most of the learning is in the Studio and in GROQ.
+
+**Decided before starting:**
+- The Studio lives in a **`studio/` folder** in this repo, with its own `package.json`. Then it can import the fixed lists from `src/recipes/types.ts`, so they're written in one place.
+- **The `slug` field is the recipe's id** (the address, `/oppskrifter/laksewrap`). Made from the title, and never changed once published. Norwegian letters need a small custom function (æ → ae, ø → o, å → a), so the id still passes the test in `data.test.ts`.
+- **`data.ts` stays, but only for the tests** (`filter.test.ts` and `data.test.ts` use it). The site reads from Sanity.
+- **Missing is normal in Sanity too:** only the title (and the slug) are *required*. Missing fields are **warnings** (yellow), not errors, so a half-done recipe can still be published, the same rule as the Datasjekk.
+
+Suggested tutorial steps:
+
+- [ ] 6.1 **A Sanity project and a Studio.** Make a free account, then `npm create sanity@latest` in `studio/` (empty project, TypeScript). Run the Studio at `localhost:3333` and look around. *The idea:* project, dataset, Studio, the Content Lake, and why the Studio is a separate app from the site
+- [ ] 6.2 **The first schema: a recipe with only a title.** A `recipe` document type with `title` (required) and `slug` (made from the title). Make "Fiskesuppe" in the Studio, and publish it. *The idea:* a schema describes the form, `defineType` / `defineField`, documents, `_id`, and **drafts vs published**
+- [ ] 6.3 **The fixed lists, from `types.ts`.** Måltid, Hovedingrediens, Kjøkken and Vanskelighetsgrad as dropdowns (`options.list`), and Tilpasninger, Passer til and Ukedag/Helgemat as checkboxes (an array of strings). Imported from `src/recipes/types.ts`, so adding a cuisine there adds it in the Studio too. *The idea:* one source of truth, and that the Studio is just TypeScript
+- [ ] 6.4 **The rest of the fields.** Description, portions and time (numbers above 0), steps (a list of text), source and tips. Then **ingredients**: a list of objects (amount, unit, name, note, group), with a `preview` so each line reads "2 dl melk". Warnings for what the Datasjekk checks ("Mangler kjøkken"). *The idea:* field types, `object` and `array`, `preview`, and validation (`rule.required()` vs `rule.warning()`)
+- [ ] 6.5 **The photo.** An `image` field with `hotspot` (you choose the important part of the photo, and it stays in view when it's cropped). Upload a photo of a dish. *The idea:* assets: the photo is stored once, and the recipe points to it (a *reference*)
+- [ ] 6.6 **GROQ, in the Studio's Vision tool.** Add the Vision plugin and try queries by hand: `*[_type == "recipe"]`, then a **projection** that gives exactly the shape `toRecipe` wants: `"id": slug.current`, `"image": image.asset->url`, `"createdAt": _createdAt`. Sort, filter on one id. *The idea:* GROQ: filter `[…]`, projection `{…}`, `->` follows a reference, and why reshaping in the query means `toRecipe` doesn't have to change. (One fix there: `_createdAt` is a full time, `"2026-11-12T10:15:00Z"`, so `date()` in `toRecipe` should read the first 10 characters)
+- [ ] 6.7 **The site reads from Sanity.** `@sanity/client` in the site, with the project id in a `.env` file (`VITE_SANITY_PROJECT_ID`), and `localhost:5173` added under **CORS origins** at sanity.io/manage. `fetchRecipes` runs the GROQ query and sends the answer through `readRecipes`; a failed fetch throws `RecipesUnavailableError` (the error page you already have). Remove the pretend delay. *The idea:* environment variables, CORS (why the browser asks Sanity "may this site read you?"), `useCdn`, and that a public dataset only shows **published** recipes
+- [ ] 6.8 **Photos in the right size.** `imageUrl(recipe, width)`: Sanity's image service resizes on request (`?w=600&auto=format`), so a card gets a small photo and the recipe page a large one. Used in `RecipeImage` and `RecipeCard`. *The idea:* image CDNs, and why you never send a 4 MB phone photo to a small card
+- [ ] 6.9 **Move the recipes over.** Type Laksewrap into the Studio (good practice for the form), decide what to do with the placeholders, and check the Datasjekk and "Like ingrediensnavn" with the real data
+- [ ] 6.10 **The Studio on the phone.** `npx sanity deploy` puts the Studio online at `https://<name>.sanity.studio`. Log in on the phone, post a recipe with only a title and a photo from the camera, and fill it in later from the computer. *The idea:* a hosted Studio, logins and who may edit
+- [ ] 6.11 **The site online.** Publish it (Vercel or Netlify): the setting that sends every address to `index.html` (see 08, issue 11), the `.env` values on the host, and the real address under CORS origins. Then a recipe posted from the phone shows up on the real site
+- [ ] 6.12 Check: a title-only recipe, a recipe with a photo, an unpublished draft (shouldn't show), no internet (the error page), and on the phone
+
+**Maybe later, with Sanity:**
+- [ ] Ingredient names to pick from: the Studio suggests names already used, so "tomat" and "tomater" don't both happen
+- [ ] The Datasjekk in the Studio: a list of recipes missing something (a custom Studio view, using the same GROQ)
+- [ ] Sanity TypeGen (makes TypeScript types from the schema). Not needed now: `toRecipe` is the border
+
+---
+
+## After Sanity: the recipe overview (task 5)
+
+**Done** (what was built, and why, is in [09 – History](09-history.md), sections 11–15):
 - ✅ **1. Search** in the title, the description and the ingredients
 - ✅ **2. "Hva med…?"**: a complete dinner that suits the day (Ukedag/Helgemat), and pizza on Fridays
 - ✅ **3. The filter panel**, modelled on Matprat: Måltid, Hovedingrediens, Tid, Vanskelighetsgrad, Kjøkken, Passer til, Tilpasninger, Har/Uten ingredienser, with counts. The meal chips are a shortcut to Måltid. Plus the **Datasjekk** at `/oppskrifter/datasjekk`. How it works: [03](03-recipes.md), section 6
+- ✅ **4. A CMS-ready data layer**: the border (`toRecipe`), a data layer that waits, loaders, "Laster…" and the error page, similar ingredient names. The steps are below, kept for reference
 
 ### 4. A CMS-ready data layer
 
@@ -53,7 +97,7 @@ Suggested tutorial steps:
 - [x] 4.4 **React Router loads the data before showing the page.** `main.tsx` switches from `<BrowserRouter>` to `createBrowserRouter`, and `/oppskrifter`, `/oppskrifter/:id` and `/oppskrifter/datasjekk` each get a `loader`. The pages read it with `useLoaderData()`. An unknown recipe id still shows "Fant ikke siden". "Hva med…?" picks from the loaded recipes
 - [x] 4.5 **Loading and error states.** A calm "Laster…" while a page waits (`useNavigation`), and "Kunne ikke hente oppskriftene" with a "Prøv igjen" button when it fails (`errorElement`). Test by making the pretend fetch fail on purpose
 - [x] 4.6 **Similar ingredient names on the Datasjekk**: `similarIngredientNames(recipes)` in `completeness.ts`, with tests. Names that are the same apart from a Norwegian plural ending ("tomat"/"tomater", "paprika"/"paprikaer") or one letter ("hvitlauk"/"hvitløk"), shown with the recipes that use each, so they're easy to make the same
-- [ ] 4.7 Check: `npm test`, every page on the phone and desktop, a slow connection (the browser's dev tools can pretend to be on a slow network), and the error state
+- [x] 4.7 Check: `npm test`, every page on the phone and desktop, a slow connection (the browser's dev tools can pretend to be on a slow network), and the error state
 
 ### 5. The filters in the address
 
@@ -61,7 +105,7 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 
 - [ ] 5.1 Only the search, first: read and write `?sok=` with React Router's `useSearchParams`. The address *is* the state now. Reload keeps the text
 - [ ] 5.2 Two pure functions in `recipes/filter.ts`: `filtersToParams(filters)` and `filtersFromParams(params)`, with tests (there and back again gives the same filters). Each filter group gets a Norwegian name for the address: a new `param` field in `FilterGroup` (`"maltid"`, `"hovedingrediens"`, `"tid"` …), since the `id`s are English
-- [ ] 5.3 The page reads its filters from the address instead of `useState`, and every change writes the address. While typing, replace the address instead of adding to the history, so the back button isn't full of single letters
+- [ ] 5.3 The page reads its filters from the address instead of `useState`, and every change writes the address. While typing, replace the address instead of adding to the history, so the back button isn't full of single letters. **Important:** a change to the address makes React Router run the page's loader again, so every letter typed would fetch the recipes again ("Laster…" flashes now, and a request to Sanity per letter once the CMS is in). Give the `/oppskrifter` route a `shouldRevalidate` that says no when only the `?…` part changed. *The idea:* when loaders run, and why
 - [ ] 5.4 Unknown or old values in an address are ignored, so a link with `?kjokken=marsiansk` doesn't break anything. With tests
 - [ ] 5.5 Check: reload, the back button, a shared link, and on the phone
 
@@ -69,36 +113,6 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 - [ ] The third view, "Store" (big cards, 1 per row on phones)
 - [ ] Remember the chosen view with `localStorage`
 - [ ] Show cuisine, difficulty and "Passer til" on the recipe page (the labels already show the themes)
-
----
-
-## Next: small fixes (about 15 minutes)
-
-From [08 – Status](08-status.md):
-
-- [ ] The browser tab says "mat-nettside" → change the `<title>` in `index.html`
-- [ ] One name for the site: the logo, footer and front page say different things
-- [ ] Remove the leftover `bg-gray-50` in `App.tsx`
-- [ ] A tidier printout of recipes (`print:hidden` on the header, menu and actions)
-
----
-
-## Then: real content
-
-- [ ] Replace the placeholder recipes (Havregrøt, Lasagne, Sjokolademousse, and Fiskesuppe, the incomplete example) with your own
-- [ ] Add more of your own recipes. `npm test` checks each one
-- [ ] Photos in `public/images/recipes/`, under ~300 KB each
-
----
-
-## Later: online
-
-- [ ] Publish the site (Netlify, Vercel or GitHub Pages). Remember the setting that sends every address to `index.html` (see 08, issue 11)
-- [ ] A CMS (for example Sanity) for posting recipes with photos from the phone. See [03](03-recipes.md), "Later: CMS and a phone app". With task 4 done, this is mostly:
-  - the CMS's recipe form, built from the same fixed lists as `types.ts` (Sanity's forms are written in code and can import them), so the lists live in one place
-  - `recipes.ts` fetches from the CMS and runs each recipe through `toRecipe`; nothing else in the site changes
-  - an `imageUrl(recipe, width)` helper, so the cards get small photos and the recipe page a large one (CMS image services resize on request)
-  - the Datasjekk's list shown in the CMS as warnings ("mangler kjøkken"), and a list of existing ingredient names to pick from, so the names stay the same
 
 ---
 
@@ -138,3 +152,5 @@ From [08 – Status](08-status.md):
 - [x] Incomplete recipes: only the title is required, an "Uferdig" label, and every page handles missing parts
 - [x] Filter panel on the overview (like Matprat): meal type, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients, with counts and tests. Datasjekk at `/oppskrifter/datasjekk`
 - [x] "Hva med…?" on the overview: a complete dinner that suits the day ("Ukedag"/"Helgemat"), pizza on Fridays, with tests
+- [x] A CMS-ready data layer: `toRecipe` at the border, a `Promise` data layer, React Router loaders, loading and error states, similar ingredient names on the Datasjekk, with tests
+- [x] Small fixes: one name for the site ("Jens matnettside" in the logo, footer and browser tab), the leftover `bg-gray-50` removed, and a printout with the ingredients and without the header, menu and buttons

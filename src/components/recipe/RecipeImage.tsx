@@ -8,7 +8,12 @@ interface RecipeImageProps {
 function RecipeImage({ src, alt }: RecipeImageProps) {
   if (src) {
     return (
-      <img src={src} alt={alt} className="aspect-video w-full object-cover" />
+      // On paper: lower, so the recipe starts on the first page
+      <img
+        src={src}
+        alt={alt}
+        className="aspect-video w-full object-cover print:aspect-auto print:h-[7cm]"
+      />
     );
   }
 
@@ -17,7 +22,8 @@ function RecipeImage({ src, alt }: RecipeImageProps) {
     <div
       role="img"
       aria-label={`${alt} (bilde kommer)`}
-      className="flex aspect-[5/2] w-full items-center justify-center bg-panel"
+      // print:hidden: a placeholder is only empty space on paper
+      className="flex aspect-[5/2] w-full items-center justify-center bg-panel print:hidden"
     >
       {/* The first letter of the title, large and faint */}
       <span

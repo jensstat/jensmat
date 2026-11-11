@@ -11,7 +11,7 @@ function App() {
   return (
     // min-h-screen + flex-col: the page is at least as tall as the screen.
     // flex-1 on <main> lets it fill the leftover space, so the footer stays at the bottom.
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col">
       <Header />
       {/* <main> sets no width, so pages can have full-width backgrounds.
           Each page centres its own content with max-w-6xl, like Header and Footer.

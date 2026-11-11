@@ -40,7 +40,7 @@ Pages set `font-mono` once on their outermost element, and everything inside inh
 | | `neutral-500` / `neutral-600` | Secondary text: hints, labels, descriptions |
 | **Red** (the only accent) | `red-600` | **Sparingly:** focus on fields, hover on links and buttons, the "STEG 1" labels |
 
-**Use `neutral-*`, not `gray-*` or `stone-*`.** Neutral is a pure gray, which suits black and white. (`App.tsx` still has an old `bg-gray-50`; see [08](08-status.md).)
+**Use `neutral-*`, not `gray-*` or `stone-*`.** Neutral is a pure gray, which suits black and white. 
 
 **Why so little red:** the accent only stands out when it's rare. If everything is red, nothing is.
 

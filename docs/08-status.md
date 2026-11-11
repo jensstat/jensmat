@@ -38,12 +38,12 @@ Found during a full review of the code. Sorted by how much they matter.
 **2. The browser tab says "mat-nettside".**
 The `<title>` in `index.html` is still the project's folder name. → Change it to "Jens matnettside".
 
-**3. The site's name differs.**
+**3. ~~The site's name differs.~~** ✅ Fixed: "Jens matnettside" in the logo, footer and browser tab; the front page heading is a welcome line.
 The logo says "Jens matnettside", the footer "Min matnettside", and the front page heading "Jens sin oppskriftsbank". → Decide on one name. The logo and footer at least should match.
 
 **4. ~~Typo in the recipe text.~~** ✅ Fixed.
 
-**5. Leftover colour in `App.tsx`.**
+**5. ~~Leftover colour in `App.tsx`.~~** ✅ Fixed: removed.
 The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white background), but it's the only `gray-*` colour left; the rest of the site uses `neutral-*`. → Change it to `bg-white`, or remove it.
 
 **6. Two knowledge files borrow types from components.**
@@ -64,7 +64,7 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **12. The recipe pages are wider than the header.** The recipe content can start further left than the logo, because the recipe pages are up to 1500px wide and the header 1152px. That was agreed ("more widescreen"). If it bothers you, the header could follow the page width.
 
-**13. Printing prints the whole page.** "Skriv ut" prints the header, the menu and the photo placeholder too. A print style (`print:hidden` on more elements) can make it tidier.
+**13. ~~Printing prints the whole page.~~** ✅ Fixed: the header, footer, menu, buttons and photo placeholder are hidden on paper, and the ingredients are printed before the steps (they used to be missing, since on paper the page is phone-width and they're behind the bar). Chromium may still put "Slik gjør du" alone at the bottom of a page. "Skriv ut" prints the header, the menu and the photo placeholder too. A print style (`print:hidden` on more elements) can make it tidier.
 
 **14. The filters are forgotten on reload.** The search and the filters are `useState` in `RecipeListPage`, so reloading the page or pressing back from a recipe clears them, and a filtered list can't be shared as a link. → Task 5 in [10](10-tasks.md) puts them in the address.
 

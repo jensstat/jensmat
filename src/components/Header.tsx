@@ -11,7 +11,7 @@ function Header() {
   return (
     // The outer <header> is full width: it carries the background, bottom line and sticky.
     // z-10 keeps it above the page content when you scroll.
-    <header className="sticky top-0 z-10 bg-white border-b border-black">
+    <header className="sticky top-0 z-10 bg-white border-b border-black print:hidden">
       {/* The inner div holds the content and has the same width as <main> and the footer,
           so everything lines up. On phones the logo and menu stack (flex-col),
           from md and up they sit side by side (md:flex-row). */}

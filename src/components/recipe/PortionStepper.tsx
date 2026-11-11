@@ -14,11 +14,12 @@ function PortionStepper({
   max = 20,
 }: PortionStepperProps) {
   const button =
-    "flex h-10 w-10 items-center justify-center border border-ink/20 bg-white text-xl leading-none transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-ink/20";
+    "print:hidden flex h-10 w-10 items-center justify-center border border-ink/20 bg-white text-xl leading-none transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-ink/20";
 
   return (
     <div className="flex items-center gap-3">
       <div className="flex">
+        {/* The buttons can't be pressed on paper, so only the number is printed */}
         <button
           type="button"
           className={button}
