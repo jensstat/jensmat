@@ -17,7 +17,9 @@ function StepList({ steps }: StepListProps) {
             <span className="flex-1 border-t-[3px] border-dotted border-gold/50" />
           </div>
           {/* 16/24 on phones, 18/32 on desktop: the same sizes as Gladkokken */}
-          <p className="mt-5 text-base leading-6 lg:text-lg lg:leading-8">{step}</p>
+          <p className="mt-5 text-base leading-6 lg:text-lg lg:leading-8">
+            {step}
+          </p>
         </li>
       ))}
     </ol>

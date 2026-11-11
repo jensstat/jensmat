@@ -31,7 +31,13 @@ export const recipes: Recipe[] = [
       { name: "Begby pølsesennep", note: "god og søt" },
       { name: "guacamole" },
       // The dip: shown under its own heading, "Til dippen"
-      { amount: 1, unit: "dl", name: "kesam", note: "eller crème fraiche", group: "Til dippen" },
+      {
+        amount: 1,
+        unit: "dl",
+        name: "kesam",
+        note: "eller crème fraiche",
+        group: "Til dippen",
+      },
       { amount: 1, unit: "ss", name: "Begby pølsesennep", group: "Til dippen" },
     ],
     steps: [
@@ -63,7 +69,8 @@ export const recipes: Recipe[] = [
   {
     id: "havregrot-med-baer",
     title: "Havregrøt med bær",
-    description: "Kremet havregrøt med bær, honning og ristede nøtter. Rask og mettende frokost.",
+    description:
+      "Kremet havregrøt med bær, honning og ristede nøtter. Rask og mettende frokost.",
     category: "Frokost",
     protein: "Vegetar",
     cuisine: "Norsk",
@@ -90,7 +97,8 @@ export const recipes: Recipe[] = [
   {
     id: "lasagne",
     title: "Lasagne",
-    description: "Klassisk lasagne med kjøttsaus, hvit saus og gyllen ost på toppen.",
+    description:
+      "Klassisk lasagne med kjøttsaus, hvit saus og gyllen ost på toppen.",
     category: "Middag",
     protein: "Kjøtt",
     cuisine: "Italiensk",
@@ -128,7 +136,8 @@ export const recipes: Recipe[] = [
   {
     id: "sjokolademousse",
     title: "Sjokolademousse",
-    description: "Luftig mousse av mørk sjokolade. Lages dagen før, så den rekker å stivne.",
+    description:
+      "Luftig mousse av mørk sjokolade. Lages dagen før, så den rekker å stivne.",
     category: "Dessert",
     cuisine: "Fransk",
     difficulty: "Enkel",

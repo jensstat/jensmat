@@ -7,7 +7,12 @@ export type RecipeView = "standard" | "list";
 // so they turn white when the button is dark.
 function GridIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <rect x="3" y="3" width="8" height="8" />
       <rect x="13" y="3" width="8" height="8" />
       <rect x="3" y="13" width="8" height="8" />
@@ -18,7 +23,12 @@ function GridIcon() {
 
 function ListIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <rect x="3" y="4" width="6" height="6" />
       <rect x="11" y="6" width="10" height="2" />
       <rect x="3" y="14" width="6" height="6" />

@@ -1,4 +1,5 @@
 import { useId, useRef } from "react";
+import { CloseIcon } from "../icons";
 import IngredientsPanel from "./IngredientsPanel";
 import type { IngredientsPanelProps } from "./IngredientsPanel";
 
@@ -21,7 +22,9 @@ function MobileIngredients(props: Omit<IngredientsPanelProps, "headingId">) {
         onClick={() => dialogRef.current?.showModal()}
         className="sticky bottom-0 z-10 flex w-full items-center justify-between bg-ink px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-white lg:hidden print:hidden"
       >
-        <span className="text-base font-medium uppercase tracking-wider">Ingredienser</span>
+        <span className="text-base font-medium uppercase tracking-wider">
+          Ingredienser
+        </span>
         <span className="text-sm text-white/70">
           {props.ingredients.length} stk
           {props.baseServings !== undefined && ` · ${props.servings} porsjoner`}
@@ -44,9 +47,7 @@ function MobileIngredients(props: Omit<IngredientsPanelProps, "headingId">) {
           aria-label="Lukk ingredienser"
           className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-ink text-white shadow-lg"
         >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-            <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-          </svg>
+          <CloseIcon className="h-6 w-6" />
         </button>
       </dialog>
     </>

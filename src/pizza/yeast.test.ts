@@ -65,7 +65,9 @@ describe("idyPercent", () => {
 
   it("'forum' is the chart, and 'hjemme' is the chart × houseFactor", () => {
     expect(idyPercent(8, 20, "forum")).toBe(idyPercentFromChart(8, 20));
-    expect(idyPercent(8, 20, "hjemme")).toBeCloseTo(idyPercentFromChart(8, 20) * houseFactor);
+    expect(idyPercent(8, 20, "hjemme")).toBeCloseTo(
+      idyPercentFromChart(8, 20) * houseFactor,
+    );
   });
 });
 

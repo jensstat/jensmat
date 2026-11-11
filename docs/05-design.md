@@ -166,3 +166,11 @@ Defined in `src/index.css`, so they become classes like `bg-panel`, `text-ink` a
 - **Phones:** one column, and the ingredients behind a dark bar at the bottom of the screen.
 - **Lines:** dotted lines around the portion selector and after each step number; thin solid lines (`border-ink/10`) between ingredients.
 - **Readable line length:** the steps and introduction are kept to `max-w-3xl`.
+
+### The filter panel and chips
+
+- **Chips** (the meal chips and the options in the panel): `rounded-full`, `bg-panel`, at least 44px tall (`min-h-11`). **Chosen:** `bg-ink text-white`, and in the panel a ✓ in front, so it's not only the colour that tells. **Leads to nothing:** `opacity-40` and disabled. The count is small and quiet: `text-xs text-ink/45`, `tabular-nums`.
+- **Chosen filters above the cards:** outlined chips (`border border-ink/20`) with a ✕, so they look removable, not choosable.
+- **The panel:** a sheet from the bottom on phones (`rounded-t-2xl`, at most 90% of the screen, the page visible above it) and a full-height panel on the right on desktop (`max-w-md`). It slides in 0.3 s, and the backdrop (`bg-ink/40`) fades. Section headings are small capitals (`text-sm font-medium uppercase tracking-wider`) with a chevron, thin lines (`border-ink/10`) between them.
+- **Keyboard focus:** a dark ring (`focusRing` in `components/focusRing.ts`), only for the keyboard (`focus-visible:`).
+- **Primary button** in the recipe section: `bg-ink text-white`, gold on hover ("Vis 4 oppskrifter", "Vis alle oppskrifter"). **Secondary:** underlined text ("Nullstill", "Vis alle").

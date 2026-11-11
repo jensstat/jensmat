@@ -127,7 +127,9 @@ function yeastInRow(hoursRow: (number | null)[], hours: number): number {
   const x = Math.log(hours);
   let i = 0;
   while (i < line.length - 2 && x < line[i + 1].logH) i++;
-  return Math.exp(lerp(x, line[i].logH, line[i + 1].logH, line[i].logY, line[i + 1].logY));
+  return Math.exp(
+    lerp(x, line[i].logH, line[i + 1].logH, line[i].logY, line[i + 1].logY),
+  );
 }
 
 // IDY % for a rise time and temperature, looked up in the chart.
@@ -156,7 +158,8 @@ export const houseRecipe = { hours: 3, tempC: 24, idyPercent: (3 / 450) * 100 };
 // How much more yeast the house recipe uses than the chart (about 3.1×).
 // Worked out from the numbers, so it follows along if the chart changes.
 export const houseFactor =
-  houseRecipe.idyPercent / idyPercentFromChart(houseRecipe.hours, houseRecipe.tempC);
+  houseRecipe.idyPercent /
+  idyPercentFromChart(houseRecipe.hours, houseRecipe.tempC);
 
 // "hjemme": the chart scaled to match the house recipe. Same curve, just more yeast,
 //           so the house recipe gives exactly 3 g. Long, cold rises get a lot of yeast this way.

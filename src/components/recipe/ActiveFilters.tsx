@@ -1,5 +1,7 @@
 import { tickedOptions, toggleOption } from "../../recipes/filter";
 import type { RecipeFilters } from "../../recipes/filter";
+import { focusRing } from "../focusRing";
+import { CloseIcon } from "../icons";
 
 interface ActiveFiltersProps {
   filters: RecipeFilters;
@@ -27,19 +29,10 @@ function ActiveFilters({ filters, onChange }: ActiveFiltersProps) {
               type="button"
               onClick={() => onChange(toggleOption(filters, group.id, option))}
               aria-label={`Fjern filteret ${label}`}
-              className="flex min-h-11 items-center gap-1.5 rounded-full border border-ink/20 pr-3 pl-4 text-sm transition-colors hover:border-ink"
+              className={`flex min-h-11 items-center gap-1.5 rounded-full border border-ink/20 pr-3 pl-4 text-sm transition-colors hover:border-ink ${focusRing}`}
             >
               {label}
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4 text-ink/60"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden="true"
-              >
-                <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-              </svg>
+              <CloseIcon className="h-4 w-4 text-ink/60" />
             </button>
           </li>
         );

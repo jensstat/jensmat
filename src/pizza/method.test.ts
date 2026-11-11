@@ -40,7 +40,9 @@ describe("makeSteps", () => {
 
   it("is always in time order", () => {
     for (const riseHours of [1, 3, 8, 24, 48]) {
-      const minutes = makeSteps({ ...house, riseHours }).map((s) => s.minutesBeforeBake);
+      const minutes = makeSteps({ ...house, riseHours }).map(
+        (s) => s.minutesBeforeBake,
+      );
       const sorted = [...minutes].sort((a, b) => b - a);
       expect(minutes).toEqual(sorted);
     }
@@ -49,11 +51,15 @@ describe("makeSteps", () => {
   it("adds a step to take the balls out for a cold rise", () => {
     const steps = makeSteps({ ...house, riseHours: 24, riseTemp: 4 });
     expect(steps.map((s) => s.title)).toContain("Ut av kjøleskapet");
-    expect(steps.find((s) => s.title === "Første heving")?.text).toContain("i kjøleskapet");
+    expect(steps.find((s) => s.title === "Første heving")?.text).toContain(
+      "i kjøleskapet",
+    );
   });
 
   it("has no fridge step at room temperature", () => {
-    expect(makeSteps(house).map((s) => s.title)).not.toContain("Ut av kjøleskapet");
+    expect(makeSteps(house).map((s) => s.title)).not.toContain(
+      "Ut av kjøleskapet",
+    );
   });
 
   it("says 'Form bollen' instead of 'Del i 1' for one pizza", () => {

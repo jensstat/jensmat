@@ -33,6 +33,12 @@ settings.salt = 3;                                // ❌ React doesn't notice
 `...prev` (the "spread" operator) copies all the old values into the new object.
 📁 `update()` in `PizzaCalculatorPage.tsx`.
 
+The same goes for objects inside objects: **copy every level that changes.**
+```ts
+{ ...filters, chosen: { ...filters.chosen, [groupId]: newTicked } }
+```
+📁 `toggleOption` in `recipes/filter.ts`. (`[groupId]:` is a *computed key*: the value of `groupId`, like `"protein"`, becomes the key.)
+
 ### Controlled inputs
 The field gets its value **from** state (`value`) and reports changes **to** it (`onChange`). React owns the value, not the browser.
 📁 `NumberField.tsx`, `SelectField.tsx`, `ChoiceTags.tsx`.
@@ -79,6 +85,10 @@ A `key` isn't only for lists. If a component's `key` changes, React throws it aw
 Makes an id that's unique on the page, to connect a label to a field.
 📁 `ChoiceTags.tsx`.
 
+### `<dialog>` and `<details>`: let the browser do the work
+`<dialog>` with `showModal()` puts a panel on top, keeps Tab inside it and closes on Esc. `<details>`/`<summary>` is a heading that opens and closes, with the keyboard too. Neither needs our own code for that.
+📁 `FilterPanel.tsx`, `MobileIngredients.tsx` (dialog), `FilterGroupSection.tsx` (details).
+
 ---
 
 ## React Router
@@ -107,6 +117,8 @@ Makes an id that's unique on the page, to connect a label to a field.
 | `group?` + grouping | Optional fields can describe structure too: `groupIngredients` turns `group` into headings | `recipes/display.ts` |
 | `Partial<T>` | "Some of the fields in T": used by `update({ salt: 3 })` | `PizzaCalculatorPage.tsx` |
 | `Record<K, V>` | "An object with keys K and values V": `yeastStrength` | `pizza/yeast.ts` |
+| `Partial<Record<string, string[]>>` | "Any text key, maybe missing, with a list of text": the ticked options per filter group | `recipes/filter.ts` (`chosen`) |
+| Functions in an object | `matches: (recipe, option) => …`: a field can hold a function, so each filter group carries its own rule | `recipes/filter.ts` (`filterGroups`) |
 | `import type` | Imports only a type (it disappears when the code runs) | everywhere |
 
 ---
@@ -121,6 +133,10 @@ Makes an id that's unique on the page, to connect a label to a field.
 | `??` | `a ?? b`: "a, or b if a is missing" | `yeast.ts` |
 | `.map` / `.filter` / `.find` / `.some` / `.reduce` | Transform, filter, find one, "is any …?", combine | `calculateDough.ts`, `recipes.ts`, the tests |
 | `Object.entries` | `{ a: 1 }` → `[["a", 1]]`, so an object can be `.map()`-ed | `pizza/settings.ts` |
+| `.flatMap` | Like `.map`, but a list of lists becomes one list | `ingredientNames` in `recipes/filter.ts` |
+| `new Set(list)` + `[...set]` | A list without duplicates | `ingredientNames` |
+| `.localeCompare(b, "nb")` | Sorts text the Norwegian way (æ, ø, å last) | `ingredientNames`, `recipes.ts` |
+| `.every` / `.some` | "Are all …?" / "Is any …?": "and" between filter groups, "or" within one | `filterRecipes` |
 
 ---
 
@@ -137,4 +153,8 @@ Things that were hard or surprising along the way. Add your own.
 - **Order in the code = order on phones.** With grid placement (`lg:col-start-2 lg:row-span-2`), the same three parts can be arranged differently on desktop, without writing them twice (the recipe page).
 - **Use what the browser already has.** `<dialog>` with `showModal()` gives a full-screen panel with Esc and keyboard handling for free (the ingredient menu on phones).
 - **Same number, same alignment.** Lines in two columns line up when the spacing above them is the same.
+- **A scroll area in a flex column needs `min-h-0`.** Flex items won't shrink below their content by default, so `overflow-y-auto` never kicks in (the filter panel on phones).
+- **`margin: auto` on one side pushes a dialog to the other.** A modal `<dialog>` is centred by `margin: auto`; `mt-auto` makes it a sheet at the bottom, `ml-auto` a panel on the right.
+- **Animating something that appears needs a first frame.** A closed dialog is `display: none`, so `starting:` (`@starting-style`) gives the slide its start, and `transition-discrete` lets it finish before it disappears.
+- **Every phone class needs an `lg:` partner in the same state.** `starting:open:translate-y-full` without `lg:starting:open:translate-y-0` made the desktop panel slide in diagonally.
 - **Files in `public/` are reached from the root:** `public/pizza.avif` → `src="/pizza.avif"`. Without the `/`, the path is relative to the current address and breaks on sub-pages.

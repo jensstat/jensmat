@@ -1,19 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { completenessReport, missingInfo } from "./completeness";
-import type { Recipe } from "./types";
-
-// A made-up recipe, like in filter.test.ts: only the required fields, plus what the test gives
-function makeRecipe(fields: Partial<Recipe>): Recipe {
-  return {
-    id: "test",
-    title: "Testrett",
-    tags: [],
-    ingredients: [],
-    steps: [],
-    createdAt: "2026-01-01",
-    ...fields,
-  };
-}
+import { makeRecipe } from "./testRecipe";
 
 const complete = makeRecipe({
   id: "complete",

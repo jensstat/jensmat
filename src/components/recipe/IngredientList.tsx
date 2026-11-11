@@ -19,21 +19,32 @@ function IngredientList({ ingredients, scale = 1 }: IngredientListProps) {
         // The ungrouped ingredients have no title, so they get their own key
         <div key={group.title ?? "ungrouped"}>
           {group.title && (
-            <h3 className="mb-2 text-sm font-medium uppercase tracking-wider">{group.title}</h3>
+            <h3 className="mb-2 text-sm font-medium uppercase tracking-wider">
+              {group.title}
+            </h3>
           )}
           <ul className="text-base lg:text-lg">
             {group.ingredients.map((ingredient, index) => {
               const quantity = formatQuantity(
-                ingredient.amount === undefined ? undefined : ingredient.amount * scale,
+                ingredient.amount === undefined
+                  ? undefined
+                  : ingredient.amount * scale,
                 ingredient.unit,
               );
               return (
                 // index as key: names aren't unique (the same mustard can appear twice),
                 // and the list never changes order, so the position is a safe key.
-                <li key={index} className="border-b border-ink/10 py-2.5 last:border-b-0">
-                  {quantity && <span className="font-semibold">{quantity} </span>}
+                <li
+                  key={index}
+                  className="border-b border-ink/10 py-2.5 last:border-b-0"
+                >
+                  {quantity && (
+                    <span className="font-semibold">{quantity} </span>
+                  )}
                   {ingredient.name}
-                  {ingredient.note && <span className="text-ink/60">, {ingredient.note}</span>}
+                  {ingredient.note && (
+                    <span className="text-ink/60">, {ingredient.note}</span>
+                  )}
                 </li>
               );
             })}

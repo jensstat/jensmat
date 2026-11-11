@@ -20,17 +20,39 @@ function RecipeActions() {
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-2 text-base lg:text-lg print:hidden">
       <button type="button" onClick={() => window.print()} className={action}>
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
-          <path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z" strokeLinejoin="round" />
+        <svg
+          viewBox="0 0 24 24"
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.6}
+          aria-hidden="true"
+        >
+          <path
+            d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"
+            strokeLinejoin="round"
+          />
         </svg>
         Skriv ut
       </button>
       <button type="button" onClick={copyLink} className={action}>
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
-          <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" strokeLinecap="round" />
+        <svg
+          viewBox="0 0 24 24"
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.6}
+          aria-hidden="true"
+        >
+          <path
+            d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"
+            strokeLinecap="round"
+          />
         </svg>
         {/* aria-live: screen readers hear "Lenke kopiert" when it changes */}
-        <span aria-live="polite">{copied ? "Lenke kopiert" : "Kopier lenke"}</span>
+        <span aria-live="polite">
+          {copied ? "Lenke kopiert" : "Kopier lenke"}
+        </span>
       </button>
     </div>
   );

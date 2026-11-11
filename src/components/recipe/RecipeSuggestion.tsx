@@ -29,7 +29,13 @@ interface SuggestionBoxProps {
 // placed against the box (relative). A button can be lifted above it (relative z-10).
 // isolate: the box gets its own stack of layers, so that z-10 only counts inside the box.
 // Without it, the button would also be lifted above the sticky header (z-10) when you scroll.
-function SuggestionBox({ picture, label, title, to, children }: SuggestionBoxProps) {
+function SuggestionBox({
+  picture,
+  label,
+  title,
+  to,
+  children,
+}: SuggestionBoxProps) {
   return (
     <div className="group relative isolate flex items-center gap-4 border border-ink/15 p-3 transition-colors hover:border-ink/40 sm:gap-6 sm:p-4">
       {picture}
@@ -61,7 +67,10 @@ function RecipeSuggestion({ recipe, onShowAnother }: RecipeSuggestionProps) {
   return (
     <SuggestionBox
       picture={
-        <CardPhoto recipe={recipe} className={`${squareSize} text-4xl sm:text-5xl`} />
+        <CardPhoto
+          recipe={recipe}
+          className={`${squareSize} text-4xl sm:text-5xl`}
+        />
       }
       label="Hva med…"
       title={`${recipe.title}?`}

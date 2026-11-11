@@ -9,10 +9,10 @@ Common tasks, step by step. After each one: `npm test` and `npm run build`.
 1. Open `src/recipes/data.ts` and copy an existing recipe inside the list.
 2. Change the fields. Pay attention to:
    - **`id`**: lowercase, hyphens instead of spaces, no æøå: `"kylling-i-karri"`. It becomes the address `/oppskrifter/kylling-i-karri`. Never change it once it's in use.
-   - **`category`, `protein`, `tags`**: must be from the lists in `types.ts`. A typo gives a red underline.
-   - **Ingredients**: `amount` as a number (`0.5`, not `"½"`), and descriptions like "finhakket" (finely chopped) in `note`.
+   - **`category`, `protein`, `tags`, `themes`, `cuisine`, `difficulty`**: must be from the lists in `types.ts`. A typo gives a red underline. Only `title` is required; leave out what you don't know yet.
+   - **Ingredients**: `amount` as a number (`0.5`, not `"½"`), only the ingredient in `name` (`"løk"`), and "finhakket" (finely chopped) or alternatives in `note`. Use the same name as in your other recipes, so the filter works: see [03](03-recipes.md), "Writing ingredients so the filter works".
    - **`createdAt`**: today's date as `"2026-11-09"`.
-3. Open `localhost:5173/oppskrifter/<id>`.
+3. Open `localhost:5173/oppskrifter/<id>`, and `localhost:5173/oppskrifter/datasjekk` to see what's still missing.
 
 **With a photo:** put the file in `public/images/recipes/` (keep it under ~300 KB), and add `image: "/images/recipes/<file>.jpg"`.
 
@@ -55,9 +55,15 @@ Add an entry to `pizzaStyles` in `src/pizza/settings.ts`, with `label`, `hint` a
 
 ---
 
-## … add a category, main ingredient or tag
+## … add a category, main ingredient, tag, theme, cuisine or difficulty
 
-Add the value to the list in `src/recipes/types.ts` (`categories`, `proteins` or `tags`). The type updates by itself.
+Add the value to its list in `src/recipes/types.ts` (`categories`, `proteins`, `tags`, `themes`, `cuisines` or `difficulties`). The type updates by itself, and the filter panel shows the new option.
+
+---
+
+## … add a filter group
+
+One entry in `filterGroups` (`src/recipes/filter.ts`), plus a test. Step by step, with an example: [03](03-recipes.md), "How to add a filter group".
 
 ---
 
@@ -85,6 +91,7 @@ describe("formatMinutes", () => {
 - `describe` groups tests, and `it` is one test. Write the name as a sentence about what *should* happen.
 - `expect(actual).toBe(expected)`. Use `toEqual` for lists and objects, and `toBeCloseTo` for decimal numbers.
 - `npm run test:watch` runs the tests every time you save, which is handy while you work.
+- **Recipes in tests:** use `makeRecipe({ … })` from `recipes/testRecipe.ts`, and give only the fields the test is about. Then the tests don't break when `data.ts` changes.
 
 **Is the test useful?** Break the code on purpose and check that the test fails. A test that never fails doesn't protect anything.
 

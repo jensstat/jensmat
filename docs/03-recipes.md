@@ -8,15 +8,19 @@ The recipes ("Oppskrifter") are the main part of the site going forward: all my 
 
 | File | Layer | What it does |
 |---|---|---|
-| `recipes/types.ts` | knowledge | **What a recipe is**: the fields, and the fixed lists of categories, main ingredients and tags |
+| `recipes/types.ts` | knowledge | **What a recipe is**: the fields, the fixed lists (categories, main ingredients, tags, themes, cuisines, difficulties), and what's worked out (`isQuick`, `isIncomplete`, `timeRangeOf`, `occasionsOf`) |
 | `recipes/data.ts` | knowledge | **The recipes themselves**, as a list |
 | `recipes/recipes.ts` | knowledge | **The data layer**: `getAllRecipes()` and `getRecipe(id)`. The pages get recipes through these |
 | `recipes/display.ts` | knowledge | **How things are shown as text**: amounts (½), time (1 t 15 min), labels |
 | `recipes/display.test.ts` | test | Checks `display.ts` |
-| `recipes/filter.ts` (+ test) | knowledge | **Which recipes to show** in the overview: `filterRecipes(recipes, filters)` |
+| `recipes/filter.ts` (+ test) | knowledge | **Which recipes to show** in the overview: `filterRecipes(recipes, filters)`, the filter groups (`filterGroups`), and the counts and helpers the panel uses |
+| `recipes/suggest.ts` (+ test) | knowledge | **"Hva med…?"**: `pickSuggestion(recipes, day, current)` and `isPizzaDay` |
+| `recipes/completeness.ts` (+ test) | knowledge | **The Datasjekk**: what each recipe is missing (`missingInfo`, `completenessReport`) |
+| `recipes/testRecipe.ts` | test | `makeRecipe({ … })`: a made-up recipe for the tests |
 | `recipes/data.test.ts` | test | Checks every recipe in `data.ts` (ids, dates, numbers) |
 | `pages/RecipeListPage.tsx` | page | **The overview** of all recipes, at `/oppskrifter` (section 6) |
 | `pages/RecipePage.tsx` | page | **One** recipe, at `/oppskrifter/:id` (section 5) |
+| `pages/DataCheckPage.tsx` | page | **The Datasjekk**, at `/oppskrifter/datasjekk` (not in the menu) |
 | `components/recipe/…` | components | The building blocks of both pages |
 
 ---
@@ -84,14 +88,14 @@ A recipe can be posted half-done, for example quickly from the phone with just a
 
 ### The fixed lists
 
-Categories, main ingredients and tags are written **once**, as arrays, and the types are made from them:
+Categories, main ingredients, tags, themes, cuisines and difficulties are written **once**, as arrays, and the types are made from them:
 
 ```ts
 export const categories = ["Frokost", "Lunsj", "Middag", …] as const;
 export type Category = (typeof categories)[number];
 ```
 
-This gives you **both** a type (TypeScript complains if a recipe says "Midag") **and** a list you can `.map()` over, for example to make filter buttons. A plain union type (`"Frokost" | "Lunsj"`) only exists for TypeScript and can't be looped over.
+This gives you **both** a type (TypeScript complains if a recipe says "Midag") **and** a list you can `.map()` over, for example to make filter buttons. A plain union type (`"Frokost" | "Lunsj"`) only exists for TypeScript and can't be looped over. **To add a value** (a cuisine, a theme …), add it to its list; the filter panel shows it by itself.
 
 ---
 
@@ -185,8 +189,10 @@ Desktop (from lg:)                                        Phones
 ```
 Oppskrifter
 Finn noe godt å lage!
-[🔍 Søk etter oppskrift eller ingrediens       ✕]                 ← search field
-(Alle) (Frokost) (Lunsj) (Middag) (Dessert) (Bakst) (Tilbehør)   ← CategoryChips
+┌ HVA MED… Laksewrap? ─────────┐                                   ← RecipeSuggestion ("Pizzatid!" on Fridays)
+[🔍 Søk i oppskrifter        ✕] [⚙ Filter 2]                       ← SearchField + FilterPanel
+(Alle) (Frokost) (Lunsj) (Middag) (Dessert) (Bakst) (Tilbehør)   ← CategoryChips (shortcut to "Måltid")
+(20–40 min ✕) (Uten løk ✕)                                         ← ActiveFilters
 4 oppskrifter                                        [▦] [☰]      ← count + ViewToggle
 ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐
 │ photo│ │ photo│ │ photo│ │ photo│                              ← RecipeCard (variant "card")
@@ -196,13 +202,13 @@ Finn noe godt å lage!
 ```
 
 **How it works:**
-- **The state** lives in `RecipeListPage`: `view` (`"standard"` or `"list"`) and `filters`, with `category` (`null` means "Alle") and `query` (the search text, `""` means no search).
+- **The state** lives in `RecipeListPage`: `view` (`"standard"` or `"list"`), `day` and `suggestion` (for "Hva med…?"), and `filters`: `query` (the search text, `""` = no search) and `chosen`, the ticked options per filter group (`{ category: ["Middag"], time: ["20–40 min"] }`; missing or `[]` = nothing ticked).
 - **Search** looks in the title, the description and the ingredient names. It ignores upper/lower case and spaces at the ends, but the field still shows exactly what was typed: the cleaning happens in `filterRecipes`, not in the state. The placeholder is short ("Søk i oppskrifter") so it fits next to the Filter button on phones.
-- **The filter panel** ("Filter" button next to the search; only the icon on phones) is a `<dialog>`: a sheet from the bottom on phones (at most 90% of the screen, rounded top corners), a full-height panel from the right on desktop. It slides in and out (`starting:` and `transition-discrete`; off for people who've turned off animations), and the backdrop fades. Ticked options are dark with a ✓, and everything has a focus ring for the keyboard (`focusRing`). It has one section per group in `filterGroups` (`recipes/filter.ts`), each opens and closes: **Måltid, Hovedingrediens, Tid, Vanskelighetsgrad, Kjøkken, Passer til, Tilpasninger, Har ingredienser, Uten ingredienser**. Each option shows how many recipes it gives, and is greyed out at 0. Long lists (the ingredients) show the 10 most used first, and "Vis alle". Everything applies right away; "Vis 4 oppskrifter" just closes the panel, "Nullstill" unticks everything but keeps the search.
+- **The filter panel** (`FilterPanel`, with one `FilterGroupSection` per group; the "Filter" button is next to the search, only the icon on phones) is a `<dialog>`: a sheet from the bottom on phones (at most 90% of the screen, rounded top corners), a full-height panel from the right on desktop. It slides in and out (`starting:` and `transition-discrete`; off for people who've turned off animations), and the backdrop fades. Ticked options are dark with a ✓, and everything has a focus ring for the keyboard (`focusRing`). It has one section per group in `filterGroups` (`recipes/filter.ts`), each opens and closes: **Måltid, Hovedingrediens, Tid, Vanskelighetsgrad, Kjøkken, Passer til, Tilpasninger, Har ingredienser, Uten ingredienser**. Each option shows how many recipes it gives, and is greyed out at 0. Long lists (the ingredients) show the 10 most used first (`mostUsedOptions`), and "Vis alle". Everything applies right away; "Vis 4 oppskrifter" just closes the panel, "Nullstill" unticks everything but keeps the search.
 - **How the groups combine:** "and" between groups. Within a group it's the group's `combine`: `"any"` (Kylling or Fisk; meal type, main ingredient, time, difficulty, cuisine), `"all"` ("Passer til", "Tilpasninger" and "Har ingredienser": every one), `"none"` ("Uten ingredienser": none of them).
 - **The category chips** are a shortcut to "Måltid" (the same state, `filters.chosen.category`): several can be on, "Alle" unticks them. A recipe without a category only shows when no meal is ticked.
 - **The chosen filters** (except the meals, which the chips show) are small chips with ✕ above the cards. "Uten" options say so: "Uten løk".
-- **The search field** has a magnifying glass, a ✕ that clears it and puts the cursor back, and 16px text, so iPhones don't zoom in when you tap it. The browser's own ✕ is hidden, since we have our own.
+- **The search field** (`SearchField`) has a magnifying glass, a ✕ that clears it and puts the cursor back, and 16px text, so iPhones don't zoom in when you tap it. The browser's own ✕ is hidden, since we have our own.
 - **The recipes to show** are calculated on every render, never stored: `visibleRecipes = filterRecipes(recipes, filters)`. The count, the cards and the empty state all read from it.
 - **`filterRecipes`** (in `recipes/filter.ts`) is a pure function with tests, like `calculateDough`. **To add a filter group:** one entry in `filterGroups` (id, label, combine, options, matches, and `hasInfo` if not every recipe has the information), plus a test. The panel, the counts and the chips pick it up by themselves. If it's a new field on the recipe, add it to `types.ts` and to the Datasjekk (`checks` in `completeness.ts`).
 - **The views:** a `layouts` lookup in the page picks the grid's classes for each view. "Standard" is 2 cards per row on phones and up to 4 on desktop. "List" is compact rows (`RecipeCard` with `variant="row"`), in two columns on desktop. **To add a view:** one line in `ViewToggle`'s `options`, one line in `layouts`. TypeScript reminds you if you forget one.

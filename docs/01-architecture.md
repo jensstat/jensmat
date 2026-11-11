@@ -22,6 +22,7 @@ src/App.tsx           The frame that's the same on every page:
    │                    /pizza             → PizzaCalculatorPage
    │                    /oppskrifter       → RecipeListPage (all recipes)
    │                    /oppskrifter/:id   → RecipePage   (:id = "laksewrap")
+   │                    /oppskrifter/datasjekk → DataCheckPage (not in the menu)
    │                    *  (anything else) → NotFoundPage
    ▼
 src/pages/RecipePage.tsx
@@ -42,17 +43,21 @@ src/
 ├── main.tsx, App.tsx, index.css     Start-up, the frame and routes, global styles
 │
 ├── pages/          ONE FILE PER ADDRESS. Puts a whole page together, and holds its state.
-│                   HomePage, PizzaCalculatorPage, RecipePage, NotFoundPage
+│                   HomePage, PizzaCalculatorPage, RecipeListPage, RecipePage,
+│                   DataCheckPage, NotFoundPage
 │
 ├── components/     UI BUILDING BLOCKS. Get data through props, report changes through onChange.
-│   │               Header, Footer, Container, the input fields, ResultPanel, Instructions
-│   └── recipe/     Building blocks used only by recipes: IngredientList, StepList …
+│   │               Header, Footer, Container, the input fields, ResultPanel, Instructions,
+│   │               icons.tsx (✕, ✓ …) and focusRing.ts (the keyboard focus ring)
+│   └── recipe/     Building blocks used only by recipes: IngredientList, StepList,
+│                   RecipeCard, SearchField, FilterPanel …
 │
 ├── pizza/          PIZZA KNOWLEDGE. Plain TypeScript, no React: settings, maths, yeast chart, method.
 │                   Each file has a .test.ts next to it.
 │
 └── recipes/        RECIPE KNOWLEDGE. Plain TypeScript, no React: what a recipe is, the data,
-                    the data layer, and how things are shown as text.
+                    the data layer, how things are shown as text, the filters, the
+                    "Hva med…?" suggestion and the Datasjekk. Tests next to each file.
 ```
 
 ### The three layers
@@ -87,10 +92,11 @@ Think of the code as three layers, where each layer only **uses** the layers bel
 | All pizza settings (`settings`) | `PizzaCalculatorPage` | Both the fields **and** the result need it, so it lives in the page above them |
 | The baking time (`bakeTime`) | `Instructions` | Only the method needs it |
 | The chosen portions (`servings`) | `RecipeView` (in `RecipePage`) | Both the desktop panel and the phone menu show it |
-| The overview's view and filters (`view`, `filters`) | `RecipeListPage` | The chips, the toggle, the count and the cards all depend on them |
+| The overview's view and filters (`view`, `filters`) | `RecipeListPage` | The search, the filter panel, the chips, the toggle, the count and the cards all depend on them. (Task 4 moves `filters` into the address) |
+| Which filter sections are open, "Vis alle" (`open`, `showAll`) | `FilterGroupSection` | Only that section cares |
 | Which page is shown | The address bar (React Router) | So the back button, bookmarks and reload work |
 
-Everything else (grams, steps, labels, the filtered recipes) is **calculated from state** every time the page is drawn, never stored. *If you can calculate it, don't store it*: then it can never be out of date.
+Everything else (grams, steps, labels, the filtered recipes, the counts in the filter panel) is **calculated from state** every time the page is drawn, never stored. *If you can calculate it, don't store it*: then it can never be out of date.
 
 ---
 
@@ -105,5 +111,6 @@ Everything else (grams, steps, labels, the filtered recipes) is **calculated fro
 | **Tailwind CSS** | Styling with classes directly in the JSX (`className="mt-4 text-sm"`) | `src/index.css` (fonts in `@theme`) |
 | **Vitest** | Runs the tests in `*.test.ts` | uses `vite.config.ts` |
 | **Oxlint** | Finds common mistakes and bad habits | `.oxlintrc.json` |
+| **Prettier** | Formats the code the same way everywhere (`npm run format`). Only `src/`; the docs are left as written | `.prettierrc.json` (Prettier's defaults), `.prettierignore` |
 
 Fonts (Anton and IBM Plex Mono) are loaded from Google Fonts in `index.html`.

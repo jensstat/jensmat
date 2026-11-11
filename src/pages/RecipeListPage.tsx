@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useState } from "react";
 import ActiveFilters from "../components/recipe/ActiveFilters";
 import CategoryChips from "../components/recipe/CategoryChips";
 import FilterPanel from "../components/recipe/FilterPanel";
@@ -6,6 +6,7 @@ import RecipeCard from "../components/recipe/RecipeCard";
 import RecipeSuggestion, {
   PizzaSuggestion,
 } from "../components/recipe/RecipeSuggestion";
+import SearchField from "../components/recipe/SearchField";
 import ViewToggle from "../components/recipe/ViewToggle";
 import type { RecipeView } from "../components/recipe/ViewToggle";
 import {
@@ -28,6 +29,21 @@ const layouts: Record<RecipeView, string> = {
   list: "grid gap-y-3 lg:grid-cols-2 lg:gap-x-10",
 };
 
+// The message when no recipe matches: names the search, and says whether it's
+// the filters, only the meal types, or that there are no recipes at all.
+function noResultsText(filters: RecipeFilters) {
+  const searchText = filters.query.trim();
+  const ticked = tickedOptions(filters);
+  if (searchText) {
+    const andFilters = ticked.length > 0 ? " og filtrene du har valgt" : "";
+    return `Ingen oppskrifter passer med «${searchText}»${andFilters}.`;
+  }
+  if (ticked.length === 0) return "Ingen oppskrifter ennå.";
+  if (ticked.every(({ group }) => group.id === "category"))
+    return "Ingen oppskrifter i denne kategorien ennå.";
+  return "Ingen oppskrifter passer med alle filtrene du har valgt.";
+}
+
 // Today's weekday: 0 = Sunday … 6 = Saturday.
 // Reading the clock gives a different answer at different times, so it's only called
 // once, as the starting value of the `day` state, never directly in the render.
@@ -36,8 +52,10 @@ function today() {
 }
 
 // The overview of all recipes, at /oppskrifter. (One recipe is RecipePage.tsx.)
-// The page holds the state (view and filters) and puts the pieces together;
-// the pieces are in components/recipe/, and the filtering in recipes/filter.ts.
+// The page holds the state (view, filters, the day and the suggestion) and puts the
+// pieces together, top to bottom: heading, "Hva med…?", search + Filter button,
+// meal chips, the chosen filters, the count + view buttons, and the cards.
+// The pieces are in components/recipe/, and the filtering in recipes/filter.ts.
 function RecipeListPage() {
   const recipes = getAllRecipes();
   const [view, setView] = useState<RecipeView>("standard");
@@ -53,22 +71,10 @@ function RecipeListPage() {
   const [suggestion, setSuggestion] = useState(() =>
     pickSuggestion(recipes, day),
   );
-  // A handle on the search field, so the ✕ button can put the cursor back in it.
-  const searchRef = useRef<HTMLInputElement>(null);
-  const searchId = useId();
 
   // Calculated on every render from recipes and filters, never stored:
   // if you can calculate it, don't store it.
   const visibleRecipes = filterRecipes(recipes, filters);
-  const searchText = filters.query.trim();
-  const ticked = tickedOptions(filters);
-  // For the message when nothing matches: only meal types ticked, or other filters too?
-  const onlyCategories = ticked.every(({ group }) => group.id === "category");
-
-  function clearSearch() {
-    setFilters({ ...filters, query: "" });
-    searchRef.current?.focus();
-  }
 
   return (
     <section className="flex-1 bg-white font-sans text-ink">
@@ -98,59 +104,11 @@ function RecipeListPage() {
           )}
           {/* The search field, and the "Filter" button on its right */}
           <div className="flex gap-2">
-            {/* Search: the text is stored in filters.query, and filterRecipes does the searching.
-              A magnifying glass on the left, and a ✕ on the right once something is typed. */}
-            {/* min-w-0: lets the field shrink next to the Filter button on narrow phones */}
-            <div className="relative min-w-0 flex-1">
-              {/* The label is for screen readers; the shorter placeholder is for everyone else */}
-              <label htmlFor={searchId} className="sr-only">
-                Søk etter oppskrift eller ingrediens
-              </label>
-              <svg
-                viewBox="0 0 24 24"
-                className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-ink/50"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                aria-hidden="true"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M20 20l-4-4" strokeLinecap="round" />
-              </svg>
-              {/* text-base (16px): smaller text makes iPhones zoom in when you tap the field.
-                The last class hides the browser's own ✕, since we have our own. */}
-              <input
-                ref={searchRef}
-                id={searchId}
-                type="search"
-                enterKeyHint="search"
-                value={filters.query}
-                onChange={(event) =>
-                  setFilters({ ...filters, query: event.target.value })
-                }
-                placeholder="Søk i oppskrifter"
-                className="w-full border border-ink/20 bg-white py-3 pr-11 pl-11 text-base placeholder:text-ink/45 focus:border-ink focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
-              />
-              {filters.query && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  aria-label="Tøm søket"
-                  className="absolute top-1/2 right-0.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-ink/50 transition-colors hover:text-ink"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                  </svg>
-                </button>
-              )}
-            </div>
+            {/* The text is stored in filters.query, and filterRecipes does the searching */}
+            <SearchField
+              value={filters.query}
+              onChange={(query) => setFilters({ ...filters, query })}
+            />
             {/* The panel with every other filter (recipes/filter.ts: filterGroups) */}
             <FilterPanel
               recipes={recipes}
@@ -190,15 +148,7 @@ function RecipeListPage() {
             <p className="font-serif text-xl font-semibold">
               Fant ingen oppskrifter
             </p>
-            <p className="mt-2 text-ink/70">
-              {searchText
-                ? `Ingen oppskrifter passer med «${searchText}»${ticked.length > 0 ? " og filtrene du har valgt" : ""}.`
-                : ticked.length === 0
-                  ? "Ingen oppskrifter ennå."
-                  : onlyCategories
-                    ? "Ingen oppskrifter i denne kategorien ennå."
-                    : "Ingen oppskrifter passer med alle filtrene du har valgt."}
-            </p>
+            <p className="mt-2 text-ink/70">{noResultsText(filters)}</p>
             <button
               type="button"
               onClick={() => setFilters(noFilters)}

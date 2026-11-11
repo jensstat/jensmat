@@ -86,9 +86,9 @@ export const pizzaStyles: Record<string, PizzaStyle> = {
 
 // The dropdown's options, made from the list above.
 // Object.entries turns { klassisk: {...}, ... } into [["klassisk", {...}], ...].
-export const pizzaStyleOptions: SelectOption[] = Object.entries(pizzaStyles).map(
-  ([value, style]) => ({ value, label: style.label }),
-);
+export const pizzaStyleOptions: SelectOption[] = Object.entries(
+  pizzaStyles,
+).map(([value, style]) => ({ value, label: style.label }));
 
 // ---------------------------------------------------------------------------
 // Yeast
@@ -115,9 +115,9 @@ const yeastModels: Record<string, { label: string; hint: string }> = {
   },
 };
 
-export const yeastModelOptions: SelectOption[] = Object.entries(yeastModels).map(
-  ([value, model]) => ({ value, label: model.label }),
-);
+export const yeastModelOptions: SelectOption[] = Object.entries(
+  yeastModels,
+).map(([value, model]) => ({ value, label: model.label }));
 
 export function yeastModelHint(model: string) {
   return yeastModels[model]?.hint;

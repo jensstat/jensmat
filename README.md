@@ -3,7 +3,7 @@
 A personal food website, built to learn React while making something useful:
 
 - **Pizzakalkulator** (`/pizza`): choose pizza type, number, rise time and temperature, and get grams, a method and clock times.
-- **Oppskrifter** (`/oppskrifter`): an overview of my recipes, with category filter and grid/list view, and a page per recipe with portions, ingredients and steps.
+- **Oppskrifter** (`/oppskrifter`): an overview of my recipes, with a suggestion for the day, search, a filter panel (meal, main ingredient, time, difficulty, cuisine, with/without ingredients …) and grid/list view, and a page per recipe with portions, ingredients and steps. A "Datasjekk" (`/oppskrifter/datasjekk`) shows which recipes are missing information.
 
 The site's text is in Norwegian. Code, comments and documentation are in English.
 
@@ -24,10 +24,14 @@ npm run dev      # start the dev server, usually http://localhost:5173
 | `npm test` | Runs all the tests once |
 | `npm run test:watch` | Runs the tests again every time you save |
 | `npm run lint` | Finds common mistakes in the code |
+| `npm run format` | Formats all the code in `src/` the same way (Prettier): line breaks, quotes, commas |
+| `npm run format:check` | Only checks the formatting, without changing anything |
 | `npm run build` | Checks the TypeScript types, then builds the finished site into `dist/` |
 | `npm run preview` | Shows the built site locally |
 
-**Before every commit:** `npm test` and `npm run build`. If both pass, the calculations are right and the types fit together.
+**Before every commit:** `npm run format`, `npm test` and `npm run build`. If they pass, the code is formatted, the calculations are right and the types fit together.
+
+**After pulling this change:** run `npm install` once, to get Prettier. Tip: install the Prettier extension in your editor and turn on "format on save"; it uses the same settings (`.prettierrc.json`).
 
 ---
 
@@ -56,6 +60,6 @@ Everything is in [`docs/`](docs/). Each file stands on its own, so read the one 
 
 ## Tech stack
 
-[React 19](https://react.dev) · [TypeScript](https://www.typescriptlang.org) · [Vite](https://vite.dev) · [React Router 7](https://reactrouter.com) · [Tailwind CSS 4](https://tailwindcss.com) · [Vitest](https://vitest.dev) · [Oxlint](https://oxc.rs)
+[React 19](https://react.dev) · [TypeScript](https://www.typescriptlang.org) · [Vite](https://vite.dev) · [React Router 7](https://reactrouter.com) · [Tailwind CSS 4](https://tailwindcss.com) · [Vitest](https://vitest.dev) · [Oxlint](https://oxc.rs) · [Prettier](https://prettier.io)
 
 What each one does, and why, is in [01 – Architecture](docs/01-architecture.md).

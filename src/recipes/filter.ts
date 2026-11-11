@@ -260,6 +260,26 @@ export function countWithOption(
   }).length;
 }
 
+// The options used in the most recipes, at most `limit` of them: the short list
+// for a long group (the ingredients), before "Vis alle". Counted on all the recipes,
+// whatever is ticked, so the list doesn't jump around while you tick.
+// Equal counts keep the group's own order (alphabetical for the ingredients).
+export function mostUsedOptions(
+  recipes: Recipe[],
+  group: FilterGroup,
+  limit: number,
+): string[] {
+  return group
+    .options(recipes)
+    .map((option) => ({
+      option,
+      uses: recipes.filter((recipe) => group.matches(recipe, option)).length,
+    }))
+    .sort((a, b) => b.uses - a.uses)
+    .slice(0, limit)
+    .map(({ option }) => option);
+}
+
 // Every ticked option, with its group, in the panel's order.
 // Used for the small chips above the cards, and for the number on the "Filter" button.
 export function tickedOptions(

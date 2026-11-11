@@ -7,7 +7,9 @@ interface RecipeImageProps {
 // so a missing photo doesn't take up half the screen.
 function RecipeImage({ src, alt }: RecipeImageProps) {
   if (src) {
-    return <img src={src} alt={alt} className="aspect-video w-full object-cover" />;
+    return (
+      <img src={src} alt={alt} className="aspect-video w-full object-cover" />
+    );
   }
 
   return (
@@ -18,7 +20,10 @@ function RecipeImage({ src, alt }: RecipeImageProps) {
       className="flex aspect-[5/2] w-full items-center justify-center bg-panel"
     >
       {/* The first letter of the title, large and faint */}
-      <span aria-hidden="true" className="font-serif text-7xl font-semibold text-ink/15 md:text-8xl">
+      <span
+        aria-hidden="true"
+        className="font-serif text-7xl font-semibold text-ink/15 md:text-8xl"
+      >
         {alt.charAt(0)}
       </span>
     </div>

@@ -7,24 +7,18 @@ import {
   saturday,
   sunday,
 } from "./suggest";
+import { makeRecipe } from "./testRecipe";
 import type { Recipe } from "./types";
 
-// A made-up recipe with just a title, like in filter.test.ts.
-function makeRecipe(fields: Partial<Recipe>): Recipe {
-  return {
-    id: "test",
-    title: "Testrett",
-    tags: [],
-    ingredients: [],
-    steps: [],
-    createdAt: "2026-01-01",
-    ...fields,
-  };
-}
 // A complete recipe (it has an ingredient, so it's not "Uferdig").
 // The other fields (like category) can be given too: complete("a", { category: "Middag" }).
 function complete(id: string, fields: Partial<Recipe> = {}): Recipe {
-  return makeRecipe({ id, title: id, ingredients: [{ name: "salt" }], ...fields });
+  return makeRecipe({
+    id,
+    title: id,
+    ingredients: [{ name: "salt" }],
+    ...fields,
+  });
 }
 // A complete dinner. Without occasions it counts as weekday food.
 function dinner(id: string, fields: Partial<Recipe> = {}): Recipe {
@@ -74,8 +68,12 @@ describe("pickSuggestion", () => {
 
   it("never suggests an incomplete recipe", () => {
     const recipes = [makeRecipe({ id: "uferdig" }), complete("ferdig")];
-    expect(pickSuggestion(recipes, monday, undefined, lowest)?.id).toBe("ferdig");
-    expect(pickSuggestion(recipes, monday, undefined, highest)?.id).toBe("ferdig");
+    expect(pickSuggestion(recipes, monday, undefined, lowest)?.id).toBe(
+      "ferdig",
+    );
+    expect(pickSuggestion(recipes, monday, undefined, highest)?.id).toBe(
+      "ferdig",
+    );
   });
 
   it("never suggests the current recipe again", () => {
@@ -86,7 +84,9 @@ describe("pickSuggestion", () => {
 
   it("compares by id, so a new copy of the current recipe counts as the same", () => {
     const recipes = [complete("a"), complete("b")];
-    expect(pickSuggestion(recipes, monday, complete("a"), lowest)?.id).toBe("b");
+    expect(pickSuggestion(recipes, monday, complete("a"), lowest)?.id).toBe(
+      "b",
+    );
   });
 
   it("keeps the current recipe when it's the only complete one", () => {
@@ -102,8 +102,12 @@ describe("pickSuggestion", () => {
       dinner("lasagne"),
       complete("mousse", { category: "Dessert" }),
     ];
-    expect(pickSuggestion(recipes, monday, undefined, lowest)?.id).toBe("lasagne");
-    expect(pickSuggestion(recipes, monday, undefined, highest)?.id).toBe("lasagne");
+    expect(pickSuggestion(recipes, monday, undefined, lowest)?.id).toBe(
+      "lasagne",
+    );
+    expect(pickSuggestion(recipes, monday, undefined, highest)?.id).toBe(
+      "lasagne",
+    );
   });
 
   it("never suggests an incomplete dinner", () => {
@@ -111,7 +115,9 @@ describe("pickSuggestion", () => {
       makeRecipe({ id: "fiskesuppe", category: "Middag" }),
       dinner("lasagne"),
     ];
-    expect(pickSuggestion(recipes, monday, undefined, lowest)?.id).toBe("lasagne");
+    expect(pickSuggestion(recipes, monday, undefined, lowest)?.id).toBe(
+      "lasagne",
+    );
   });
 
   it("suggests any complete recipe when there are no dinners", () => {
@@ -163,8 +169,9 @@ describe("pickSuggestion and the day", () => {
 
   it("falls back to any dinner when none suits the day", () => {
     // Saturday, but only weekday food
-    expect(possible([taco, complete("mousse", { category: "Dessert" })], saturday))
-      .toEqual(["taco"]);
+    expect(
+      possible([taco, complete("mousse", { category: "Dessert" })], saturday),
+    ).toEqual(["taco"]);
   });
 
   it("keeps the only fitting dinner, instead of jumping to one for another day", () => {

@@ -14,8 +14,9 @@ One per address. A page puts components together and holds the state for that pa
 |---|---|---|
 | `HomePage` | `/` | Big heading, subtitle, and two buttons: "Oppskrifter" and "Pizzakalkulator" |
 | `PizzaCalculatorPage` | `/pizza` | Holds the pizza `settings` in state, and draws the fields, the result and the method. See [02](02-pizza-calculator.md) |
-| `RecipeListPage` | `/oppskrifter` | The overview: category chips, grid/list toggle, recipe cards. Holds `view` and `filters` in state. See [03](03-recipes.md), section 6 |
+| `RecipeListPage` | `/oppskrifter` | The overview: "Hva med…?", search, the filter panel, meal chips, the chosen filters, grid/list toggle, recipe cards. Holds `view`, `filters`, `day` and `suggestion` in state. See [03](03-recipes.md), section 6 |
 | `RecipePage` | `/oppskrifter/:id` | One recipe. See [03](03-recipes.md) |
+| `DataCheckPage` | `/oppskrifter/datasjekk` | The Datasjekk: every recipe and what it's missing. Not in the menu. Rules in `recipes/completeness.ts` |
 | `NotFoundPage` | everything else | "Fant ikke siden". Props: `title?`, `message?`. Also used by `RecipePage` for unknown recipes |
 
 ---
@@ -39,6 +40,12 @@ The shared page width: centred, `max-w-6xl`, with the same side padding as the h
 | `children` | anything | the content |
 
 Used by: `NotFoundPage`. (The other pages still write the same classes themselves, and `RecipePage` is deliberately wider: up to 1500px.)
+
+### Icons (`icons.tsx`)
+Small line icons, drawn on a 24×24 grid in the text colour: `CloseIcon` (✕), `CheckIcon` (✓), `ChevronDownIcon`, `FilterIcon`, `SearchIcon`. Each takes only `className?` (the size, e.g. `"h-5 w-5"`, and maybe a colour). They're hidden from screen readers; the button around them carries the words.
+
+### `focusRing` (`focusRing.ts`)
+Not a component, but a string of classes: a dark ring around whatever the keyboard is on (`focus-visible:`). Add it to a button: `` className={`… ${focusRing}`} ``. Used in the filter panel and the chosen-filter chips.
 
 ---
 
@@ -128,12 +135,50 @@ The photo, or the first letter when there's no photo, comes from a small helper 
 | `variant?` | `"card"` \| `"row"` | default `"card"` |
 
 ### `CategoryChips`
-Rounded chips: "Alle" first, then one per category from `types.ts`. The chosen one is dark. Controlled.
+Rounded chips: "Alle" first, then one per category from `types.ts`. A shortcut to "Måltid" in the filter panel (the same state): several can be on, and the ticked ones are dark. "Alle" is on when none are ticked, and unticks them all. Controlled.
 
 | Prop | Type | |
 |---|---|---|
-| `value` | `Category` \| `null` | `null` = "Alle" |
-| `onChange` | `(category) => void` | |
+| `value` | `string[]` | the ticked categories; `[]` = "Alle" |
+| `onToggle` | `(category) => void` | tick or untick one |
+| `onClear` | `() => void` | "Alle" |
+
+### `SearchField`
+The overview's search: a magnifying glass, a ✕ that clears it and puts the cursor back, and 16px text (so iPhones don't zoom). Controlled: the page holds the text.
+
+| Prop | Type |
+|---|---|
+| `value` | text |
+| `onChange` | `(value: string) => void` |
+
+### `FilterPanel`
+The "Filter" button (only the icon on phones, with a small number badge) and the panel it opens: a `<dialog>` that's a sheet from the bottom on phones and a full-height panel from the right on desktop, sliding in and out. One `FilterGroupSection` per entry in `filterGroups`, and a bottom bar with "Nullstill" and "Vis 4 oppskrifter". Closes with ✕, Esc, a tap outside, or the bottom button. The classes are in a commented list, `panelClasses`.
+
+| Prop | Type | |
+|---|---|---|
+| `recipes` | `Recipe[]` | all of them, for the options and counts |
+| `filters` | `RecipeFilters` | |
+| `onChange` | `(filters) => void` | |
+| `activeCount` | number | the number on the button (`activeFilterCount(filters)`) |
+| `resultCount` | number | for "Vis 4 oppskrifter" |
+
+### `FilterGroupSection`
+One group in the panel: a heading that opens and closes (`<details>`, with the number ticked), a hint ("Alle må passe", "Skjuler oppskrifter med disse"), and the options as 44px chips with a count. Ticked = dark with a ✓; 0 recipes = greyed out. Long groups show the 10 most used (`mostUsedOptions`) and "Vis alle". Måltid, Hovedingrediens and Tid start open, plus any group with something ticked.
+
+Props: `group` (one entry from `filterGroups`), `recipes`, `filters`, `onChange`.
+
+### `ActiveFilters`
+The ticked options (except the meals, which the chips show) as small chips with a ✕ above the cards. "Uten" options say so: "Uten løk". Shows nothing when nothing is ticked.
+
+Props: `filters`, `onChange`.
+
+### `RecipeSuggestion` and `PizzaSuggestion`
+"Hva med…?" above the search: a square picture, a small label, the title and the card line, the whole box a link. `RecipeSuggestion` has a "Vis et annet forslag" button; `PizzaSuggestion` (Fridays) says "Pizzatid!" and leads to `/pizza`. Both use `SuggestionBox` in the same file.
+
+| Prop (`RecipeSuggestion`) | Type |
+|---|---|
+| `recipe` | `Recipe` |
+| `onShowAnother` | `() => void` |
 
 ### `ViewToggle`
 Icon buttons for the overview's view (grid ▦ / list ☰). The chosen one is dark. Also exports the `RecipeView` type.
@@ -224,9 +269,13 @@ App
 │   │   └── ChoiceTags    │  (same layout, own code)
 │   ├── ResultPanel
 │   └── Instructions
-├── RecipeListPage (holds view and filters)
-│   ├── CategoryChips, ViewToggle
+├── RecipeListPage (holds view, filters, day and suggestion)
+│   ├── RecipeSuggestion / PizzaSuggestion ── SuggestionBox
+│   ├── SearchField
+│   ├── FilterPanel ── FilterGroupSection (× each filter group)
+│   ├── CategoryChips, ActiveFilters, ViewToggle
 │   └── RecipeCard (× each recipe) ── CardPhoto
+├── DataCheckPage
 ├── RecipePage
 │   ├── RecipeView (in the same file; holds the portions)
 │   │   ├── RecipeImage, RecipeActions, RecipeMeta ── LabelList

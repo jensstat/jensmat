@@ -14,7 +14,13 @@ interface ChoiceTagsProps {
 //
 // Under the hood each tag is a real radio button, hidden with sr-only.
 // That way the keyboard (Tab + arrow keys) and screen readers work for free.
-function ChoiceTags({ label, options, value, onChange, hint }: ChoiceTagsProps) {
+function ChoiceTags({
+  label,
+  options,
+  value,
+  onChange,
+  hint,
+}: ChoiceTagsProps) {
   // useId makes an id that is unique on the page, even if the component is used twice.
   // It connects the label to the group, and gives the radio buttons a shared name.
   const id = useId();
@@ -25,7 +31,11 @@ function ChoiceTags({ label, options, value, onChange, hint }: ChoiceTagsProps) 
       <span>
         {/* Phones: side by side (the box is the full screen width).
             From sm:, the box is only 16rem wide, so the tags go on top of each other. */}
-        <span role="radiogroup" aria-labelledby={id} className="grid grid-cols-2 gap-2 sm:grid-cols-1">
+        <span
+          role="radiogroup"
+          aria-labelledby={id}
+          className="grid grid-cols-2 gap-2 sm:grid-cols-1"
+        >
           {options.map((option) => (
             <label key={option.value} className="cursor-pointer">
               <input

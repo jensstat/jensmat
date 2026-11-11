@@ -23,7 +23,10 @@ function IngredientsPanel({
 }: IngredientsPanelProps) {
   return (
     <>
-      <h2 id={headingId} className="text-base font-medium uppercase tracking-wider">
+      <h2
+        id={headingId}
+        className="text-base font-medium uppercase tracking-wider"
+      >
         Ingredienser
       </h2>
       {baseServings !== undefined && (

@@ -7,7 +7,8 @@ import { defaults, pizzaStyles } from "./settings";
 const grams = (rows: ResultRow[], label: string) =>
   rows.find((row) => row.label === label)?.grams;
 
-const total = (rows: ResultRow[]) => rows.reduce((sum, row) => sum + row.grams, 0);
+const total = (rows: ResultRow[]) =>
+  rows.reduce((sum, row) => sum + row.grams, 0);
 
 describe("calculateDough", () => {
   it("gives back the house recipe with the default settings", () => {
@@ -25,7 +26,9 @@ describe("calculateDough", () => {
       const settings = { ...defaults, ...style.values };
       const expected = settings.pizzaCount * settings.ballWeight;
       // Each row is rounded on its own, so allow a couple of grams either way.
-      expect(Math.abs(total(calculateDough(settings)) - expected)).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(total(calculateDough(settings)) - expected),
+      ).toBeLessThanOrEqual(2);
     }
   });
 
@@ -39,18 +42,22 @@ describe("calculateDough", () => {
 
   it("only shows oil when there is oil in the dough", () => {
     expect(grams(calculateDough(defaults), "Olje")).toBeUndefined();
-    expect(grams(calculateDough({ ...defaults, oil: 2 }), "Olje")).toBeGreaterThan(0);
+    expect(
+      grams(calculateDough({ ...defaults, oil: 2 }), "Olje"),
+    ).toBeGreaterThan(0);
   });
 
   it("needs about 3× more fresh yeast than dry yeast", () => {
     const dry = grams(calculateDough(defaults), "Gjær") ?? 0;
-    const fresh = grams(calculateDough({ ...defaults, yeastType: "fersk" }), "Gjær") ?? 0;
+    const fresh =
+      grams(calculateDough({ ...defaults, yeastType: "fersk" }), "Gjær") ?? 0;
     expect(fresh / dry).toBeCloseTo(3.1, 1);
   });
 
   it("uses less yeast with the forum chart than with the house recipe", () => {
     const house = grams(calculateDough(defaults), "Gjær") ?? 0;
-    const forum = grams(calculateDough({ ...defaults, yeastModel: "forum" }), "Gjær") ?? 0;
+    const forum =
+      grams(calculateDough({ ...defaults, yeastModel: "forum" }), "Gjær") ?? 0;
     expect(forum).toBeLessThan(house);
   });
 });

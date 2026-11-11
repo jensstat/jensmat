@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 10 November 2026. Type check, lint, 76 tests and the build all pass. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling.*
+*Last checked: 11 November 2026. Type check, lint, 151 tests and the build all pass. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -14,12 +14,13 @@ Where the project stands: what works, what's missing, and known issues. **Update
 |---|---|---|
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
 | Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises |
-| Recipe overview | `/oppskrifter` | ✅ Recipe cards, search (title, description, ingredients), category filter, grid/list view, a message when nothing matches |
+| Recipe overview | `/oppskrifter` | ✅ Recipe cards, search (title, description, ingredients), "Hva med…?" (pizza on Fridays), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, grid/list view, a message when nothing matches |
+| Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken: wide layout, ingredient panel, portion selector, groups, an ingredient menu on phones, print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| Tests | `npm test` | ✅ 76 tests: yeast chart, dough maths, method, text formatting, the overview filter and search, incomplete recipes, and a check of every recipe in `data.ts` |
+| Tests | `npm test` | ✅ 151 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, incomplete recipes, and a check of every recipe in `data.ts` |
 
 ---
 
@@ -63,6 +64,8 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 **12. The recipe pages are wider than the header.** The recipe content can start further left than the logo, because the recipe pages are up to 1500px wide and the header 1152px. That was agreed ("more widescreen"). If it bothers you, the header could follow the page width.
 
 **13. Printing prints the whole page.** "Skriv ut" prints the header, the menu and the photo placeholder too. A print style (`print:hidden` on more elements) can make it tidier.
+
+**14. The filters are forgotten on reload.** The search and the filters are `useState` in `RecipeListPage`, so reloading the page or pressing back from a recipe clears them, and a filtered list can't be shared as a link. → Task 4 in [10](10-tasks.md) puts them in the address.
 
 ---
 

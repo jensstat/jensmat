@@ -7,27 +7,21 @@ import {
   filterGroups,
   filterRecipes,
   ingredientNames,
+  mostUsedOptions,
   noFilters,
   tickedOptions,
   toggleOption,
 } from "./filter";
-import type { Recipe } from "./types";
+import { makeRecipe } from "./testRecipe";
 
-// A made-up recipe for the tests. Give only the fields the test is about;
-// the rest get default values. So the tests don't depend on the real
-// recipes in data.ts, which will be replaced (and later come from a CMS).
-// The defaults are only the required fields, so makeRecipe({ title: "…" })
-// is a recipe with just a title, like one posted quickly from the phone.
-function makeRecipe(fields: Partial<Recipe>): Recipe {
-  return {
-    id: "test",
-    title: "Testrett",
-    tags: [],
-    ingredients: [],
-    steps: [],
-    createdAt: "2026-01-01",
-    ...fields,
-  };
+// The tests use made-up recipes (makeRecipe in testRecipe.ts), so they keep working
+// when the example recipes in data.ts are replaced.
+
+// Looks a filter group up by its id, so the tests read like the panel
+function group(id: string) {
+  const found = filterGroups.find((g) => g.id === id);
+  if (!found) throw new Error(`No filter group "${id}"`);
+  return found;
 }
 
 describe("filterRecipes", () => {
@@ -399,13 +393,6 @@ describe("counting (the numbers in the panel)", () => {
   });
   const all = [wrap, lasagne, salad];
 
-  // Looks a group up by its id, so the tests read like the panel
-  function group(id: string) {
-    const found = filterGroups.find((g) => g.id === id);
-    if (!found) throw new Error(`No filter group "${id}"`);
-    return found;
-  }
-
   it("counts how many recipes an option would give", () => {
     expect(countWithOption(all, noFilters, group("protein"), "Fisk")).toBe(1);
     expect(countWithOption(all, noFilters, group("protein"), "Kylling")).toBe(
@@ -597,5 +584,32 @@ describe("themes ('Passer til')", () => {
 
   it("shows every recipe while nothing is ticked, also those not filled in", () => {
     expect(filterRecipes(all, noFilters)).toEqual(all);
+  });
+});
+
+describe("mostUsedOptions (the short list for long groups)", () => {
+  const wrap = makeRecipe({
+    ingredients: [{ name: "laks" }, { name: "løk" }, { name: "avokado" }],
+  });
+  const lasagne = makeRecipe({
+    ingredients: [{ name: "kjøttdeig" }, { name: "løk" }, { name: "melk" }],
+  });
+  const porridge = makeRecipe({
+    ingredients: [{ name: "havregryn" }, { name: "melk" }, { name: "Løk " }],
+  });
+  const all = [wrap, lasagne, porridge];
+
+  it("puts the most used first, and keeps alphabetical order for equal counts", () => {
+    // løk: 3 recipes, melk: 2, then the ones used once, alphabetically
+    expect(mostUsedOptions(all, group("ingredients"), 4)).toEqual([
+      "løk",
+      "melk",
+      "avokado",
+      "havregryn",
+    ]);
+  });
+
+  it("counts the same way for 'Uten' (how many recipes use it, not how many are left)", () => {
+    expect(mostUsedOptions(all, group("without"), 2)).toEqual(["løk", "melk"]);
   });
 });

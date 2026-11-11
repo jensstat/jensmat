@@ -130,7 +130,7 @@ The overview page `/oppskrifter` was built **as a tutorial, one small visible st
 
 ## 11. Search, and recipes that don't have to be finished
 
-*Uncommitted work after `149adfd`*
+*After `149adfd`*
 
 **Search** was built as a tutorial first (1.1–1.4: a field, `query` in `filters`, the title, then description and ingredients, then case and spaces), and then finished in one go:
 - **Tests** with made-up recipes (`makeRecipe` in `filter.test.ts`), so they don't break when the placeholder recipes are replaced or the CMS arrives.
@@ -142,3 +142,46 @@ The overview page `/oppskrifter` was built **as a tutorial, one small visible st
 - Every part of the site only shows what's there: the card line, the time/portion line, the portion selector, "Slik gjør du", and the ingredient panel. Without ingredients the recipe page is one column.
 - `data.test.ts` now checks that every recipe has a title, and only checks numbers that are filled in.
 - **Fixed along the way:** on a short recipe, the panel colour leaked out under the main column on desktop.
+
+## 12. "Hva med…?": a suggestion that suits the day
+
+*Commits `f1063ae` and `7dad61a`*
+
+Built as a tutorial (2.1–2.11): first a random recipe with `Math.random()`, then in state with a "Vis et annet forslag" button, never the same twice in a row, only complete recipes, only dinners.
+- **The rules moved into a pure function**, `pickSuggestion(recipes, day, current)` in `recipes/suggest.ts`, with tests. *Why:* the page only shows the result, and the tests can "pretend it's Saturday" because the page passes in the weekday instead of the function reading the clock.
+- **`occasions` ("Ukedag", "Helgemat")** became its own field, not a tag, since it's only used to pick the suggestion and is never shown. Missing means "Ukedag" (`occasionsOf`), so only weekend food needs marking.
+- **Fallbacks:** if nothing suits the day, any dinner, then any complete recipe. The suggestion never disappears just because a rule is too strict.
+- **Fridays are pizza day:** "Pizzatid!" with a link to the calculator.
+
+## 13. The filter panel, modelled on Matprat
+
+*Commits `ac6e794` → `84d6a18`, and the work after*
+
+**Built step by step first (3.1–3.5),** to see what a filter needs:
+1. `ingredientNames(recipes)`: every ingredient name once, cleaned, sorted the Norwegian way (`flatMap`, `Set`, `localeCompare(…, "nb")`).
+2. **Main ingredient by hand:** a `proteins` field in `RecipeFilters` and one more rule in `filterRecipes`.
+3. **Refactor: the filters became a list, `filterGroups`.** Each group is an object with what *differs* (id, label, options, a `matches` rule for one option); what's the *same* ("nothing ticked = no filter", "and" between groups) is written once in `filterRecipes`. *Why:* the next filters became one entry each, and `filterRecipes` didn't change when they were added. The old tests stayed the same and kept passing; that was the safety net.
+4. **Ingredients and properties** as entries, with `combine: "any" | "all"`. Properties became "all" after a question: a guest who can't have gluten *or* lactose needs recipes that are *both* free.
+5. `cleanName` in one place, so the options and the rule that checks them always clean names the same way.
+
+**Then built in one go** (the user wasn't interested in the filter logic, only in the result): `toggleOption`, the counts (`countWithOption`), the button, the `<dialog>` panel, and the chips above the cards.
+
+**Then made more like Matprat**, after looking at their filter:
+- **Several meals at once.** The category became a filter group like the others; the chips are a shortcut to it.
+- **New groups:** Tid (worked out from `minutes`, nothing to fill in), Vanskelighetsgrad, Kjøkken (a flat list, "Fusion" for mixes), "Passer til" (Sunn, Kos, Gjester, Barnevennlig, Tradisjon, Høytid, Matpakke og tur), and **Uten ingredienser** (`combine: "none"`). Barnevennlig moved from the tags to "Passer til"; the tags are now only diet needs ("Tilpasninger").
+- **Not every recipe is filled in, and that's fine.** Each group has `hasInfo`: a recipe without the information is hidden only while that group is in use. **The Datasjekk** (`/oppskrifter/datasjekk`, `recipes/completeness.ts`) lists what each recipe is missing, so it's easy to fill in, now and later in a CMS.
+- Sections that open and close, an icon-only button on phones, and a shorter placeholder in the search.
+
+**Styling (as a tutorial, then finished):** a sheet from the bottom on phones (`mt-auto` on the dialog, `min-h-0` on the scroll area), sliding in and out (`starting:` and `transition-discrete`, off for "reduce motion"), a ✓ on ticked options, and focus rings.
+
+**Checked** at 360px and on desktop, with the keyboard: Tab stays in the panel, Enter/Space work, Esc closes it and puts focus back on the button.
+
+## 14. Tidying up after task 3
+
+A refactor before starting task 4, so the code is easy to come back to. Nothing changed for the user (checked with the same browser checks as above).
+- **`FilterPanel.tsx` was split.** The panel (button, dialog, heading, bottom bar) stayed; one group's section (heading, options, "Vis alle") moved to `FilterGroupSection.tsx`. The long class string on the dialog became a commented list (`panelClasses`). *Why:* the file was 340 lines doing two jobs.
+- **"Which options are used most"** moved out of the component into `mostUsedOptions` in `recipes/filter.ts`, with tests. *Why:* logic belongs with the other filter logic, where it can be tested and survives a CMS.
+- **`SearchField`** became its own component, and the "nothing matches" message a small function (`noResultsText`). *Why:* `RecipeListPage` now reads as an outline of the page (227 → 177 lines).
+- **Shared icons** (`components/icons.tsx`: ✕, ✓, chevron, filter, search) and **one `focusRing`** (`components/focusRing.ts`). *Why:* the same ✕ was drawn in four places.
+- **One `makeRecipe`** for the tests (`recipes/testRecipe.ts`), instead of a copy in three test files.
+- **Prettier** was added (`npm run format`, Prettier's default settings) and every file in `src/` formatted once. *Why:* the files were formatted in slightly different ways; now there's one style, and nobody has to think about it. Only line breaks changed.

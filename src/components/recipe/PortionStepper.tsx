@@ -7,7 +7,12 @@ interface PortionStepperProps {
 
 // "[−] [2] [+] porsjoner": a white number box between two buttons, like Gladkokken's portion box.
 // Controlled: the page holds the number.
-function PortionStepper({ value, onChange, min = 1, max = 20 }: PortionStepperProps) {
+function PortionStepper({
+  value,
+  onChange,
+  min = 1,
+  max = 20,
+}: PortionStepperProps) {
   const button =
     "flex h-10 w-10 items-center justify-center border border-ink/20 bg-white text-xl leading-none transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-ink/20";
 
