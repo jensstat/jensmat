@@ -60,8 +60,8 @@ Suggested tutorial steps:
 - [x] 6.6 **GROQ, in the Studio's Vision tool.** Add the Vision plugin and try queries by hand: `*[_type == "recipe"]`, then a **projection** that gives exactly the shape `toRecipe` wants: `"id": slug.current`, `"image": image.asset->url`, `"createdAt": _createdAt`. Sort, filter on one id. *The idea:* GROQ: filter `[…]`, projection `{…}`, `->` follows a reference, and why reshaping in the query means `toRecipe` doesn't have to change. (One fix there: `_createdAt` is a full time, `"2026-11-12T10:15:00Z"`, so `date()` in `toRecipe` should read the first 10 characters)
 - [x] 6.7 **The site reads from Sanity.** `@sanity/client` in the site, with the project id in a `.env` file (`VITE_SANITY_PROJECT_ID`), and `localhost:5173` added under **CORS origins** at sanity.io/manage. `fetchRecipes` runs the GROQ query and sends the answer through `readRecipes`; a failed fetch throws `RecipesUnavailableError` (the error page you already have). Remove the pretend delay. *The idea:* environment variables, CORS (why the browser asks Sanity "may this site read you?"), `useCdn`, and that a public dataset only shows **published** recipes
 - [x] 6.8 **Photos in the right size.** `imageUrl(recipe, width)`: Sanity's image service resizes on request (`?w=600&auto=format`), so a card gets a small photo and the recipe page a large one. Used in `RecipeImage` and `RecipeCard`. *The idea:* image CDNs, and why you never send a 4 MB phone photo to a small card
-- [ ] 6.9 **Move the recipes over.** Type Laksewrap into the Studio (good practice for the form), decide what to do with the placeholders, and check the Datasjekk and "Like ingrediensnavn" with the real data
-- [ ] 6.10 **The Studio on the phone.** `npx sanity deploy` puts the Studio online at `https://<name>.sanity.studio`. Log in on the phone, post a recipe with only a title and a photo from the camera, and fill it in later from the computer. *The idea:* a hosted Studio, logins and who may edit
+- [x] 6.9 **Move the recipes over.** Type Laksewrap into the Studio (good practice for the form), decide what to do with the placeholders, and check the Datasjekk and "Like ingrediensnavn" with the real data
+- [x] 6.10 **The Studio on the phone.** `npx sanity deploy` puts the Studio online at `https://<name>.sanity.studio`. Log in on the phone, post a recipe with only a title and a photo from the camera, and fill it in later from the computer. *The idea:* a hosted Studio, logins and who may edit
 - [ ] 6.11 **The site online.** Publish it (Vercel or Netlify): the setting that sends every address to `index.html` (see 08, issue 11), the `.env` values on the host, and the real address under CORS origins. Then a recipe posted from the phone shows up on the real site
 - [ ] 6.12 Check: a title-only recipe, a recipe with a photo, an unpublished draft (shouldn't show), no internet (the error page), and on the phone
 
@@ -69,6 +69,11 @@ Suggested tutorial steps:
 - [ ] Ingredient names to pick from: the Studio suggests names already used, so "tomat" and "tomater" don't both happen
 - [ ] The Datasjekk in the Studio: a list of recipes missing something (a custom Studio view, using the same GROQ)
 - [ ] Sanity TypeGen (makes TypeScript types from the schema). Not needed now: `toRecipe` is the border
+
+**A friendlier way to post recipes** (asked 11 November 2026, after 6.10). Three levels, least work first:
+- [ ] **A friendlier Studio**: tabs (`groups`) with a quick "Raskt" tab (title + photo) for the phone and the rest under "Detaljer" / "Ingredienser"; starting values (`initialValue`); own input components (ingredient names to pick from, paste a whole ingredient list and split it into lines); own lists in the left column ("Uferdige", "Mangler bilde"). Try this first: it's quick, and keeps Sanity's login, drafts and photos
+- [ ] **An own form on the site** (`/ny-oppskrift`): writing needs a Sanity **token**, which must never be in the browser (nothing secret in `VITE_…`). So: the form → a **server function** on the host (Vercel/Netlify, after 6.11) that holds the token, checks that it's you (a login), uploads the photo (`client.assets.upload`) and creates the recipe → Sanity. The form fills in the same fields as `Recipe`, and the site keeps reading through `toRecipe`. Alternative: Sanity's **App SDK** (own React apps that use the Sanity login, no token on an own server); check Sanity's docs for how it's set up
+- [ ] **A phone app** (the long-term goal): the same as the form, as an app
 
 ---
 
