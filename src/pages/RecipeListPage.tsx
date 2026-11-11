@@ -1,12 +1,21 @@
 import { useId, useRef, useState } from "react";
+import ActiveFilters from "../components/recipe/ActiveFilters";
 import CategoryChips from "../components/recipe/CategoryChips";
+import FilterPanel from "../components/recipe/FilterPanel";
 import RecipeCard from "../components/recipe/RecipeCard";
 import RecipeSuggestion, {
   PizzaSuggestion,
 } from "../components/recipe/RecipeSuggestion";
 import ViewToggle from "../components/recipe/ViewToggle";
 import type { RecipeView } from "../components/recipe/ViewToggle";
-import { filterRecipes, noFilters } from "../recipes/filter";
+import {
+  activeFilterCount,
+  clearGroup,
+  filterRecipes,
+  noFilters,
+  tickedOptions,
+  toggleOption,
+} from "../recipes/filter";
 import type { RecipeFilters } from "../recipes/filter";
 import { getAllRecipes } from "../recipes/recipes";
 import { isPizzaDay, pickSuggestion } from "../recipes/suggest";
@@ -52,6 +61,9 @@ function RecipeListPage() {
   // if you can calculate it, don't store it.
   const visibleRecipes = filterRecipes(recipes, filters);
   const searchText = filters.query.trim();
+  const ticked = tickedOptions(filters);
+  // For the message when nothing matches: only meal types ticked, or other filters too?
+  const onlyCategories = ticked.every(({ group }) => group.id === "category");
 
   function clearSearch() {
     setFilters({ ...filters, query: "" });
@@ -84,64 +96,84 @@ function RecipeListPage() {
               />
             )
           )}
-          {/* Search: the text is stored in filters.query, and filterRecipes does the searching.
+          {/* The search field, and the "Filter" button on its right */}
+          <div className="flex gap-2">
+            {/* Search: the text is stored in filters.query, and filterRecipes does the searching.
               A magnifying glass on the left, and a ✕ on the right once something is typed. */}
-          <div className="relative">
-            {/* The label is for screen readers; the placeholder says the same for everyone else */}
-            <label htmlFor={searchId} className="sr-only">
-              Søk etter oppskrift eller ingrediens
-            </label>
-            <svg
-              viewBox="0 0 24 24"
-              className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-ink/50"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.8}
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="M20 20l-4-4" strokeLinecap="round" />
-            </svg>
-            {/* text-base (16px): smaller text makes iPhones zoom in when you tap the field.
-                The last class hides the browser's own ✕, since we have our own. */}
-            <input
-              ref={searchRef}
-              id={searchId}
-              type="search"
-              enterKeyHint="search"
-              value={filters.query}
-              onChange={(event) =>
-                setFilters({ ...filters, query: event.target.value })
-              }
-              placeholder="Søk etter oppskrift eller ingrediens"
-              className="w-full border border-ink/20 bg-white py-3 pr-11 pl-11 text-base placeholder:text-ink/45 focus:border-ink focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
-            />
-            {filters.query && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                aria-label="Tøm søket"
-                className="absolute top-1/2 right-0.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-ink/50 transition-colors hover:text-ink"
+            {/* min-w-0: lets the field shrink next to the Filter button on narrow phones */}
+            <div className="relative min-w-0 flex-1">
+              {/* The label is for screen readers; the shorter placeholder is for everyone else */}
+              <label htmlFor={searchId} className="sr-only">
+                Søk etter oppskrift eller ingrediens
+              </label>
+              <svg
+                viewBox="0 0 24 24"
+                className="pointer-events-none absolute top-1/2 left-3.5 h-5 w-5 -translate-y-1/2 text-ink/50"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                aria-hidden="true"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden="true"
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20l-4-4" strokeLinecap="round" />
+              </svg>
+              {/* text-base (16px): smaller text makes iPhones zoom in when you tap the field.
+                The last class hides the browser's own ✕, since we have our own. */}
+              <input
+                ref={searchRef}
+                id={searchId}
+                type="search"
+                enterKeyHint="search"
+                value={filters.query}
+                onChange={(event) =>
+                  setFilters({ ...filters, query: event.target.value })
+                }
+                placeholder="Søk i oppskrifter"
+                className="w-full border border-ink/20 bg-white py-3 pr-11 pl-11 text-base placeholder:text-ink/45 focus:border-ink focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
+              />
+              {filters.query && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  aria-label="Tøm søket"
+                  className="absolute top-1/2 right-0.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-ink/50 transition-colors hover:text-ink"
                 >
-                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                </svg>
-              </button>
-            )}
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {/* The panel with every other filter (recipes/filter.ts: filterGroups) */}
+            <FilterPanel
+              recipes={recipes}
+              filters={filters}
+              onChange={setFilters}
+              activeCount={activeFilterCount(filters)}
+              resultCount={visibleRecipes.length}
+            />
           </div>
         </div>
         <div className="mt-4">
+          {/* The meal chips are a shortcut to "Måltid" in the filter panel (the same state) */}
           <CategoryChips
-            value={filters.category}
-            onChange={(category) => setFilters({ ...filters, category })}
+            value={filters.chosen.category ?? []}
+            onToggle={(category) =>
+              setFilters(toggleOption(filters, "category", category))
+            }
+            onClear={() => setFilters(clearGroup(filters, "category"))}
           />
+        </div>
+        {/* What's ticked in the panel, as chips you can remove */}
+        <div className="mt-4">
+          <ActiveFilters filters={filters} onChange={setFilters} />
         </div>
         {/* The number of recipes shown on the left, the view buttons on the right */}
         <div className="mt-8 flex items-center justify-between">
@@ -160,8 +192,12 @@ function RecipeListPage() {
             </p>
             <p className="mt-2 text-ink/70">
               {searchText
-                ? `Ingen oppskrifter passer med «${searchText}»${filters.category ? ` i ${filters.category}` : ""}.`
-                : "Ingen oppskrifter i denne kategorien ennå."}
+                ? `Ingen oppskrifter passer med «${searchText}»${ticked.length > 0 ? " og filtrene du har valgt" : ""}.`
+                : ticked.length === 0
+                  ? "Ingen oppskrifter ennå."
+                  : onlyCategories
+                    ? "Ingen oppskrifter i denne kategorien ennå."
+                    : "Ingen oppskrifter passer med alle filtrene du har valgt."}
             </p>
             <button
               type="button"

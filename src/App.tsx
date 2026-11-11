@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import RecipePage from "./pages/RecipePage";
 import RecipeListPage from "./pages/RecipeListPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import DataCheckPage from "./pages/DataCheckPage";
 
 // App is the top component. It puts the big pieces of the page together.
 function App() {
@@ -24,6 +25,9 @@ function App() {
           np
           <Route path="/oppskrifter" element={<RecipeListPage />} />
           <Route path="/oppskrifter/:id" element={<RecipePage />} />
+          {/* Not in the menu: which recipes are missing what (recipes/completeness.ts).
+              A fixed address wins over :id, so no recipe can be called "datasjekk". */}
+          <Route path="/oppskrifter/datasjekk" element={<DataCheckPage />} />
           {/* * = every other address: shows "Fant ikke siden" instead of an empty page */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

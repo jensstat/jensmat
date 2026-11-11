@@ -77,14 +77,18 @@ export function groupIngredients(ingredients: Ingredient[]): IngredientGroup[] {
     group.ingredients.push(ingredient);
   }
   // The ungrouped ones first, even if a grouped ingredient happens to be written above them.
-  return groups.sort((a, b) => (a.title === undefined ? -1 : b.title === undefined ? 1 : 0));
+  return groups.sort((a, b) =>
+    a.title === undefined ? -1 : b.title === undefined ? 1 : 0,
+  );
 }
 
-// The short labels shown on a recipe: main ingredient, "Rask" (worked out from the time), then the tags.
+// The short labels shown on a recipe: main ingredient, "Rask" (worked out from the time),
+// then the tags (Glutenfri …) and the themes (Barnevennlig, Kos …).
 export function recipeLabels(recipe: Recipe): string[] {
   return [
     ...(recipe.protein ? [recipe.protein] : []),
     ...(isQuick(recipe) ? ["Rask"] : []),
     ...recipe.tags,
+    ...(recipe.themes ?? []),
   ];
 }

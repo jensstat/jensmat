@@ -55,7 +55,9 @@ describe("groupIngredients", () => {
       { name: "sennep", group: "Til dippen" },
       { name: "tomat", group: "Salsa" },
     ]);
-    expect(groups.map((g) => [g.title, g.ingredients.map((i) => i.name)])).toEqual([
+    expect(
+      groups.map((g) => [g.title, g.ingredients.map((i) => i.name)]),
+    ).toEqual([
       [undefined, ["laks", "mango"]],
       ["Til dippen", ["kesam", "sennep"]],
       ["Salsa", ["tomat"]],
@@ -63,7 +65,10 @@ describe("groupIngredients", () => {
   });
 
   it("puts the ungrouped ones first even when a group is written above them", () => {
-    const groups = groupIngredients([{ name: "kesam", group: "Dipp" }, { name: "laks" }]);
+    const groups = groupIngredients([
+      { name: "kesam", group: "Dipp" },
+      { name: "laks" },
+    ]);
     expect(groups.map((g) => g.title)).toEqual([undefined, "Dipp"]);
   });
 });
@@ -83,11 +88,24 @@ describe("recipeLabels", () => {
   };
 
   it("shows the main ingredient, 'Rask' for quick recipes, then the tags", () => {
-    expect(recipeLabels({ ...base, protein: "Fisk", minutes: 20, tags: ["Glutenfri"] })).toEqual([
-      "Fisk",
-      "Rask",
-      "Glutenfri",
-    ]);
+    expect(
+      recipeLabels({
+        ...base,
+        protein: "Fisk",
+        minutes: 20,
+        tags: ["Glutenfri"],
+      }),
+    ).toEqual(["Fisk", "Rask", "Glutenfri"]);
+  });
+
+  it("shows the themes after the tags", () => {
+    expect(
+      recipeLabels({
+        ...base,
+        tags: ["Glutenfri"],
+        themes: ["Barnevennlig", "Kos"],
+      }),
+    ).toEqual(["Glutenfri", "Barnevennlig", "Kos"]);
   });
 
   it("leaves out what doesn't apply", () => {
@@ -126,12 +144,18 @@ describe("isQuick", () => {
 describe("isIncomplete", () => {
   it("is incomplete until the recipe has ingredients", () => {
     expect(isIncomplete(titleOnly)).toBe(true);
-    expect(isIncomplete({ ...titleOnly, ingredients: [{ name: "torsk" }] })).toBe(false);
+    expect(
+      isIncomplete({ ...titleOnly, ingredients: [{ name: "torsk" }] }),
+    ).toBe(false);
   });
 
   it("doesn't need steps to be complete", () => {
     expect(
-      isIncomplete({ ...titleOnly, ingredients: [{ name: "torsk" }], steps: [] }),
+      isIncomplete({
+        ...titleOnly,
+        ingredients: [{ name: "torsk" }],
+        steps: [],
+      }),
     ).toBe(false);
   });
 });

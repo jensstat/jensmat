@@ -31,7 +31,11 @@ interface Recipe {
   image?: string;          // A file path now, a web address from the CMS later.
   category?: Category;     // "Frokost" | "Lunsj" | "Middag" | "Dessert" | "Bakst" | "Tilbehør"
   protein?: Protein;       // "Kylling" | "Kjøtt" | "Fisk" | "Sjømat" | "Vegetar" | "Vegansk"
-  tags: Tag[];             // "Glutenfri" | "Laktosefri" | "Barnevennlig". [] if none.
+  cuisine?: Cuisine;       // "Norsk" | "Italiensk" | "Indisk" | … (the list in types.ts)
+  difficulty?: Difficulty; // "Superenkel" | "Enkel" | "Middels" | "Avansert"
+  tags: Tag[];             // "Glutenfri" | "Laktosefri". [] if none.
+  themes?: Theme[];        // "Sunn" | "Kos" | "Gjester" | "Barnevennlig" | "Tradisjon" | "Høytid" | "Matpakke og tur".
+                           // Missing = not filled in yet; [] = none fit
   occasions?: Occasion[];  // "Ukedag" | "Helgemat", only on dinners. Missing = ["Ukedag"]
   servings?: number;       // how many portions the amounts are for
   minutes?: number;        // total time
@@ -60,6 +64,8 @@ A recipe can be posted half-done, for example quickly from the phone with just a
 - **Everything else is optional,** and every part of the site only shows what's there: no "undefined min" on the cards, no portion selector without `servings`, no "Slik gjør du" without steps, no ingredient panel without ingredients.
 - **"Uferdig" (incomplete)** is worked out, not stored: `isIncomplete(recipe)` in `types.ts` is "no ingredients yet". The card gets an "Uferdig" label, and the recipe page says "Denne oppskriften er ikke ferdig ennå". To change what counts as incomplete, change that one function.
 - **The example:** "Fiskesuppe" in `data.ts` has only a title.
+- **Missing information and the filter:** a recipe without e.g. a cuisine is shown as normal, but hidden while you filter on cuisine (we can't know if it fits). Each filter group says what information it needs (`hasInfo` in `filter.ts`).
+- **The Datasjekk** at `/oppskrifter/datasjekk` (not in the menu) lists every recipe and what it's missing, the most first. The rules are in `recipes/completeness.ts`. When the CMS comes, the same list can be shown there as warnings.
 
 ### Why it's built like this
 
@@ -68,6 +74,8 @@ A recipe can be posted half-done, for example quickly from the phone with just a
 | **`amount` is a number**, not text like "3 dl" | So portions can be scaled: 2 → 4 portions is just "× 2" |
 | **`protein` is its own field**, not a tag | A dish has *one* main ingredient. As a field it can't be forgotten (TypeScript checks), and it makes nice filter buttons |
 | **"Rask" (quick) isn't stored** | It's worked out: `isQuick(recipe)` is `minutes <= 30`. Then it can never be wrong if you change the time. No time means not quick |
+| **Time ranges aren't stored** | The filter's "Under 20 min", "20–40 min", "40–60 min", "Over 60 min" come from `minutes` (`timeRangeOf` in `types.ts`). Nothing extra to fill in |
+| **`themes` is its own field, not tags** | Tags are diet needs (Glutenfri, Laktosefri): `[]` means "none apply", so they're never "missing". Themes are the mood or occasion, and *missing* means "not filled in yet" (the Datasjekk asks for it), while `[]` means "you've decided none fit". Both are shown as labels on the recipe |
 | **"Uferdig" isn't stored either** | `isIncomplete(recipe)`, for the same reason: it can't still say "Uferdig" after you've added the ingredients |
 | **`createdAt` as `"2026-11-09"`** | The standard date format every database and CMS uses. It also sorts correctly as plain text |
 | **`occasions` is its own field**, not a tag | It's only for picking the "Hva med…?" suggestion, and tags are shown as labels on the recipe. Every dinner is weekday food unless it says otherwise: `occasionsOf(recipe)` in `types.ts` gives `["Ukedag"]` when it's missing. So only weekend food needs marking: `["Helgemat"]`, or `["Ukedag", "Helgemat"]` for both |
@@ -173,13 +181,17 @@ Finn noe godt å lage!
 
 **How it works:**
 - **The state** lives in `RecipeListPage`: `view` (`"standard"` or `"list"`) and `filters`, with `category` (`null` means "Alle") and `query` (the search text, `""` means no search).
-- **Search** looks in the title, the description and the ingredient names. It ignores upper/lower case and spaces at the ends, but the field still shows exactly what was typed: the cleaning happens in `filterRecipes`, not in the state. Search and category must both match. A recipe without a category only shows under "Alle".
+- **Search** looks in the title, the description and the ingredient names. It ignores upper/lower case and spaces at the ends, but the field still shows exactly what was typed: the cleaning happens in `filterRecipes`, not in the state. The placeholder is short ("Søk i oppskrifter") so it fits next to the Filter button on phones.
+- **The filter panel** ("Filter" button next to the search; only the icon on phones) is a `<dialog>`: a sheet from the bottom on phones (at most 90% of the screen, rounded top corners), a full-height panel from the right on desktop. It slides in and out (`starting:` and `transition-discrete`; off for people who've turned off animations), and the backdrop fades. Ticked options are dark with a ✓, and everything has a focus ring for the keyboard (`focusRing`). It has one section per group in `filterGroups` (`recipes/filter.ts`), each opens and closes: **Måltid, Hovedingrediens, Tid, Vanskelighetsgrad, Kjøkken, Passer til, Tilpasninger, Har ingredienser, Uten ingredienser**. Each option shows how many recipes it gives, and is greyed out at 0. Long lists (the ingredients) show the 10 most used first, and "Vis alle". Everything applies right away; "Vis 4 oppskrifter" just closes the panel, "Nullstill" unticks everything but keeps the search.
+- **How the groups combine:** "and" between groups. Within a group it's the group's `combine`: `"any"` (Kylling or Fisk; meal type, main ingredient, time, difficulty, cuisine), `"all"` ("Passer til", "Tilpasninger" and "Har ingredienser": every one), `"none"` ("Uten ingredienser": none of them).
+- **The category chips** are a shortcut to "Måltid" (the same state, `filters.chosen.category`): several can be on, "Alle" unticks them. A recipe without a category only shows when no meal is ticked.
+- **The chosen filters** (except the meals, which the chips show) are small chips with ✕ above the cards. "Uten" options say so: "Uten løk".
 - **The search field** has a magnifying glass, a ✕ that clears it and puts the cursor back, and 16px text, so iPhones don't zoom in when you tap it. The browser's own ✕ is hidden, since we have our own.
 - **The recipes to show** are calculated on every render, never stored: `visibleRecipes = filterRecipes(recipes, filters)`. The count, the cards and the empty state all read from it.
-- **`filterRecipes`** (in `recipes/filter.ts`) is a pure function with tests, like `calculateDough`. **To add a filter** (search, main ingredient, "Rask"): one more field in `RecipeFilters`, one more rule in `filterRecipes`, and a control on the page.
+- **`filterRecipes`** (in `recipes/filter.ts`) is a pure function with tests, like `calculateDough`. **To add a filter group:** one entry in `filterGroups` (id, label, combine, options, matches, and `hasInfo` if not every recipe has the information), plus a test. The panel, the counts and the chips pick it up by themselves. If it's a new field on the recipe, add it to `types.ts` and to the Datasjekk (`checks` in `completeness.ts`).
 - **The views:** a `layouts` lookup in the page picks the grid's classes for each view. "Standard" is 2 cards per row on phones and up to 4 on desktop. "List" is compact rows (`RecipeCard` with `variant="row"`), in two columns on desktop. **To add a view:** one line in `ViewToggle`'s `options`, one line in `layouts`. TypeScript reminds you if you forget one.
 - **"Hva med…?"** (under the subtitle): one suggested recipe, with a "Vis et annet forslag" button. The rules are in `recipes/suggest.ts`, as pure functions with tests. `pickSuggestion(recipes, day, current)` picks a complete dinner that suits the day (Monday–Friday "Ukedag", Saturday "Helgemat", Sunday either: see `occasions` in section 2), never the same one twice in a row. If nothing suits, it falls back to any dinner, then any complete recipe, and only shows nothing if there are no complete recipes. On **Fridays** (`isPizzaDay`) the page shows "Pizzatid!" with a link to the pizza calculator instead. **The look** is in `components/recipe/RecipeSuggestion.tsx`: `RecipeSuggestion` and `PizzaSuggestion` share one box (`SuggestionBox`: square picture, small label, title, thin border), reusing `CardPhoto` and `CardDetails` from the cards. The whole box is clickable through a "stretched link" on the title, with the "Vis et annet forslag" button lifted above it. The page decides the width: the box and the search field sit in one `max-w-xl` wrapper. The page reads the weekday **once**, into state (`day`), and passes it in, so the functions never read the clock and the tests can pretend it's any day.
-- **When nothing matches:** "Fant ingen oppskrifter", with the search text in the message ("Ingen oppskrifter passer med «laks» i Dessert."), and a "Vis alle oppskrifter" button that resets every filter, the search too.
+- **When nothing matches:** "Fant ingen oppskrifter", with the search text in the message ("Ingen oppskrifter passer med «laks» og filtrene du har valgt."), and a "Vis alle oppskrifter" button that resets every filter, the search too.
 
 ## 7. The plan going forward
 

@@ -28,7 +28,7 @@ export const recipes: Recipe[] = [
       { name: "Begby pølsesennep", note: "god og søt" },
       { name: "guacamole" },
       // The dip: shown under its own heading, "Til dippen"
-      { amount: 1, unit: "dl", name: "kesam eller crème fraiche", group: "Til dippen" },
+      { amount: 1, unit: "dl", name: "kesam", note: "eller crème fraiche", group: "Til dippen" },
       { amount: 1, unit: "ss", name: "Begby pølsesennep", group: "Til dippen" },
     ],
     steps: [
@@ -63,7 +63,10 @@ export const recipes: Recipe[] = [
     description: "Kremet havregrøt med bær, honning og ristede nøtter. Rask og mettende frokost.",
     category: "Frokost",
     protein: "Vegetar",
-    tags: ["Barnevennlig"],
+    cuisine: "Norsk",
+    difficulty: "Superenkel",
+    tags: [],
+    themes: ["Barnevennlig", "Sunn"],
     servings: 2,
     minutes: 10,
     ingredients: [
@@ -87,7 +90,10 @@ export const recipes: Recipe[] = [
     description: "Klassisk lasagne med kjøttsaus, hvit saus og gyllen ost på toppen.",
     category: "Middag",
     protein: "Kjøtt",
+    cuisine: "Italiensk",
+    difficulty: "Middels",
     tags: [],
+    themes: ["Kos", "Gjester", "Barnevennlig"],
     occasions: ["Helgemat"],
     servings: 4,
     minutes: 90,
@@ -103,7 +109,9 @@ export const recipes: Recipe[] = [
       { amount: 3, unit: "ss", name: "smør", group: "Hvit saus" },
       { amount: 3, unit: "ss", name: "hvetemel", group: "Hvit saus" },
       { amount: 5, unit: "dl", name: "melk", group: "Hvit saus" },
-      { name: "salt, pepper og muskat", group: "Hvit saus" },
+      { name: "salt", group: "Hvit saus" },
+      { name: "pepper", group: "Hvit saus" },
+      { name: "muskat", group: "Hvit saus" },
     ],
     steps: [
       "Brun kjøttdeigen med løk og hvitløk. Tilsett tomater og tomatpuré, og la sausen småkoke i 20 minutter.",
@@ -119,7 +127,10 @@ export const recipes: Recipe[] = [
     title: "Sjokolademousse",
     description: "Luftig mousse av mørk sjokolade. Lages dagen før, så den rekker å stivne.",
     category: "Dessert",
+    cuisine: "Fransk",
+    difficulty: "Enkel",
     tags: ["Glutenfri"],
+    themes: ["Kos", "Gjester"],
     servings: 4,
     minutes: 20,
     ingredients: [

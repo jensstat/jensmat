@@ -67,7 +67,7 @@ A **"Filter (2)"** button next to the search (the number is how many filters are
 **The decisions:**
 - **Within a group: "or".** Kylling or Fisk.
 - **Between groups: "and".** Middag and Fisk and Glutenfri.
-- **Ingredients are the exception: "all of them".** Picking "laks" and "avokado" gives recipes with *both* ("I have these, what can I make?").
+- **Ingredients and properties are the exception: "all of them".** Picking "laks" and "avokado" gives recipes with *both* ("I have these, what can I make?"). Picking Glutenfri and Laktosefri gives recipes that are *both* (a guest who can't have either). Each group says which it is with `combine: "any" | "all"`.
 - **The ingredient options come from the recipes themselves** (every unique ingredient name), so there's no separate list to keep up to date. Meal type, main ingredient and the tags come from the fixed lists in `types.ts`. "Rask" comes from `isQuick`.
 - **Easy to extend:** every filter group is **one entry in a list** (`filterGroups`), with its label, its options and its rule. The panel draws the list and `filterRecipes` uses it. Adding a filter later (cuisine, difficulty …) means adding one entry.
 
@@ -75,13 +75,17 @@ A **"Filter (2)"** button next to the search (the number is how many filters are
 
 - [x] 3.1 `ingredientNames(recipes)`: every unique ingredient name, cleaned (lower case, no spaces at the ends) and sorted the Norwegian way (æ, ø, å last). A pure function, with tests
 - [x] 3.2 Main ingredient by hand: `proteins: Protein[]` in `RecipeFilters`, and a rule in `filterRecipes` ("or" within the group). With tests. *(Just one, to see what a filter needs)*
-- [ ] 3.3 Spot the repetition, and turn the filters into a list, `filterGroups`: label, options, rule. `filterRecipes` loops over it. All the old tests must still pass (they're the safety net when moving code around)
-- [ ] 3.4 Add **ingredients** ("all of them") and **properties** (Rask + the tags) as entries in the list. With tests. *(This is the proof that extending is easy)*
-- [ ] 3.5 **How many** recipes each option would give ("Fisk (2)"), so options that give 0 can be greyed out. With tests
-- [ ] 3.6 The **"Filter" button** next to the search, with the number of filters that are on. It opens an empty panel (`<dialog>`, like the ingredient menu on the recipe page) that closes with ✕, Esc and a tap outside. Full screen on phones, a panel from the side on desktop
-- [ ] 3.7 The panel's content, drawn from `filterGroups`: a heading per group and tappable options (44px) with the count. If there are many ingredients: the most common first, and a "Vis alle" (show all)
-- [ ] 3.8 The bottom of the panel: "Nullstill" (reset) and "Vis 4 oppskrifter" (closes the panel)
-- [ ] 3.9 The chosen filters as small chips with ✕ above the cards, and "Vis alle oppskrifter" in the empty state resets every filter
+- [x] 3.3 Spot the repetition, and turn the filters into a list, `filterGroups`: label, options, rule. `filterRecipes` loops over it. All the old tests must still pass (they're the safety net when moving code around)
+- [x] 3.4 Add **ingredients** ("all of them") and **properties** (Rask + the tags, also "all of them") as entries in the list. With tests. *(This is the proof that extending is easy)*
+- [x] 3.5 **How many** recipes each option would give ("Fisk (2)"), so options that give 0 can be greyed out. With tests
+- [x] 3.6 The **"Filter" button** next to the search, with the number of filters that are on. It opens an empty panel (`<dialog>`, like the ingredient menu on the recipe page) that closes with ✕, Esc and a tap outside. Full screen on phones, a panel from the side on desktop
+- [x] 3.7 The panel's content, drawn from `filterGroups`: a heading per group and tappable options (44px) with the count. If there are many ingredients: the most common first, and a "Vis alle" (show all)
+- [x] 3.8 The bottom of the panel: "Nullstill" (reset) and "Vis 4 oppskrifter" (closes the panel)
+- [x] 3.9 The chosen filters as small chips with ✕ above the cards, and "Vis alle oppskrifter" in the empty state resets every filter
+- [x] 3.9a **Made more like Matprat** (2026-11-11): several meals at once (the chips are a shortcut to "Måltid"), new groups **Tid** (from `minutes`), **Vanskelighetsgrad**, **Kjøkken** and **Uten ingredienser** (`combine: "none"`), sections that open and close, an icon-only Filter button on phones. A recipe without the information a group needs is hidden while that group is in use (`hasInfo`). **Datasjekk** at `/oppskrifter/datasjekk`. Cleaned two ingredient names in `data.ts`
+- [x] 3.9a2 **"Passer til"** (2026-11-11): a new `themes` field (Sunn, Kos, Gjester, Barnevennlig, Tradisjon, Høytid, Matpakke og tur), "all of them" when several are ticked. Barnevennlig moved from the tags; "Egenskaper" is now "Tilpasninger" (Glutenfri, Laktosefri). In the Datasjekk too
+- [x] 3.9b **Style the panel**: a sheet from the bottom on phones, slides in and out, ✓ on ticked options, focus rings, a shadow on the bottom bar
+- [ ] 3.9c Fill in `difficulty`, `cuisine` and `themes` on Laksewrap (see the Datasjekk), and maybe show them on the recipe page
 - [ ] 3.10 **Documentation** in `docs/03-recipes.md`:
   - **How to add a filter group** (one entry in `filterGroups`, plus a test)
   - **How to write ingredients** so the filter works: one clean name per ingredient (`"løk"`, not `"løk, finhakket"`: that goes in `note`), the same name in every recipe, lower case, and when two things are different ingredients ("rødløk" vs "løk"). A new ingredient shows up in the filter by itself

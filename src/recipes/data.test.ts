@@ -17,9 +17,12 @@ describe("every recipe in data.ts", () => {
     },
   );
 
-  it.each(recipes)("$id: has a title (the one thing every recipe needs)", (recipe) => {
-    expect(recipe.title.trim()).not.toBe("");
-  });
+  it.each(recipes)(
+    "$id: has a title (the one thing every recipe needs)",
+    (recipe) => {
+      expect(recipe.title.trim()).not.toBe("");
+    },
+  );
 
   it.each(recipes)("$id: has a date written as year-month-day", (recipe) => {
     expect(recipe.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -43,6 +46,11 @@ describe("every recipe in data.ts", () => {
       expect(new Set(recipe.occasions).size).toBe(recipe.occasions.length);
     },
   );
+
+  it.each(recipes)("$id: has no theme twice", (recipe) => {
+    const themes = recipe.themes ?? [];
+    expect(new Set(themes).size).toBe(themes.length);
+  });
 
   it.each(recipes)(
     "$id: has sensible numbers (portions, time, amounts above 0)",

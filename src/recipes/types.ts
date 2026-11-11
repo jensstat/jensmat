@@ -36,7 +36,7 @@ export type Protein = (typeof proteins)[number];
 
 // Properties a recipe can have several of, or none.
 // "Rask" (quick) isn't here: it's worked out from minutes (see isQuick at the bottom).
-export const tags = ["Glutenfri", "Laktosefri", "Barnevennlig"] as const;
+export const tags = ["Glutenfri", "Laktosefri"] as const;
 export type Tag = (typeof tags)[number];
 
 // When a dinner suits: easy weekday food, or weekend food. A dinner can be both.
@@ -44,6 +44,49 @@ export type Tag = (typeof tags)[number];
 // so it's its own field and not a tag (tags are shown as labels).
 export const occasions = ["Ukedag", "Helgemat"] as const;
 export type Occasion = (typeof occasions)[number];
+
+// What the dish suits: the mood or the occasion ("Passer til" in the filter).
+// A recipe can have several, or none. Shown as labels on the recipe, like the tags.
+// Diet needs (Glutenfri, Laktosefri) are tags, not themes; time is worked out from minutes.
+export const themes = [
+  "Sunn",
+  "Kos",
+  "Gjester",
+  "Barnevennlig",
+  "Tradisjon",
+  "Høytid",
+  "Matpakke og tur",
+] as const;
+export type Theme = (typeof themes)[number];
+
+// Which kitchen the dish comes from. One per recipe, optional: leave it out for
+// everyday food that isn't really from anywhere. Add to the list when you need a new one.
+export const cuisines = [
+  "Norsk",
+  "Nordisk",
+  "Italiensk",
+  "Fransk",
+  "Spansk",
+  "Gresk",
+  "Meksikansk",
+  "Amerikansk",
+  "Indisk",
+  "Thai",
+  "Kinesisk",
+  "Japansk",
+  "Koreansk",
+  "Midtøsten",
+] as const;
+export type Cuisine = (typeof cuisines)[number];
+
+// How hard the recipe is to make (the same four steps as Matprat).
+export const difficulties = [
+  "Superenkel",
+  "Enkel",
+  "Middels",
+  "Avansert",
+] as const;
+export type Difficulty = (typeof difficulties)[number];
 
 // ---------------------------------------------------------------------------
 // The recipe
@@ -73,7 +116,11 @@ export interface Recipe {
   image?: string; // not every recipe has a photo yet. A file path now, a web address later.
   category?: Category;
   protein?: Protein;
+  cuisine?: Cuisine;
+  difficulty?: Difficulty;
   tags: Tag[]; // [] if none apply
+  // Missing = not filled in yet (shows in the Datasjekk); [] = none of them fit.
+  themes?: Theme[];
   occasions?: Occasion[]; // only on dinners. Missing = ["Ukedag"] (see occasionsOf at the bottom)
   servings?: number; // how many portions the amounts are for
   minutes?: number; // total time
@@ -95,6 +142,24 @@ export const quickMinutes = 30;
 // A recipe without a time is never "quick": we don't know.
 export function isQuick(recipe: Recipe) {
   return recipe.minutes !== undefined && recipe.minutes <= quickMinutes;
+}
+
+// The time ranges in the filter, worked out from minutes (like isQuick), so there's
+// nothing extra to fill in. Each range is "up to and including max minutes";
+// the last has no max. The first range that fits is used.
+export const timeRanges = [
+  { label: "Under 20 min", max: 19 },
+  { label: "20–40 min", max: 40 },
+  { label: "40–60 min", max: 60 },
+  { label: "Over 60 min", max: Infinity },
+] as const;
+export type TimeRange = (typeof timeRanges)[number]["label"];
+
+// Which time range a recipe is in, or undefined if it has no time yet.
+export function timeRangeOf(recipe: Recipe): TimeRange | undefined {
+  const minutes = recipe.minutes;
+  if (minutes === undefined) return undefined;
+  return timeRanges.find((range) => minutes <= range.max)?.label;
 }
 
 // A recipe is incomplete ("Uferdig") until it has ingredients: without them you can't cook it.
