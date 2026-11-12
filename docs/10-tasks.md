@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 11 November 2026. Tasks 1–4 and 6 are done (task 6: Sanity, the CMS: the Studio, also on the phone, the site reading from Sanity, and the site online on Vercel). The small fixes are done too. Next: **task 5, the filters in the address**.*
+*Last updated: 11 November 2026. Tasks 1–4 and 6 are done (task 6: Sanity, the CMS: the Studio, also on the phone, the site reading from Sanity, and the site online on Vercel). The small fixes are done too. Task 5 is done too (12 November: the search and the filters in the address, and "← Alle oppskrifter" back to the filtered list). Next, in this order (agreed 12 November): **1. a friendlier Studio** (the "Raskt" tab, starting values, own lists), **2. ingredient names to pick from** in the Studio (suggestions from the names already used; a new name can still be typed), **3. the overview**: remember grid/list (`localStorage`) and the "Store" view, **4. the front page**: "Nyeste oppskrifter".*
 
 ---
 
@@ -66,7 +66,7 @@ Suggested tutorial steps:
 - [x] 6.12 Check: a title-only recipe, a recipe with a photo, an unpublished draft (shouldn't show), no internet (the error page), and on the phone
 
 **Maybe later, with Sanity:**
-- [ ] Ingredient names to pick from: the Studio suggests names already used, so "tomat" and "tomater" don't both happen
+- [ ] Ingredient names to pick from: the Studio suggests names already used, so "tomat" and "tomater" don't both happen. Suggestions, not a closed list: a new name can still be typed, and is suggested next time (the list is "every name used so far", from GROQ). Not ingredients as their own documents with references: slower on the phone, and every recipe would need converting; only worth it if ingredients get their own data (nutrition, shopping list)
 - [ ] The Datasjekk in the Studio: a list of recipes missing something (a custom Studio view, using the same GROQ)
 - [ ] Sanity TypeGen (makes TypeScript types from the schema). Not needed now: `toRecipe` is the border
 
@@ -77,13 +77,14 @@ Suggested tutorial steps:
 
 ---
 
-## ▶ Now: the recipe overview (task 5)
+## ✅ Done: the recipe overview (task 5)
 
 **Done** (what was built, and why, is in [09 – History](09-history.md), sections 11–15):
 - ✅ **1. Search** in the title, the description and the ingredients
 - ✅ **2. "Hva med…?"**: a complete dinner that suits the day (Ukedag/Helgemat), and pizza on Fridays
 - ✅ **3. The filter panel**, modelled on Matprat: Måltid, Hovedingrediens, Tid, Vanskelighetsgrad, Kjøkken, Passer til, Tilpasninger, Har/Uten ingredienser, with counts. The meal chips are a shortcut to Måltid. Plus the **Datasjekk** at `/oppskrifter/datasjekk`. How it works: [03](03-recipes.md), section 6
 - ✅ **4. A CMS-ready data layer**: the border (`toRecipe`), a data layer that waits, loaders, "Laster…" and the error page, similar ingredient names. The steps are below, kept for reference
+- ✅ **5. The filters in the address**: `?sok=laks&maltid=Middag`, kept on reload, back and in a shared link; "← Alle oppskrifter" goes back to the filtered list. The steps are below, kept for reference
 
 ### 4. A CMS-ready data layer
 
@@ -104,15 +105,16 @@ Suggested tutorial steps:
 - [x] 4.6 **Similar ingredient names on the Datasjekk**: `similarIngredientNames(recipes)` in `completeness.ts`, with tests. Names that are the same apart from a Norwegian plural ending ("tomat"/"tomater", "paprika"/"paprikaer") or one letter ("hvitlauk"/"hvitløk"), shown with the recipes that use each, so they're easy to make the same
 - [x] 4.7 Check: `npm test`, every page on the phone and desktop, a slow connection (the browser's dev tools can pretend to be on a slow network), and the error state
 
-### 5. The filters in the address
+### 5. The filters in the address ✅
 
 Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=middag&tid=20–40+min`), so reload and the back button keep them, and a filtered list can be shared as a link. Today they're `useState` in `RecipeListPage`, so a reload clears them. Suggested tutorial steps:
 
-- [ ] 5.1 Only the search, first: read and write `?sok=` with React Router's `useSearchParams`. The address *is* the state now. Reload keeps the text
-- [ ] 5.2 Two pure functions in `recipes/filter.ts`: `filtersToParams(filters)` and `filtersFromParams(params)`, with tests (there and back again gives the same filters). Each filter group gets a Norwegian name for the address: a new `param` field in `FilterGroup` (`"maltid"`, `"hovedingrediens"`, `"tid"` …), since the `id`s are English
-- [ ] 5.3 The page reads its filters from the address instead of `useState`, and every change writes the address. While typing, replace the address instead of adding to the history, so the back button isn't full of single letters. **Important:** a change to the address makes React Router run the page's loader again, so every letter typed would fetch the recipes again ("Laster…" flashes now, and a request to Sanity per letter once the CMS is in). Give the `/oppskrifter` route a `shouldRevalidate` that says no when only the `?…` part changed. *The idea:* when loaders run, and why
-- [ ] 5.4 Unknown or old values in an address are ignored, so a link with `?kjokken=marsiansk` doesn't break anything. With tests
-- [ ] 5.5 Check: reload, the back button, a shared link, and on the phone
+- [x] 5.1 Only the search, first: read and write `?sok=` with React Router's `useSearchParams`. The address *is* the state now. Reload keeps the text
+- [x] 5.2 Two pure functions in `recipes/filter.ts`: `filtersToParams(filters)` and `filtersFromParams(params)`, with tests (there and back again gives the same filters). Each filter group gets a Norwegian name for the address: a new `param` field in `FilterGroup` (`"maltid"`, `"hovedingrediens"`, `"tid"` …), since the `id`s are English
+- [x] 5.3 The page reads its filters from the address instead of `useState`, and every change writes the address. While typing, replace the address instead of adding to the history, so the back button isn't full of single letters. **Important:** a change to the address makes React Router run the page's loader again, so every letter typed would fetch the recipes again ("Laster…" flashes now, and a request to Sanity per letter once the CMS is in). Give the `/oppskrifter` route a `shouldRevalidate` that says no when only the `?…` part changed. *The idea:* when loaders run, and why
+- [x] 5.4 Unknown or old values in an address are ignored, so a link with `?kjokken=marsiansk` doesn't break anything. With tests. (`filtersFromParams(params, recipes)` keeps only values the panel could have ticked, since the ingredient options come from the recipes)
+- [x] 5.5 Check: reload, the back button, a shared link, and on the phone
+- [x] 5.6 (found in the check) "← Alle oppskrifter" on a recipe went to the plain list. Now the cards bring the list's `?…` part along in the link's `state` (`recipes/listLink.ts`), so it goes back to the filtered list
 
 **Maybe later on the overview:**
 - [ ] The third view, "Store" (big cards, 1 per row on phones)
@@ -160,3 +162,4 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 - [x] A CMS-ready data layer: `toRecipe` at the border, a `Promise` data layer, React Router loaders, loading and error states, similar ingredient names on the Datasjekk, with tests
 - [x] Sanity, the CMS: a Studio in `studio/` (also online, for the phone), the schema with the fixed lists from `types.ts`, the site reading published recipes with GROQ, photos in the right size, and the site online on Vercel
 - [x] Small fixes: one name for the site ("Jens matnettside" in the logo, footer and browser tab), the leftover `bg-gray-50` removed, and a printout with the ingredients and without the header, menu and buttons
+- [x] The filters in the address: the search and every filter in `?sok=…&maltid=…`, so reload, the back button and a shared link keep them; no new fetch from Sanity while filtering; unknown values ignored; "← Alle oppskrifter" goes back to the filtered list. With tests

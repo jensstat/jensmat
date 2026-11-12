@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData, useLocation } from "react-router";
 import IngredientsPanel from "../components/recipe/IngredientsPanel";
 import MobileIngredients from "../components/recipe/MobileIngredients";
 import RecipeActions from "../components/recipe/RecipeActions";
@@ -7,6 +7,7 @@ import RecipeImage from "../components/recipe/RecipeImage";
 import RecipeMeta from "../components/recipe/RecipeMeta";
 import StepList from "../components/recipe/StepList";
 import { recipeLabels } from "../recipes/display";
+import { listAddress } from "../recipes/listLink";
 import type { recipeLoader } from "../loaders";
 import { isIncomplete } from "../recipes/types";
 import type { Recipe } from "../recipes/types";
@@ -50,6 +51,8 @@ function RecipeView({ recipe }: RecipeViewProps) {
   // and the panel on phones both need it, and must show the same number.
   // ?? 1: a recipe without portions has no portion selector, so the number is never shown.
   const [servings, setServings] = useState(recipe.servings ?? 1);
+  // Where we came from: its state may hold the list's search and filters (listLink.ts)
+  const location = useLocation();
 
   const hasIngredients = recipe.ingredients.length > 0;
   const labels = recipeLabels(recipe);
@@ -91,8 +94,9 @@ function RecipeView({ recipe }: RecipeViewProps) {
             hasIngredients ? "" : "w-full max-w-[60rem]"
           }`}
         >
+          {/* Back to the list you came from, with its search and filters (recipes/listLink.ts) */}
           <Link
-            to="/oppskrifter"
+            to={listAddress(location.state)}
             className="text-sm text-ink/60 hover:text-gold print:hidden"
           >
             ← Alle oppskrifter

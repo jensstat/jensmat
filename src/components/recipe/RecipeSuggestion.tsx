@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
+import { listState } from "../../recipes/listLink";
 import type { Recipe } from "../../recipes/types";
 import { CardDetails, CardPhoto } from "./RecipeCard";
 
@@ -36,6 +37,8 @@ function SuggestionBox({
   to,
   children,
 }: SuggestionBoxProps) {
+  // The list's ?… part, brought along like on the cards (recipes/listLink.ts)
+  const { search } = useLocation();
   return (
     <div className="group relative isolate flex items-center gap-4 border border-ink/15 p-3 transition-colors hover:border-ink/40 sm:gap-6 sm:p-4">
       {picture}
@@ -46,6 +49,7 @@ function SuggestionBox({
         <h2 className="mt-1 font-serif text-xl leading-snug font-semibold sm:text-2xl">
           <Link
             to={to}
+            state={listState(search)}
             className="after:absolute after:inset-0 group-hover:text-gold"
           >
             {title}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useSearchParams } from "react-router";
 import ActiveFilters from "../components/recipe/ActiveFilters";
 import CategoryChips from "../components/recipe/CategoryChips";
 import FilterPanel from "../components/recipe/FilterPanel";
@@ -15,6 +15,8 @@ import {
   activeFilterCount,
   clearGroup,
   filterRecipes,
+  filtersFromParams,
+  filtersToParams,
   noFilters,
   tickedOptions,
   toggleOption,
@@ -53,16 +55,33 @@ function today() {
 }
 
 // The overview of all recipes, at /oppskrifter. (One recipe is RecipePage.tsx.)
-// The page holds the state (view, filters, the day and the suggestion) and puts the
-// pieces together, top to bottom: heading, "Hva med…?", search + Filter button,
+// The page holds the state (view, the day and the suggestion; the search and the
+// filters are in the address) and puts the pieces together, top to bottom:
+// heading, "Hva med…?", search + Filter button,
 // meal chips, the chosen filters, the count + view buttons, and the cards.
 // The pieces are in components/recipe/, and the filtering in recipes/filter.ts.
 function RecipeListPage() {
   // The recipes, already fetched by the loader before the page is shown (loaders.ts).
   // <typeof recipeListLoader>: TypeScript gets the type from what the loader returns.
   const recipes = useLoaderData<typeof recipeListLoader>();
+  // The query string of the address (?sok=laks …). The address is the state.
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Every filter (the search too), read from the address on every render, never stored.
+  // The recipes are passed in, so values that aren't an option are left out (filter.ts).
+  const filters = filtersFromParams(searchParams, recipes);
+  // Changing a filter = changing the address. Same name and shape as a useState setter,
+  // so everything below that calls setFilters works as before.
+  // - replace: true replaces the current step in the history instead of adding one
+  //   (used while typing, so the back button isn't full of single letters).
+  // - preventScrollReset: a new address normally scrolls to the top (ScrollRestoration
+  //   in App.tsx); here it's the same page, so you stay where you were.
+  function setFilters(newFilters: RecipeFilters, replace = false) {
+    setSearchParams(filtersToParams(newFilters), {
+      replace,
+      preventScrollReset: true,
+    });
+  }
   const [view, setView] = useState<RecipeView>("standard");
-  const [filters, setFilters] = useState<RecipeFilters>(noFilters);
   // The weekday, read from the clock once when the page opens. It's state (never changed),
   // so every render sees the same day, and the page and the suggestion always agree.
   // The page passes it in, so the functions in recipes/suggest.ts stay pure and testable.
@@ -107,10 +126,14 @@ function RecipeListPage() {
           )}
           {/* The search field, and the "Filter" button on its right */}
           <div className="flex gap-2">
-            {/* The text is stored in filters.query, and filterRecipes does the searching */}
+            {/* The text is in the address (?sok=), like every filter; filterRecipes does the searching.
+                The first letter adds a step to the history; the next ones replace it
+                (filters.query isn't empty any more), so one press on back clears the search. */}
             <SearchField
               value={filters.query}
-              onChange={(query) => setFilters({ ...filters, query })}
+              onChange={(query) =>
+                setFilters({ ...filters, query }, filters.query !== "")
+              }
             />
             {/* The panel with every other filter (recipes/filter.ts: filterGroups) */}
             <FilterPanel

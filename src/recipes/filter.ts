@@ -32,7 +32,10 @@ export const noFilters: RecipeFilters = {
 // Only what's different from group to group is here; what's the same for all of them
 // ("nothing ticked = no filter", "and" between groups) is written once, in filterRecipes.
 export interface FilterGroup {
-  id: string; // the group's name in the code (later also in the address: ?protein=fisk)
+  id: string; // the group's name in the code
+  // The group's name in the address (?maltid=Middag): Norwegian, since people see it,
+  // and only a–z and "-", since other letters become %C3%B8 in a copied link.
+  param: string;
   label: string; // the heading in the panel
   // How the ticked options combine:
   // "any" = or (Kylling or Fisk),
@@ -76,6 +79,7 @@ function hasIngredients(recipe: Recipe) {
 export const filterGroups: FilterGroup[] = [
   {
     id: "category",
+    param: "maltid",
     label: "Måltid",
     combine: "any", // Lunsj or Middag. The category chips above the cards use this group too.
     options: () => categories,
@@ -84,6 +88,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "protein",
+    param: "hovedingrediens",
     label: "Hovedingrediens",
     combine: "any",
     options: () => proteins,
@@ -92,6 +97,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "time",
+    param: "tid",
     label: "Tid",
     combine: "any",
     // Worked out from minutes (timeRangeOf in types.ts): nothing extra to fill in
@@ -101,6 +107,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "difficulty",
+    param: "vanskelighetsgrad",
     label: "Vanskelighetsgrad",
     combine: "any",
     options: () => difficulties,
@@ -109,6 +116,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "cuisine",
+    param: "kjokken",
     label: "Kjøkken",
     combine: "any",
     options: () => cuisines,
@@ -117,6 +125,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "themes",
+    param: "passer-til",
     label: "Passer til",
     combine: "all", // Barnevennlig and Sunn: both. Each tick narrows it down
     options: () => themes,
@@ -127,6 +136,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "properties",
+    param: "tilpasninger",
     label: "Tilpasninger",
     combine: "all", // Glutenfri and Laktosefri: a guest who can't have either
     options: () => tags,
@@ -137,6 +147,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "ingredients",
+    param: "har",
     label: "Har ingredienser",
     combine: "all",
     // The options come from the recipes themselves (cleaned, see ingredientNames),
@@ -147,6 +158,7 @@ export const filterGroups: FilterGroup[] = [
   },
   {
     id: "without",
+    param: "uten",
     label: "Uten ingredienser",
     combine: "none",
     options: (recipes) => ingredientNames(recipes),
@@ -294,4 +306,45 @@ export function tickedOptions(
 // The search isn't counted: it has its own field.
 export function activeFilterCount(filters: RecipeFilters): number {
   return tickedOptions(filters).length;
+}
+
+// The filters as an address (?sok=laks&maltid=Middag&maltid=Lunsj): the search under
+// "sok", and each group under its `param`, once per ticked option. Used by the overview
+// page, so reload, the back button and a shared link keep the filters.
+// The values are written as they are; URLSearchParams encodes what an address can't hold
+// ("20–40 min" → 20%E2%80%9340+min) and decodes it again when it's read.
+// The opposite is filtersFromParams.
+export function filtersToParams(filters: RecipeFilters): URLSearchParams {
+  const params = new URLSearchParams();
+  // As typed, not trimmed: a trailing space must survive while you type the next word
+  if (filters.query) params.set("sok", filters.query);
+  for (const group of filterGroups) {
+    for (const option of filters.chosen[group.id] ?? []) {
+      params.append(group.param, option);
+    }
+  }
+  return params;
+}
+
+// The filters from an address: the opposite of filtersToParams.
+// getAll: every value of a name that's repeated (?maltid=Middag&maltid=Lunsj → both).
+// An address can hold anything (typed by hand, or an old link), so only what the panel
+// could have ticked is kept: names we don't know (?utm_source=…) and values that aren't
+// an option (?kjokken=Marsiansk, an ingredient no recipe uses any more) are ignored,
+// and a value given twice counts once. The ingredient options come from the recipes,
+// so they're needed here too. The search is free text, so it's kept as it is.
+export function filtersFromParams(
+  params: URLSearchParams,
+  recipes: Recipe[],
+): RecipeFilters {
+  const chosen: RecipeFilters["chosen"] = {};
+  for (const group of filterGroups) {
+    const known = group.options(recipes);
+    // new Set: removes doubles; .filter: only the options this group has
+    const options = [...new Set(params.getAll(group.param))].filter((option) =>
+      known.includes(option),
+    );
+    if (options.length > 0) chosen[group.id] = options;
+  }
+  return { query: params.get("sok") ?? "", chosen };
 }

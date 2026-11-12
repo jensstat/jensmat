@@ -6,6 +6,8 @@ import {
   countWithOption,
   filterGroups,
   filterRecipes,
+  filtersFromParams,
+  filtersToParams,
   ingredientNames,
   mostUsedOptions,
   noFilters,
@@ -611,5 +613,116 @@ describe("mostUsedOptions (the short list for long groups)", () => {
 
   it("counts the same way for 'Uten' (how many recipes use it, not how many are left)", () => {
     expect(mostUsedOptions(all, group("without"), 2)).toEqual(["løk", "melk"]);
+  });
+});
+
+describe("filtersToParams (filters → the address)", () => {
+  it("gives an empty address when nothing is chosen", () => {
+    expect(filtersToParams(noFilters).toString()).toBe("");
+  });
+
+  it("writes the search, and each ticked option under the group's param", () => {
+    const params = filtersToParams({
+      query: "laks",
+      chosen: { category: ["Middag", "Lunsj"], cuisine: ["Italiensk"] },
+    });
+    expect(params.toString()).toBe(
+      "sok=laks&maltid=Middag&maltid=Lunsj&kjokken=Italiensk",
+    );
+  });
+
+  it("leaves out a group with nothing ticked", () => {
+    const params = filtersToParams(clearGroup(noFilters, "category"));
+    expect(params.toString()).toBe("");
+  });
+
+  it("keeps the search as typed, with a trailing space", () => {
+    const params = filtersToParams({ ...noFilters, query: "laks " });
+    expect(params.get("sok")).toBe("laks ");
+  });
+});
+
+describe("filtersFromParams (the address → filters)", () => {
+  // Recipes with the ingredients the tests tick (the ingredient options come from them)
+  const withIngredients = [
+    makeRecipe({ ingredients: [{ name: "rød løk" }, { name: "hvitløk" }] }),
+  ];
+  const fromAddress = (address: string) =>
+    filtersFromParams(new URLSearchParams(address), withIngredients);
+
+  it("gives no filters for an empty address", () => {
+    expect(fromAddress("")).toEqual(noFilters);
+  });
+
+  it("reads the search, and every value of a repeated name", () => {
+    expect(
+      fromAddress("sok=laks&maltid=Middag&maltid=Lunsj&kjokken=Italiensk"),
+    ).toEqual({
+      query: "laks",
+      chosen: { category: ["Middag", "Lunsj"], cuisine: ["Italiensk"] },
+    });
+  });
+
+  it("ignores names it doesn't know", () => {
+    expect(fromAddress("utm_source=facebook&category=Middag")).toEqual(
+      noFilters,
+    );
+  });
+
+  it("ignores values that aren't an option, and keeps the rest", () => {
+    expect(
+      fromAddress("kjokken=Marsiansk&kjokken=Italiensk&maltid=middag"),
+    ).toEqual({ query: "", chosen: { cuisine: ["Italiensk"] } });
+  });
+
+  it("ignores an ingredient no recipe uses", () => {
+    expect(fromAddress("har=hvitløk&har=dodo&uten=dodo")).toEqual({
+      query: "",
+      chosen: { ingredients: ["hvitløk"] },
+    });
+  });
+
+  it("counts a value given twice once", () => {
+    expect(fromAddress("maltid=Middag&maltid=Middag")).toEqual({
+      query: "",
+      chosen: { category: ["Middag"] },
+    });
+  });
+
+  it("gives the same filters back, there and back again", () => {
+    // Letters an address can't hold as they are: æøå, –, spaces, & and +
+    const filters = {
+      query: "salt & pepper + løk",
+      chosen: {
+        category: ["Middag"],
+        protein: ["Kjøtt", "Fisk"],
+        time: ["20–40 min"],
+        themes: ["Barnevennlig"],
+        ingredients: ["rød løk"],
+        without: ["hvitløk"],
+      },
+    };
+    expect(
+      filtersFromParams(filtersToParams(filters), withIngredients),
+    ).toEqual(filters);
+  });
+
+  it("gives the same filters for every group (none is forgotten)", () => {
+    // The first option of each group
+    const chosen = Object.fromEntries(
+      filterGroups.map((group) => [
+        group.id,
+        [group.options(withIngredients)[0]],
+      ]),
+    );
+    const filters = { query: "", chosen };
+    expect(
+      filtersFromParams(filtersToParams(filters), withIngredients),
+    ).toEqual(filters);
+  });
+
+  it("gives every group its own name in the address", () => {
+    const names = filterGroups.map((group) => group.param);
+    expect(new Set([...names, "sok"]).size).toBe(names.length + 1);
   });
 });

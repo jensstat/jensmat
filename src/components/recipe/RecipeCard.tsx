@@ -1,6 +1,7 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { cardDetails } from "../../recipes/display";
 import { imagePosition, imageSrcSet, imageUrl } from "../../recipes/image";
+import { listState } from "../../recipes/listLink";
 import { isIncomplete } from "../../recipes/types";
 import type { Recipe } from "../../recipes/types";
 
@@ -63,10 +64,15 @@ export function CardDetails({ recipe }: { recipe: Recipe }) {
 }
 
 function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
+  // The list's ?… part (the search and the filters), brought along to the recipe page,
+  // so "← Alle oppskrifter" goes back to this list (recipes/listLink.ts)
+  const { search } = useLocation();
+  const state = listState(search);
   if (variant === "row") {
     return (
       <Link
         to={`/oppskrifter/${recipe.id}`}
+        state={state}
         className="group flex items-center gap-4"
       >
         <CardPhoto
@@ -84,7 +90,11 @@ function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
     );
   }
   return (
-    <Link to={`/oppskrifter/${recipe.id}`} className="group block">
+    <Link
+      to={`/oppskrifter/${recipe.id}`}
+      state={state}
+      className="group block"
+    >
       {/* Two cards per row (half the screen), three from 1024 px, four (about 300 px each) from 1280 px */}
       <CardPhoto
         recipe={recipe}

@@ -32,6 +32,19 @@ export const routes: RouteObject[] = [
             path: "/oppskrifter",
             element: <RecipeListPage />,
             loader: recipeListLoader,
+            // A change in only the ?… part (the search and the filters) doesn't fetch the
+            // recipes again: the loader fetches all of them, and the filtering happens on
+            // the page. Anything else (like "Prøv igjen", which keeps the same address)
+            // does what React Router normally does.
+            shouldRevalidate: ({
+              currentUrl,
+              nextUrl,
+              defaultShouldRevalidate,
+            }) =>
+              currentUrl.pathname === nextUrl.pathname &&
+              currentUrl.search !== nextUrl.search
+                ? false
+                : defaultShouldRevalidate,
           },
           {
             path: "/oppskrifter/:id",

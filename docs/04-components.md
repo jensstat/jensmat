@@ -14,7 +14,7 @@ One per address. A page puts components together and holds the state for that pa
 |---|---|---|
 | `HomePage` | `/` | Big heading, subtitle, and two buttons: "Oppskrifter" and "Pizzakalkulator" |
 | `PizzaCalculatorPage` | `/pizza` | Holds the pizza `settings` in state, and draws the fields, the result and the method. See [02](02-pizza-calculator.md) |
-| `RecipeListPage` | `/oppskrifter` | The overview: "Hva med…?", search, the filter panel, meal chips, the chosen filters, grid/list toggle, recipe cards. Holds `view`, `filters`, `day` and `suggestion` in state. See [03](03-recipes.md), section 6 |
+| `RecipeListPage` | `/oppskrifter` | The overview: "Hva med…?", search, the filter panel, meal chips, the chosen filters, grid/list toggle, recipe cards. Holds `view`, `day` and `suggestion` in state; the search and the filters are in the address. See [03](03-recipes.md), section 6 |
 | `RecipePage` | `/oppskrifter/:id` | One recipe. See [03](03-recipes.md) |
 | `DataCheckPage` | `/oppskrifter/datasjekk` | The Datasjekk: every recipe and what it's missing. Not in the menu. Rules in `recipes/completeness.ts` |
 | `NotFoundPage` | everything else | "Fant ikke siden". Props: `title?`, `message?`. Also used by `RecipePage` for unknown recipes |
@@ -269,7 +269,7 @@ App
 │   │   └── ChoiceTags    │  (same layout, own code)
 │   ├── ResultPanel
 │   └── Instructions
-├── RecipeListPage (holds view, filters, day and suggestion)
+├── RecipeListPage (holds view, day and suggestion; the filters are in the address)
 │   ├── RecipeSuggestion / PizzaSuggestion ── SuggestionBox
 │   ├── SearchField
 │   ├── FilterPanel ── FilterGroupSection (× each filter group)
