@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 11 November 2026. Type check, lint, 151 tests and the build all pass. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
+*Last checked: 11 November 2026. Type check, lint, 205 tests and the build all pass. The recipes come from Sanity, and the site is online (Vercel). Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -16,12 +16,15 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises |
 | Recipe overview | `/oppskrifter` | ✅ Recipe cards, search (title, description, ingredients), "Hva med…?" (pizza on Fridays), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, grid/list view, a message when nothing matches |
 | Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same |
+| Recipes from Sanity | | ✅ The site reads published recipes from Sanity with GROQ (`sanityClient.ts`, `sanityQuery.ts`), through `toRecipe`. Drafts don't show. Photos come in the right size from Sanity's image service, with the hotspot kept in view |
+| Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings |
+| The site online | Vercel | ✅ Published from GitHub; `vercel.json` sends every address to `index.html` |
 | Loading and errors | | ✅ Each recipe page loads its data first ("Laster…"), and "Kunne ikke hente oppskriftene" + "Prøv igjen" if it fails. Every recipe is checked at the border (`toRecipe`) |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken: wide layout, ingredient panel, portion selector, groups, an ingredient menu on phones, print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| Tests | `npm test` | ✅ 194 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, incomplete recipes, the border (`toRecipe`), the data layer, and a check of every recipe in `data.ts` |
+| Tests | `npm test` | ✅ 205 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
 
 ---
 
@@ -35,7 +38,7 @@ Found during a full review of the code. Sorted by how much they matter.
 
 ### Small
 
-**2. The browser tab says "mat-nettside".**
+**2. ~~The browser tab says "mat-nettside".~~** ✅ Fixed: it says "Jens matnettside".
 The `<title>` in `index.html` is still the project's folder name. → Change it to "Jens matnettside".
 
 **3. ~~The site's name differs.~~** ✅ Fixed: "Jens matnettside" in the logo, footer and browser tab; the front page heading is a welcome line.
@@ -60,7 +63,7 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **10. Field labels include more than the name.** In `NumberField`, the whole row is a `<label>`, so a screen reader reads e.g. "Hydrering 61 % Vanlig: 60–70 %" as the field's name. It works, but could be more precise (`aria-describedby` for the hint).
 
-**11. Publishing needs one setting.** When the site is put online (Netlify, Vercel …), the server must send every address to `index.html`, otherwise reloading on `/pizza` gives the host's own 404 page. Each host has a short guide for "single page apps".
+**11. ~~Publishing needs one setting.~~** ✅ Fixed: `vercel.json` sends every address to `index.html`. When the site is put online (Netlify, Vercel …), the server must send every address to `index.html`, otherwise reloading on `/pizza` gives the host's own 404 page. Each host has a short guide for "single page apps".
 
 **12. The recipe pages are wider than the header.** The recipe content can start further left than the logo, because the recipe pages are up to 1500px wide and the header 1152px. That was agreed ("more widescreen"). If it bothers you, the header could follow the page width.
 

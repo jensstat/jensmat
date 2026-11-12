@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 11 November 2026. Tasks 1–4 are done (task 4: the border `toRecipe`, a data layer that waits, loaders, loading and error states, similar ingredient names). The small fixes are done too. Next: **task 6, Sanity** (the CMS, to learn it properly), then task 5, the filters in the address.*
+*Last updated: 11 November 2026. Tasks 1–4 and 6 are done (task 6: Sanity, the CMS: the Studio, also on the phone, the site reading from Sanity, and the site online on Vercel). The small fixes are done too. Next: **task 5, the filters in the address**.*
 
 ---
 
@@ -13,11 +13,11 @@ Start each new task in a fresh Claude Code session (`/clear`): it's cheaper, and
 
 > We're working on **[the task]**. Read `docs/10-tasks.md` and the files it mentions. I want to build it myself as a **tutorial**: one small change per message, shown in full, then "save and look", and wait for me before the next step. **Teach me the ideas behind the code**, not just the code.
 
-For the next task, for example:
+For a task, for example (task 6 is done, kept as an example):
 
 > We're working on **Sanity, the CMS** (task 6 in `docs/10-tasks.md`). Read task 6 there, `docs/03-recipes.md` sections 2 and 3, `src/recipes/types.ts`, `src/recipes/toRecipe.ts` and `src/recipes/recipes.ts`. I want to **learn how Sanity works**: tutorial, one small step per message, and teach me the ideas (Studio, schemas, documents, GROQ …) before the code. Start with step 6.1.
 
-For task 5 later:
+For task 5, the next task:
 
 > We're working on **the filters in the address** (task 5 in `docs/10-tasks.md`). Read `docs/03-recipes.md` sections 3 and 6, `docs/06-react-and-typescript.md` (React Router), `src/routes.tsx`, `src/loaders.ts`, `src/recipes/filter.ts`, `src/recipes/filter.test.ts` and `src/pages/RecipeListPage.tsx`. Tutorial, one small step per message, and teach me the ideas behind the code. Start with step 5.1.
 
@@ -33,7 +33,7 @@ If you're not interested in a part, say so ("just build this part"), and ask for
 
 ---
 
-## ▶ Now: Sanity, the CMS (task 6)
+## ✅ Done: Sanity, the CMS (task 6)
 
 **The goal:** post a recipe from the phone (maybe just a title and a photo), fill it in later, and see it on the site. **The focus is learning Sanity**, so each step starts with the idea, then the code.
 
@@ -63,7 +63,7 @@ Suggested tutorial steps:
 - [x] 6.9 **Move the recipes over.** Type Laksewrap into the Studio (good practice for the form), decide what to do with the placeholders, and check the Datasjekk and "Like ingrediensnavn" with the real data
 - [x] 6.10 **The Studio on the phone.** `npx sanity deploy` puts the Studio online at `https://<name>.sanity.studio`. Log in on the phone, post a recipe with only a title and a photo from the camera, and fill it in later from the computer. *The idea:* a hosted Studio, logins and who may edit
 - [x] 6.11 **The site online.** Publish it (Vercel or Netlify): the setting that sends every address to `index.html` (see 08, issue 11), the `.env` values on the host, and the real address under CORS origins. Then a recipe posted from the phone shows up on the real site
-- [ ] 6.12 Check: a title-only recipe, a recipe with a photo, an unpublished draft (shouldn't show), no internet (the error page), and on the phone
+- [x] 6.12 Check: a title-only recipe, a recipe with a photo, an unpublished draft (shouldn't show), no internet (the error page), and on the phone
 
 **Maybe later, with Sanity:**
 - [ ] Ingredient names to pick from: the Studio suggests names already used, so "tomat" and "tomater" don't both happen
@@ -77,7 +77,7 @@ Suggested tutorial steps:
 
 ---
 
-## After Sanity: the recipe overview (task 5)
+## ▶ Now: the recipe overview (task 5)
 
 **Done** (what was built, and why, is in [09 – History](09-history.md), sections 11–15):
 - ✅ **1. Search** in the title, the description and the ingredients
@@ -158,4 +158,5 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 - [x] Filter panel on the overview (like Matprat): meal type, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients, with counts and tests. Datasjekk at `/oppskrifter/datasjekk`
 - [x] "Hva med…?" on the overview: a complete dinner that suits the day ("Ukedag"/"Helgemat"), pizza on Fridays, with tests
 - [x] A CMS-ready data layer: `toRecipe` at the border, a `Promise` data layer, React Router loaders, loading and error states, similar ingredient names on the Datasjekk, with tests
+- [x] Sanity, the CMS: a Studio in `studio/` (also online, for the phone), the schema with the fixed lists from `types.ts`, the site reading published recipes with GROQ, photos in the right size, and the site online on Vercel
 - [x] Small fixes: one name for the site ("Jens matnettside" in the logo, footer and browser tab), the leftover `bg-gray-50` removed, and a printout with the ingredients and without the header, menu and buttons
