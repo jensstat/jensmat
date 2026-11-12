@@ -89,6 +89,20 @@ Makes an id that's unique on the page, to connect a label to a field.
 `<dialog>` with `showModal()` puts a panel on top, keeps Tab inside it and closes on Esc. `<details>`/`<summary>` is a heading that opens and closes, with the keyboard too. Neither needs our own code for that.
 📁 `FilterPanel.tsx` (dialog), `FilterGroupSection.tsx` (details).
 
+### `useEffect`: reaching outside React, and cleaning up
+Rendering should only *calculate* what to show. Anything that reaches outside React (listening to scrolling, measuring an element, asking the browser to keep the screen on, saving to `localStorage`) goes in `useEffect`, which runs after the screen is drawn. The function it **returns** is the cleanup: it runs before the effect runs again and when the component disappears, so listeners are removed and locks let go.
+```tsx
+useEffect(() => {
+  window.addEventListener("scroll", update, { passive: true });
+  return () => window.removeEventListener("scroll", update); // cleanup
+}, [key]); // run again only when key changes
+```
+📁 `Header.tsx` (a `ResizeObserver` measures the header into `--header-height`), `RecipeSectionNav.tsx` (scroll), `useWakeLock.ts` (keep the screen on, and ask again when the page is visible).
+
+### Your own hooks
+A function whose name starts with `use` and that uses other hooks is a **hook** of your own: a piece of state + effects that a component can use in one line. `useWakeLock()` works like `useState(false)`, but while it's `true` the screen stays on.
+📁 `useWakeLock.ts` (used by `KeepScreenOn`), `useActiveSection` in `RecipeSectionNav.tsx`.
+
 ---
 
 ## React Router
@@ -156,10 +170,14 @@ Things that were hard or surprising along the way. Add your own.
 - **Empty number fields give `NaN`.** It has to be handled both in the field (show empty) and in the calculation (no result).
 - **A component must return something.** `function RecipePage() {}` returns nothing, and TypeScript says `'() => void' is not a valid JSX element type`. The last line of a TypeScript error is often the most useful.
 - **Order in the code = order on phones.** With grid placement (`lg:col-start-2 lg:row-span-2`), the same three parts can be arranged differently on desktop, without writing them twice (the recipe page).
-- **Use what the browser already has.** `<dialog>` with `showModal()` gives a full-screen panel with Esc and keyboard handling for free (the ingredient menu on phones).
+- **Use what the browser already has.** `<dialog>` with `showModal()` gives a panel on top with Esc and keyboard handling for free (the filter panel).
 - **Same number, same alignment.** Lines in two columns line up when the spacing above them is the same.
 - **A scroll area in a flex column needs `min-h-0`.** Flex items won't shrink below their content by default, so `overflow-y-auto` never kicks in (the filter panel on phones).
 - **`margin: auto` on one side pushes a dialog to the other.** A modal `<dialog>` is centred by `margin: auto`; `mt-auto` makes it a sheet at the bottom, `ml-auto` a panel on the right.
 - **Animating something that appears needs a first frame.** A closed dialog is `display: none`, so `starting:` (`@starting-style`) gives the slide its start, and `transition-discrete` lets it finish before it disappears.
 - **Every phone class needs an `lg:` partner in the same state.** `starting:open:translate-y-full` without `lg:starting:open:translate-y-0` made the desktop panel slide in diagonally.
 - **Files in `public/` are reached from the root:** `public/pizza.avif` → `src="/pizza.avif"`. Without the `/`, the path is relative to the current address and breaks on sub-pages.
+- **A CSS variable can be set from JavaScript.** `document.documentElement.style.setProperty("--header-height", "119px")`, and Tailwind reads it with `top-[var(--header-height)]`. Measure once, use anywhere (the header, the recipe page's sticky parts).
+- **`row-span` + a `1fr` row keeps a grid calm.** When one item spans several rows and is taller than them, the extra height goes to the `1fr` row instead of spreading out the others (the top of the overview).
+- **`w-fit` makes a box as wide as its widest child.** Put the search and the chips in one `w-fit` box, and the search ends where the chips end.
+- **`scroll-mt-…` keeps a heading out from under sticky bars** when you jump to it with `scrollIntoView`.

@@ -1,7 +1,12 @@
 // The calculator's settings and all the choices: what can be set, the default values,
 // and the pizza types. Only data, no React. The page and the calculation both read from here.
 
-import type { SelectOption } from "../components/SelectField";
+// One choice in a dropdown (SelectField) or a row of tags (ChoiceTags): the value that's
+// saved, and the text that's shown. Here, not in the components: pizza/ doesn't depend on the UI.
+export interface SelectOption {
+  value: string;
+  label: string;
+}
 
 // All the settings on the page. One object instead of many separate states,
 // so the whole set can be passed to the calculation in one go.

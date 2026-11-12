@@ -1,10 +1,5 @@
+import type { SelectOption } from "../pizza/settings";
 import FieldCard from "./FieldCard";
-
-// export: the page also uses this type, for its list of options.
-export interface SelectOption {
-  value: string;
-  label: string;
-}
 
 interface SelectFieldProps {
   label: string;

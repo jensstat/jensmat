@@ -10,7 +10,7 @@ import { CardDetails, CardPhoto } from "./RecipeCard";
 // They only show things; the page decides which one, picks the recipe (recipes/suggest.ts)
 // and holds the state. No outer margin or width: the page decides where it goes and how wide.
 //
-// Always a row: a square picture on the left and the text on the right.
+// Always a row: the picture on the left and the text on the right.
 // From lg, in the overview's right column: a bigger picture, no border (the column
 // itself sets it apart), and the box is as tall as the left column (h-full), with the
 // content centred. On phones the border marks the box between the heading and the search.
@@ -22,14 +22,14 @@ const pictureSize =
   "h-24 w-24 shrink-0 sm:h-32 sm:w-32 lg:aspect-[4/3] lg:h-40 lg:w-auto xl:h-56";
 
 interface SuggestionBoxProps {
-  picture: ReactNode; // the square on the left
+  picture: ReactNode; // the picture on the left
   label: string; // the small line above the title, like "Hva med…"
   title: string;
   to: string; // where the box leads
   children?: ReactNode; // anything under the title: details, a button …
 }
 
-// The frame both versions share: picture on the left, text on the right, thin border.
+// The frame both versions share: picture on the left, text on the right, a thin border on phones.
 // A white box: the photo's placeholder is gray (bg-panel), so it shows up.
 //
 // The whole box is a link, but a button inside it must still work.

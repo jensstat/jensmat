@@ -1,5 +1,5 @@
 import { useId } from "react";
-import type { SelectOption } from "./SelectField";
+import type { SelectOption } from "../pizza/settings";
 
 interface ChoiceTagsProps {
   label: string;

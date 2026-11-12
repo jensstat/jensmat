@@ -2,31 +2,26 @@ import type { Ingredient } from "../../recipes/types";
 import IngredientList from "./IngredientList";
 import PortionStepper from "./PortionStepper";
 
-export interface IngredientsPanelProps {
+interface IngredientsPanelProps {
   ingredients: Ingredient[];
   servings: number; // the chosen number of portions
   // The number of portions the recipe's amounts are for.
   // undefined when the recipe has no portions yet: then there's no portion selector, and no scaling.
   baseServings?: number;
   onServingsChange: (servings: number) => void;
-  headingId?: string; // lets the phone dialog say "my name is this heading"
 }
 
 // The content of the ingredient panel: the heading, the portion selector between two dotted lines,
-// and the list. Used twice: in the side panel on desktop, and in the full-screen panel on phones.
+// and the list. Used twice: in the side panel on desktop, and in the page on phones and paper.
 function IngredientsPanel({
   ingredients,
   servings,
   baseServings,
   onServingsChange,
-  headingId,
 }: IngredientsPanelProps) {
   return (
     <>
-      <h2
-        id={headingId}
-        className="text-base font-medium uppercase tracking-wider"
-      >
+      <h2 className="text-base font-medium uppercase tracking-wider">
         Ingredienser
       </h2>
       {baseServings !== undefined && (

@@ -7,6 +7,7 @@ interface RecipeMetaProps {
   servings?: number; // left out if the recipe has no portions yet
   difficulty?: Difficulty; // left out if the recipe has no difficulty yet
   labels: string[];
+  className?: string; // the space around it, set by the page (e.g. "mt-6")
 }
 
 // Small line icons, drawn in the text colour (currentColor). aria-hidden: the text says the same.
@@ -65,12 +66,14 @@ function DifficultyIcon({ difficulty }: { difficulty: Difficulty }) {
 }
 
 // The key facts in one calm line: time, portions, difficulty, and the labels (Fisk, Rask …).
-// Each part is only shown when the recipe has it. With nothing to show, nothing is drawn.
+// Each part is only shown when the recipe has it. With nothing to show, nothing is drawn,
+// not even the space around it (so the page doesn't have to check the same things again).
 function RecipeMeta({
   minutes,
   servings,
   difficulty,
   labels,
+  className = "",
 }: RecipeMetaProps) {
   if (
     minutes === undefined &&
@@ -81,7 +84,9 @@ function RecipeMeta({
     return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-base text-ink/70">
+    <div
+      className={`flex flex-wrap items-center gap-x-6 gap-y-3 text-base text-ink/70 ${className}`}
+    >
       {minutes !== undefined && (
         <span className="flex items-center gap-2">
           <ClockIcon />

@@ -1,6 +1,11 @@
-import type { ResultRow } from "../components/ResultPanel";
 import type { PizzaSettings } from "./settings";
 import { idyPercent, yeastStrength } from "./yeast";
+
+// One line in the result: "Mel 451 g". Shown by ResultPanel.
+export interface ResultRow {
+  label: string;
+  grams: number;
+}
 
 // Turns the settings into grams for each ingredient.
 // A "pure" function: the same settings always give the same result, and it doesn't touch React.

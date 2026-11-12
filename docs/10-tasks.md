@@ -3,13 +3,21 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 12 November 2026. Tasks 1–4 and 6 are done (task 6: Sanity, the CMS: the Studio, also on the phone, the site reading from Sanity, and the site online on Vercel). The small fixes are done too. Task 5 is done too (12 November: the search and the filters in the address, and "← Alle oppskrifter" back to the filtered list). The friendlier Studio is done too (12 November: tabs, placeholders, "Ny middag"/"Ny dessert", own lists). Next, in this order (agreed 12 November): ~~1. a friendlier Studio~~ ✅, ~~2. ingredient names to pick from~~ ✅, ~~3. the overview~~ ✅ (the view remembered, and "Store"), ~~4. the front page: "Nyeste oppskrifter"~~ (dropped 12 November: the front page stays as it is, only the heading and the two buttons). **A new order** was agreed after that: see "Now: the next tasks, in order" below.*
+*Last updated: 12 November 2026 (evening). Done: tasks 1–6 of the first list (Sanity, the filters in the address …), a friendlier Studio, ingredient names to pick from, the overview's views, and from the second list tasks 1–4 (pasting an ingredient list, the Datasjekk in the Studio, cuisine and difficulty on the recipe page; remembering the pizza settings was dropped for a «Husoppskriften» button). After that, the design: the overview's top in two columns, the whole site a bit wider, and the recipe page on phones like Matprat, with cooking mode (sections 23–24 in [09](09-history.md)). Then a clean-up of the code and the docs. **Next:** see "Now" below.*
 
 ---
 
 ## Now: the next tasks, in order
 
 Agreed 12 November, after the first order was finished. Small things that help right away come first; the biggest (own posting) comes last, when you've used the Studio on the phone for a while and know better what your own form should do differently.
+
+**Next, agreed 12 November (evening), for the design:**
+- [ ] **The recipe page lined up with the header**: the rest of the site is `max-w-7xl`; the recipe page is still up to 1500px, so it starts left of the logo (08, issue 12). The panel colour can still reach the screen edge
+- [ ] **Clickable labels** on the recipe page: «Italiensk» → `/oppskrifter?kjokken=Italiensk` (the filters are already in the address)
+- [ ] **Sorting** on the overview (Nyeste, A–Å, Raskest)
+- ~~A layout for recipes without a photo~~ Not needed: every dish should have a photo
+
+**The second list:**
 
 1. [x] **Paste a whole ingredient list in the Studio** ✅ (12 November: «Lim inn liste» under the ingredients, `studio/components/IngredientListInput.tsx` + `src/recipes/parseIngredients.ts`, with tests): paste "2 dl melk / 3 egg / salt" and get three ingredient lines. Builds on the own input from "ingredient names to pick from"
 2. [x] **The Datasjekk in the Studio** ✅ (12 November: «Datasjekk» in the left column, `studio/dataCheck.ts`, live counts): a list in the left column of recipes missing something, reusing the rules in `src/recipes/completeness.ts` (like the Studio already reuses `cleanName`)
@@ -158,8 +166,8 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 - [ ] Sourdough, with its own calculation (hidden for now)
 
 **Code tidy-up**
-- [ ] Move `SelectOption` and `ResultRow` out of the components (08, issue 6)
-- [ ] Use `Container` on more pages (08, issue 7)
+- [x] Move `SelectOption` and `ResultRow` out of the components (08, issue 6) ✅ (now in `pizza/settings.ts` and `pizza/calculateDough.ts`)
+- [x] Use `Container` on more pages (08, issue 7) ✅ (the pizza calculator; the front page and the overview keep their own vertical padding)
 
 **Phone**
 - [ ] A tab bar at the bottom of the screen (fits with a phone app)

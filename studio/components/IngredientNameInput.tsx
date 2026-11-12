@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react'
 import {set, unset, useClient, type StringInputProps} from 'sanity'
 import {cleanName} from '../../src/recipes/filter'
 
-// Every ingredient name used so far, in every recipe (drafts too, since the Studio is logged in).
+// Every ingredient name used so far, in every recipe, drafts too.
 // array::unique removes names that are exactly the same.
 const namesQuery = `array::unique(*[_type == "recipe"].ingredients[].name)`
 
@@ -22,15 +22,19 @@ function suggestionList(names: (string | null)[]): string[] {
 // so "tomat" and "tomater" don't both happen. A new name can still be typed.
 export function IngredientNameInput(props: StringInputProps) {
   const {elementProps, onChange, value} = props
+  // Sanity's props for the input element, passed on to Autocomplete below
+  const {id, ref, onFocus, onBlur, readOnly} = elementProps
   // The Studio's own connection to Sanity, logged in as you
   const client = useClient({apiVersion: '2025-02-19'})
   const [names, setNames] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch the names once, when the input is shown
+  // Fetch the names once, when the input is shown.
+  // perspective 'drafts': from API version 2025-02-19 Sanity answers with published documents
+  // only, unless you ask; 'drafts' gives each recipe once, in its newest version (draft or published).
   useEffect(() => {
     client
-      .fetch<(string | null)[]>(namesQuery)
+      .fetch<(string | null)[]>(namesQuery, {}, {perspective: 'drafts'})
       .then((result) => setNames(suggestionList(result)))
       .catch(() => setNames([])) // no suggestions is fine: the field still works
       .finally(() => setLoading(false))
@@ -41,11 +45,11 @@ export function IngredientNameInput(props: StringInputProps) {
 
   return (
     <Autocomplete
-      id={elementProps.id}
-      ref={elementProps.ref}
-      onFocus={elementProps.onFocus}
-      onBlur={elementProps.onBlur}
-      readOnly={elementProps.readOnly}
+      id={id}
+      ref={ref}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      readOnly={readOnly}
       value={value ?? ''}
       options={names.map((name) => ({value: name}))}
       // Show names that contain what's typed: "tom" finds "tomat" and "cherrytomat"

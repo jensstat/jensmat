@@ -1,8 +1,4 @@
-// export: the page also uses this type, for its list of rows.
-export interface ResultRow {
-  label: string;
-  grams: number;
-}
+import type { ResultRow } from "../pizza/calculateDough";
 
 interface ResultPanelProps {
   rows: ResultRow[];

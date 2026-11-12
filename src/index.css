@@ -31,7 +31,7 @@
   }
 }
 
-/* While a <dialog> is open (the ingredient panel on phones), the page behind it shouldn't scroll. */
+/* While a <dialog> is open (the filter panel on the overview), the page behind it shouldn't scroll. */
 body:has(dialog[open]) {
   overflow: hidden;
 }

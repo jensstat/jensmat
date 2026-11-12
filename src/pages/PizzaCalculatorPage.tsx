@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ChoiceTags from "../components/ChoiceTags";
+import Container from "../components/Container";
 import FieldGroup from "../components/FieldGroup";
 import Instructions from "../components/Instructions";
 import NumberField from "../components/NumberField";
@@ -36,9 +37,9 @@ function PizzaCalculatorPage() {
 
   return (
     // The section fills <main> and carries the white background.
-    // The inner div is centred with the same width and padding as the header, so they line up.
+    // Container: the same width and padding as the header, so they line up.
     <section className="flex-1 bg-white font-mono">
-      <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 lg:py-14">
+      <Container>
         {/* The heading spans both columns */}
         <h1 className="font-display text-5xl md:text-6xl">Pizzakalkulator</h1>
         <p className="mt-2 text-neutral-600">
@@ -194,7 +195,7 @@ function PizzaCalculatorPage() {
             )}
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

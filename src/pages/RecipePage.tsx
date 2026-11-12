@@ -57,7 +57,6 @@ function RecipeView({ recipe }: RecipeViewProps) {
   const location = useLocation();
 
   const hasIngredients = recipe.ingredients.length > 0;
-  const labels = recipeLabels(recipe);
   // The parts the phone's section bar can jump to
   const sections = recipeSections(recipe);
   // Each part's scroll margin: as tall as the header and the section bar, so jumping
@@ -87,7 +86,7 @@ function RecipeView({ recipe }: RecipeViewProps) {
       }`}
     >
       {/* Up to 1500px wide (93.75rem, like Gladkokken). Two columns from lg: the main column, and a panel
-          of 420px (480px from xl). On phones: one column. Sizes in rem, so they follow the 110 % in index.css. */}
+          of 420px (480px from xl). On phones: one column. Sizes in rem, so they follow the 90 % in index.css. */}
       <div
         className={`mx-auto grid w-full max-w-[93.75rem] ${
           hasIngredients
@@ -130,20 +129,14 @@ function RecipeView({ recipe }: RecipeViewProps) {
           )}
 
           {/* Time, portions, difficulty and labels (main ingredient, cuisine, "Passer til" …).
-              Each only if the recipe has it. */}
-          {(recipe.minutes !== undefined ||
-            recipe.servings !== undefined ||
-            recipe.difficulty !== undefined ||
-            labels.length > 0) && (
-            <div className="mt-6">
-              <RecipeMeta
-                minutes={recipe.minutes}
-                servings={recipe.servings === undefined ? undefined : servings}
-                difficulty={recipe.difficulty}
-                labels={labels}
-              />
-            </div>
-          )}
+              Each only if the recipe has it; nothing at all if it has none of them. */}
+          <RecipeMeta
+            minutes={recipe.minutes}
+            servings={recipe.servings === undefined ? undefined : servings}
+            difficulty={recipe.difficulty}
+            labels={recipeLabels(recipe)}
+            className="mt-6"
+          />
 
           {/* An incomplete recipe (saved quickly, to be filled in later) says so */}
           {isIncomplete(recipe) && (
@@ -206,7 +199,8 @@ function RecipeView({ recipe }: RecipeViewProps) {
                 </>
               )}
               {recipe.source && (
-                <p className="mt-3 text-sm text-ink/60">
+                // first:mt-0: no space above it when there are no tips before it
+                <p className="mt-3 text-sm text-ink/60 first:mt-0">
                   Kilde: {recipe.source}
                 </p>
               )}
@@ -215,10 +209,11 @@ function RecipeView({ recipe }: RecipeViewProps) {
         </div>
 
         {/* The ingredient panel, desktop only. The content is sticky, so it stays in view while you
-            read the steps, and scrolls on its own if the list is taller than the screen. */}
+            read the steps (2rem under the header, measured by Header.tsx), and scrolls on its own
+            if the list is taller than the screen. */}
         {hasIngredients && (
           <aside className="hidden bg-panel lg:block lg:px-10 lg:py-16 xl:px-16 print:hidden">
-            <div className="sticky top-28 max-h-[calc(100dvh-8rem)] overflow-y-auto">
+            <div className="sticky top-[calc(var(--header-height,0px)+2rem)] max-h-[calc(100dvh-var(--header-height,0px)-4rem)] overflow-y-auto">
               <IngredientsPanel {...panelProps} />
             </div>
           </aside>

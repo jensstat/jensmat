@@ -13,15 +13,15 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Part | Address | Status |
 |---|---|---|
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
-| Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises |
-| Recipe overview | `/oppskrifter` | ✅ Recipe cards, search (title, description, ingredients), "Hva med…?" (pizza on Fridays), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, grid/list view, a message when nothing matches. The search and the filters are kept in the address, so reload, back and a shared link keep them |
+| Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises. Always opens with the house recipe; «Husoppskriften» puts it back after a change |
+| Recipe overview | `/oppskrifter` | ✅ Recipe cards (three views, the chosen one remembered), search (title, description, ingredients), "Hva med…?" (pizza on Fridays; on the right from lg), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, grid/list view, a message when nothing matches. The search and the filters are kept in the address, so reload, back and a shared link keep them |
 | Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same |
 | Recipes from Sanity | | ✅ The site reads published recipes from Sanity with GROQ (`sanityClient.ts`, `sanityQuery.ts`), through `toRecipe`. Drafts don't show. Photos come in the right size from Sanity's image service, with the hotspot kept in view |
-| Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings |
+| Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings. Tabs, templates («Ny middag», «Ny dessert»), ingredient names to pick from, «Lim inn liste» (paste a whole ingredient list), and the Datasjekk in the left column |
 | The site online | Vercel | ✅ Published from GitHub; `vercel.json` sends every address to `index.html` |
 | Loading and errors | | ✅ Each recipe page loads its data first ("Laster…"), and "Kunne ikke hente oppskriftene" + "Prøv igjen" if it fails. Every recipe is checked at the border (`toRecipe`) |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
-| Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken: wide layout, ingredient panel, portion selector, groups, an ingredient menu on phones, print and copy link |
+| Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken on desktop (wide layout, ingredient panel) and Matprat on phones (the ingredients in the page, a section bar under the header): portion selector, groups, time/portions/difficulty and labels (with cuisine), cooking mode («Behold skjermen på», tick off steps), print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
 | Tests | `npm test` | ✅ 218 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
@@ -49,10 +49,10 @@ The logo says "Jens matnettside", the footer "Min matnettside", and the front pa
 **5. ~~Leftover colour in `App.tsx`.~~** ✅ Fixed: removed.
 The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white background), but it's the only `gray-*` colour left; the rest of the site uses `neutral-*`. → Change it to `bg-white`, or remove it.
 
-**6. Two knowledge files borrow types from components.**
+**6. ~~Two knowledge files borrow types from components.~~** ✅ Fixed (12 November): `SelectOption` is in `pizza/settings.ts` and `ResultRow` in `pizza/calculateDough.ts`; the components import them from there.
 `pizza/settings.ts` uses `SelectOption` from `SelectField`, and `pizza/calculateDough.ts` uses `ResultRow` from `ResultPanel`. It works, but breaks the rule that `pizza/` doesn't depend on the UI (see [01](01-architecture.md)). → Move the two types into `pizza/` (or a shared `types` file), and let the components import them from there.
 
-**7. `Container` is only used by one page.**
+**7. ~~`Container` is only used by one page.~~** ✅ Fixed (12 November): the pizza calculator uses it too. The front page and the overview keep their own vertical padding on purpose.
 `HomePage` and `PizzaCalculatorPage` still write the same width classes themselves (`RecipePage` is deliberately wider). → Switch them to `Container`, so the width is set in one place. (`HomePage` needs its own vertical centring, so check that it still looks right.)
 
 ### Worth knowing (not bugs)
@@ -65,7 +65,7 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **11. ~~Publishing needs one setting.~~** ✅ Fixed: `vercel.json` sends every address to `index.html`. When the site is put online (Netlify, Vercel …), the server must send every address to `index.html`, otherwise reloading on `/pizza` gives the host's own 404 page. Each host has a short guide for "single page apps".
 
-**12. The recipe pages are wider than the header.** The recipe content can start further left than the logo, because the recipe pages are up to 1500px wide and the header 1152px. That was agreed ("more widescreen"). If it bothers you, the header could follow the page width.
+**12. The recipe page is wider than the header.** The recipe content starts further left than the logo, because the recipe page is up to 1500px wide and the rest of the site `max-w-7xl` (1280px). Agreed 12 November to line it up: it's the first design task in [10](10-tasks.md).
 
 **13. ~~Printing prints the whole page.~~** ✅ Fixed: the header, footer, menu, buttons and photo placeholder are hidden on paper, and the ingredients are printed before the steps (they used to be missing, since on paper the page is phone-width and they're behind the bar). Chromium may still put "Slik gjør du" alone at the bottom of a page. "Skriv ut" prints the header, the menu and the photo placeholder too. A print style (`print:hidden` on more elements) can make it tidier.
 
@@ -75,7 +75,7 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **16. ~~The data layer answers instantly.~~** ✅ Fixed in task 4.3–4.5: a `Promise`, loaders, "Laster…" and an error page.
 
-**17. Almost-the-same ingredient names become separate filter options.** ✅ The Datasjekk lists them now (task 4.6); fixing them is still by hand. "tomat" and "tomater" are two options, and "Uten tomat" misses the other. Later, the CMS can offer existing names to pick from.
+**17. Almost-the-same ingredient names become separate filter options.** ✅ Mostly handled: the Studio suggests names already used (`IngredientNameInput`), and the Datasjekk (on the site and in the Studio) lists names that are almost the same; fixing them is still by hand. "tomat" and "tomater" are two options, and "Uten tomat" misses the other. Pasted lists («Lim inn liste») skip the suggestions, so check those.
 
 ---
 

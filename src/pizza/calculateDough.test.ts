@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ResultRow } from "../components/ResultPanel";
 import { calculateDough } from "./calculateDough";
+import type { ResultRow } from "./calculateDough";
 import { defaults, pizzaStyles } from "./settings";
 
 // Grams for one ingredient, or undefined if the row isn't there.

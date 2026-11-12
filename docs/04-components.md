@@ -14,8 +14,8 @@ One per address. A page puts components together and holds the state for that pa
 |---|---|---|
 | `HomePage` | `/` | Big heading, subtitle, and two buttons: "Oppskrifter" and "Pizzakalkulator" |
 | `PizzaCalculatorPage` | `/pizza` | Holds the pizza `settings` in state, and draws the fields, the result and the method. See [02](02-pizza-calculator.md) |
-| `RecipeListPage` | `/oppskrifter` | The overview: "Hva med…?", search, the filter panel, meal chips, the chosen filters, grid/list toggle, recipe cards. Holds `view`, `day` and `suggestion` in state; the search and the filters are in the address. See [03](03-recipes.md), section 6 |
-| `RecipePage` | `/oppskrifter/:id` | One recipe. See [03](03-recipes.md) |
+| `RecipeListPage` | `/oppskrifter` | The overview: "Hva med…?" (on the right from lg), search, the filter panel, meal chips, the chosen filters, grid/list toggle, recipe cards. Holds `view`, `day` and `suggestion` in state; the search and the filters are in the address. See [03](03-recipes.md), section 6 |
+| `RecipePage` | `/oppskrifter/:id` | One recipe: a side panel for the ingredients on desktop; on phones the ingredients in the page, a section bar and cooking mode. See [03](03-recipes.md), section 5 |
 | `DataCheckPage` | `/oppskrifter/datasjekk` | The Datasjekk: every recipe and what it's missing. Not in the menu. Rules in `recipes/completeness.ts` |
 | `NotFoundPage` | everything else | "Fant ikke siden". Props: `title?`, `message?`. Also used by `RecipePage` for unknown recipes |
 
@@ -28,9 +28,10 @@ The logo and the menu. **No props.**
 - Uses `NavLink`, which knows whether it points to the current page, and then gets a black underline and `aria-current` (for screen readers).
 - `end` on "Hjem" stops it from being active on every page (every address starts with `/`).
 - On phones, the logo and menu are stacked; from `md:`, they're side by side.
+- **Measures its own height** (`ResizeObserver`) into the CSS variable `--header-height`, so things that stick under it know where to stop: the recipe page's section bar (phones) and ingredient panel (desktop).
 
 ### `Footer`
-"© year Min matnettside". **No props.** The year is worked out once, outside the component.
+"© year Jens matnettside". **No props.** The year is worked out once, outside the component.
 
 ### `Container`
 The shared page width: centred, `max-w-7xl`, with the same side padding as the header, so content lines up with the logo.
@@ -39,7 +40,7 @@ The shared page width: centred, `max-w-7xl`, with the same side padding as the h
 |---|---|---|
 | `children` | anything | the content |
 
-Used by: `NotFoundPage`. (The other pages still write the same classes themselves, and `RecipePage` is deliberately wider: up to 1500px.)
+Used by: `PizzaCalculatorPage`, `NotFoundPage`, `RouteErrorPage`. (`HomePage` and `RecipeListPage` write the same width with their own vertical padding, and `RecipePage` is deliberately wider: up to 1500px.)
 
 ### Icons (`icons.tsx`)
 Small line icons, drawn on a 24×24 grid in the text colour: `CloseIcon` (✕), `CheckIcon` (✓), `ChevronDownIcon`, `FilterIcon`, `SearchIcon`. Each takes only `className?` (the size, e.g. `"h-5 w-5"`, and maybe a colour). They're hidden from screen readers; the button around them carries the words.
@@ -87,7 +88,7 @@ A dropdown with its own arrow, built on `FieldCard`.
 | Prop | Type | |
 |---|---|---|
 | `label` | text | |
-| `options` | `SelectOption[]` | `{ value, label }`. `value` is what the code sees, `label` what the user sees |
+| `options` | `SelectOption[]` | `{ value, label }` (the type is in `pizza/settings.ts`). `value` is what the code sees, `label` what the user sees |
 | `value` | text | |
 | `onChange` | `(value: string) => void` | |
 | `hint?` | text | |
@@ -104,7 +105,7 @@ The grams per ingredient. **Phones:** a black box. **Desktop:** a list with line
 
 | Prop | Type | |
 |---|---|---|
-| `rows` | `ResultRow[]` | `{ label, grams }`, from `calculateDough` |
+| `rows` | `ResultRow[]` | `{ label, grams }`, from `calculateDough` (the type is in `pizza/calculateDough.ts`) |
 | `pizzaCount`, `ballWeight` | number | for "2 x 372 g" |
 
 If `rows` is empty, it shows "Fyll inn alle feltene".
@@ -173,7 +174,7 @@ The ticked options (except the meals, which the chips show) as small chips with 
 Props: `filters`, `onChange`.
 
 ### `RecipeSuggestion` and `PizzaSuggestion`
-"Hva med…?" above the search: a square picture, a small label, the title and the card line, the whole box a link. `RecipeSuggestion` has a "Vis et annet forslag" button; `PizzaSuggestion` (Fridays) says "Pizzatid!" and leads to `/pizza`. Both use `SuggestionBox` in the same file.
+"Hva med…?": a picture, a small label, the title and the card line, the whole box a link. On phones a bordered box above the search with a square picture; from lg, in the overview's right column, no border and a 4:3 picture like the cards. `RecipeSuggestion` has a "Vis et annet forslag" button; `PizzaSuggestion` (Fridays) says "Pizzatid!" and leads to `/pizza`. Both use `SuggestionBox` in the same file.
 
 | Prop (`RecipeSuggestion`) | Type |
 |---|---|
@@ -200,12 +201,14 @@ The photo (16:9). Without a photo: a lower placeholder (5:2) in the panel colour
 "Skriv ut" (opens the print dialog) and "Kopier lenke" (copies the address, then says "Lenke kopiert" for 2 seconds). **No props.** Holds its own state for "copied". Hidden when printing.
 
 ### `RecipeMeta`
-One line: a clock icon with the time, a plate icon with the portions, then `LabelList`.
+One line: a clock icon with the time, a plate icon with the portions, four bars with the difficulty (filled up to the level), then `LabelList`. Draws nothing at all (not even its margin) when there's nothing to show.
 
 | Prop | Type |
 |---|---|
 | `minutes`, `servings` | number |
+| `difficulty` | `Difficulty` |
 | `labels` | `string[]` (use `recipeLabels(recipe)`) |
+| `className?` | text, the space around it (`"mt-6"`) |
 
 ### `LabelList`
 Small, soft, rounded labels in the panel colour: "Fisk", "Rask". Shows nothing for an empty list. Will be reused on the recipe cards.
@@ -215,7 +218,7 @@ Small, soft, rounded labels in the panel colour: "Fisk", "Rask". Shows nothing f
 | `labels` | `string[]` |
 
 ### `IngredientsPanel`
-**The content of the ingredient panel:** the "INGREDIENSER" heading, `PortionStepper` between two dotted lines, and `IngredientList`. Used in two places: the side panel on desktop, and the full-screen panel on phones.
+**The content of the ingredient panel:** the "INGREDIENSER" heading, `PortionStepper` between two dotted lines, and `IngredientList`. Used in two places: the side panel on desktop, and in the page (before the steps) on phones and paper.
 
 | Prop | Type | |
 |---|---|---|
@@ -223,7 +226,6 @@ Small, soft, rounded labels in the panel colour: "Fisk", "Rask". Shows nothing f
 | `servings` | number | the chosen number of portions |
 | `baseServings` | number | the portions the recipe's amounts are for |
 | `onServingsChange` | `(servings: number) => void` | |
-| `headingId?` | text | lets a dialog use the heading as its name (not used now) |
 
 ### `RecipeSectionNav`
 **Phones only** (`lg:hidden`). A bar that sticks under the header (`top-[var(--header-height)]`, measured by `Header`) with one button per part of the recipe («Ingredienser», «Slik gjør du», «Tips»): tap to scroll there, and the part you're reading is dark (`aria-current`). Nothing is shown for fewer than two parts.
@@ -253,7 +255,7 @@ The ingredients **in groups** (see `groupIngredients`), one per line: "**300 g**
 | `scale?` | number | multiplies every amount. Default 1 |
 
 ### `StepList`
-The steps: a 50×50 gold square with the number in serif, a dotted line, and the text below (16px on phones, 18px on desktop).
+The steps: a 50×50 gold square with the number in serif, a dotted line, and the text below (16px on phones, 18px on desktop). The square is a button: pressed, it shows ✓ and the step turns grey (cooking mode; kept only while the page is open).
 
 | Prop | Type |
 |---|---|
