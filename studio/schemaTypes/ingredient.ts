@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {IngredientNameInput} from '../components/IngredientNameInput'
 
 // One line in a recipe's ingredient list: "2 dl melk, romtemperert".
 // The same fields as Ingredient in src/recipes/types.ts. Only the name is required:
@@ -26,6 +27,7 @@ export const ingredient = defineType({
       title: 'Navn',
       type: 'string',
       description: 'Bare selve ingrediensen («løk», ikke «finhakket løk»), så filteret finner den.',
+      components: {input: IngredientNameInput},
       validation: (rule) => rule.required(),
     }),
     defineField({

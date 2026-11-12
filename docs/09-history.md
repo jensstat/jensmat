@@ -195,3 +195,12 @@ A refactor before the next tasks, so the code is easy to come back to. Nothing c
 - **"Laster…"** (`useNavigation`, fades in after a moment so quick loads don't flicker), `LoadingPage` on the first load, and **`RouteErrorPage`** with "Prøv igjen" (`useRevalidator`). Plus `<ScrollRestoration />`: a new page starts at the top, back returns to where you were.
 - **"Like ingrediensnavn" on the Datasjekk:** `similarIngredientNames` in `completeness.ts` finds names that are the same without a Norwegian ending (tomat/tomater) or one letter apart (5+ letters).
 
+
+## 16. A friendlier Studio
+
+*Built as a tutorial, the code typed by Claude after each idea was explained. Only `studio/` changed; the data, the GROQ query and the site are the same.*
+- **Tabs (`groups`)** on the recipe form: **Raskt** (title, address, photo; `default: true`, so the form opens there, for quick posting from the phone), Detaljer, Ingredienser and Fremgangsmåte. Porsjoner is on two tabs (`group: ['detaljer', 'ingredienser']`): one field, shown twice. *Why:* on the phone you no longer scroll past 17 fields to post a photo. The address is on Raskt because it's required, and a required field on a hidden tab would block Publish.
+- **Placeholders, not starting values,** on Porsjoner and Tid (`placeholder: 'f.eks. 4'`). *Why:* an `initialValue` is real data, so "4 porsjoner" on a photo-only recipe would hide from the Datasjekk that nobody decided it. A placeholder is only a hint and is never saved. Every field was checked against that rule, and none got a plain starting value.
+- **Templates on the "+" button** (`schema.templates` in `sanity.config.ts`): "Ny middag" and "Ny dessert" start with the meal type filled in, and plain "Oppskrift" is kept (`...prev`). *Why:* choosing the template *is* the decision, so the value isn't a guess.
+- **Own lists in the left column** (`studio/structure.ts`, the Structure tool): Alle oppskrifter, Uferdige (no ingredients, the same rule as `isIncomplete`) and Mangler bilde. Each list is a GROQ filter, so nothing extra is stored and a recipe leaves the list by itself.
+- **Deployed** with `npx sanity deploy`: the phone uses a built copy of the Studio, so every change in `studio/` needs a new deploy to reach it.
