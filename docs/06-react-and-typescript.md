@@ -79,7 +79,7 @@ A `key` isn't only for lists. If a component's `key` changes, React throws it aw
 
 ### `useRef`: a handle on an element
 `useRef` gives you a "handle" that points at a real element on the page, so you can call its own functions.
-📁 `MobileIngredients.tsx`: `dialogRef.current?.showModal()` opens the `<dialog>`, and `close()` closes it.
+📁 `FilterPanel.tsx`: `dialogRef.current?.showModal()` opens the `<dialog>`, and `close()` closes it. `Header.tsx`: `headerRef` lets a `ResizeObserver` measure the header's height.
 
 ### `useId`
 Makes an id that's unique on the page, to connect a label to a field.
@@ -87,7 +87,7 @@ Makes an id that's unique on the page, to connect a label to a field.
 
 ### `<dialog>` and `<details>`: let the browser do the work
 `<dialog>` with `showModal()` puts a panel on top, keeps Tab inside it and closes on Esc. `<details>`/`<summary>` is a heading that opens and closes, with the keyboard too. Neither needs our own code for that.
-📁 `FilterPanel.tsx`, `MobileIngredients.tsx` (dialog), `FilterGroupSection.tsx` (details).
+📁 `FilterPanel.tsx` (dialog), `FilterGroupSection.tsx` (details).
 
 ---
 

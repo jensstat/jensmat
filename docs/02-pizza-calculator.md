@@ -67,6 +67,8 @@ ingredient  = flour × ingredient% / 100
 
 The default settings (`defaults` in `settings.ts`) are **the house recipe worked backwards**: 450 g flour, 275 g water, 10 g salt, 5 g sugar, 3 g instant yeast, 2 pizzas, 3 h at 24 °C. A test checks that they give the recipe back (451 / 275 / 10 / 5 / 3 g; 451 rather than 450 because 371.5 g per ball is rounded to 372).
 
+**«Husoppskriften»** under the subtitle (only shown after a change, `isHouseRecipe` in `settings.ts`) puts the house recipe back. The settings are **not** remembered between visits on purpose: the house recipe is what's usually baked, so the page always opens with it (decided 12 November).
+
 `calculateDough` also:
 - **returns no rows when a field is empty** (an empty number field is `NaN`, "Not a Number"), or when the rise time is 0. The result panel then shows "Fyll inn alle feltene" (fill in all the fields).
 - **hides ingredients at 0 g**, for example oil.

@@ -13,8 +13,8 @@ Agreed 12 November, after the first order was finished. Small things that help r
 
 1. [x] **Paste a whole ingredient list in the Studio** ✅ (12 November: «Lim inn liste» under the ingredients, `studio/components/IngredientListInput.tsx` + `src/recipes/parseIngredients.ts`, with tests): paste "2 dl melk / 3 egg / salt" and get three ingredient lines. Builds on the own input from "ingredient names to pick from"
 2. [x] **The Datasjekk in the Studio** ✅ (12 November: «Datasjekk» in the left column, `studio/dataCheck.ts`, live counts): a list in the left column of recipes missing something, reusing the rules in `src/recipes/completeness.ts` (like the Studio already reuses `cleanName`)
-3. [ ] **Cuisine, difficulty and "Passer til" on the recipe page** (the labels already show the themes)
-4. [ ] **The pizza calculator remembers its settings** (`localStorage`, checked when it's read, like the overview's view)
+3. [x] **Cuisine, difficulty and "Passer til" on the recipe page** ✅ (12 November: the difficulty with a bars icon in `RecipeMeta`, the cuisine as a label) (the labels already show the themes)
+4. [x] ~~**The pizza calculator remembers its settings**~~ Dropped (12 November): the house recipe is what's usually baked, so the page always opens with it. Instead: a **«Husoppskriften»** button that puts it back after a change (`localStorage`, checked when it's read, like the overview's view)
 5. [ ] **Another way to post recipes** (the long-term goal), in parts:
    - [ ] 5a. **A server function** on Vercel that holds the Sanity **token** (never in the browser) and creates the recipe
    - [ ] 5b. **A login**, so only you can post
@@ -140,7 +140,7 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 **Maybe later on the overview:**
 - [x] The third view, "Store" (big cards, 1 per row on phones, with photos big enough: its own `sizes`) (12 November)
 - [x] Remember the chosen view with `localStorage`, checked when it's read (`components/recipe/recipeView.ts`, with tests) (12 November)
-- [ ] Show cuisine, difficulty and "Passer til" on the recipe page (the labels already show the themes)
+- [x] Show cuisine, difficulty and "Passer til" on the recipe page ✅
 
 ---
 
@@ -151,7 +151,7 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 - [ ] "Hva skal vi spise i dag?": a random recipe
 
 **Pizza calculator**
-- [ ] Remember the settings when the page is reloaded (`localStorage`)
+- ~~Remember the settings when the page is reloaded (`localStorage`)~~ Dropped (12 November): always the house recipe, plus a «Husoppskriften» button
 - [ ] Share settings as a link
 - [ ] Test-bake "Forum-basert" vs "Hjemmeoppskrift", and adjust
 - [ ] The 48 h+ yeast chart (forum reply #406)

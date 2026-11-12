@@ -14,7 +14,7 @@ function App() {
     <div className="flex min-h-screen flex-col">
       <Header />
       {/* <main> sets no width, so pages can have full-width backgrounds.
-          Each page centres its own content with max-w-6xl, like Header and Footer.
+          Each page centres its own content with max-w-7xl, like Header and Footer.
           flex flex-col lets a page fill all of <main> by giving its section flex-1. */}
       <main className="flex flex-1 flex-col">
         {isLoading && <LoadingNotice />}

@@ -37,6 +37,14 @@ export const defaults: PizzaSettings = {
   oil: 0,
 };
 
+// True when the settings are the house recipe (defaults), so the "Husoppskriften"
+// button has nothing to do. Object.is, so an empty field (NaN) counts as changed.
+export function isHouseRecipe(settings: PizzaSettings): boolean {
+  return (Object.keys(defaults) as (keyof PizzaSettings)[]).every((key) =>
+    Object.is(settings[key], defaults[key]),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Pizza types
 // ---------------------------------------------------------------------------

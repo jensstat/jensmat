@@ -70,6 +70,8 @@ function today() {
 // filters are in the address) and puts the pieces together, top to bottom:
 // heading, "Hva med…?", search + Filter button,
 // meal chips, the chosen filters, the count + view buttons, and the cards.
+// From lg: the top is two columns: heading, search and chips on the left,
+// "Hva med…?" as a big photo card on the right.
 // The pieces are in components/recipe/, and the filtering in recipes/filter.ts.
 function RecipeListPage() {
   // The recipes, already fetched by the loader before the page is shown (loaders.ts).
@@ -117,60 +119,78 @@ function RecipeListPage() {
 
   return (
     <section className="flex-1 bg-white font-sans text-ink">
-      <div className="mx-auto w-full max-w-[93.75rem] px-5 py-8 lg:px-10 lg:py-12">
-        <h1 className="font-serif text-[2rem] leading-tight font-semibold lg:text-[2.75rem]">
-          Oppskrifter
-        </h1>
-        <p className="mt-2 text-lg font-light text-ink/70 lg:text-[1.375rem]">
-          Finn noe godt å lage!
-        </p>
-        {/* The suggestion and the search field: the same width (set here, in one place),
-            and gap-8 between them. A gap only appears between boxes that are there,
-            so there's no extra space when there's no suggestion. */}
-        <div className="mt-6 flex max-w-xl flex-col gap-8">
+      {/* The same width and side padding as the header (max-w-7xl, px-4 md:px-8),
+          so the heading starts under the logo and the cards end under the menu. */}
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8 lg:py-12">
+        {/* The top. Phones and tablets: one column, in the order of the code
+            (heading, suggestion, search + chips).
+            From lg: two columns, the right one 26rem (34rem from xl), so the left one is wide
+            enough for the meal chips on one line. The suggestion is placed in the right column,
+            over all three rows (row-span-3), so it's as tall as the left column; the rest goes
+            down the left column (col-start-1). The last row is 1fr: if the suggestion is ever
+            taller, the extra height goes there, instead of spreading out the heading and the search. */}
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_26rem] lg:grid-rows-[auto_auto_1fr] xl:grid-cols-[minmax(0,1fr)_34rem] lg:gap-x-12">
+          <div className="lg:col-start-1">
+            <h1 className="font-serif text-[2rem] leading-tight font-semibold lg:text-[2.75rem]">
+              Oppskrifter
+            </h1>
+            <p className="mt-2 text-lg font-light text-ink/70 lg:text-[1.375rem]">
+              Finn noe godt å lage!
+            </p>
+          </div>
           {/* "Hva med…?": on Fridays pizza, on other days a recipe (if there is one to suggest) */}
-          {isPizzaDay(day) ? (
-            <PizzaSuggestion />
-          ) : (
-            suggestion && (
-              <RecipeSuggestion
-                recipe={suggestion}
-                onShowAnother={() =>
-                  setSuggestion(pickSuggestion(recipes, day, suggestion))
-                }
-              />
-            )
+          {(isPizzaDay(day) || suggestion) && (
+            <div className="mt-6 max-w-xl lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:mt-0 lg:max-w-none">
+              {isPizzaDay(day) ? (
+                <PizzaSuggestion />
+              ) : (
+                suggestion && (
+                  <RecipeSuggestion
+                    recipe={suggestion}
+                    onShowAnother={() =>
+                      setSuggestion(pickSuggestion(recipes, day, suggestion))
+                    }
+                  />
+                )
+              )}
+            </div>
           )}
-          {/* The search field, and the "Filter" button on its right */}
-          <div className="flex gap-2">
-            {/* The text is in the address (?sok=), like every filter; filterRecipes does the searching.
+          {/* The search and the meal chips in one box. From lg the box is as wide as the
+              chips on one line (w-fit: as wide as its widest child, the chip row), and the
+              search row fills it, so the search + Filter end where "Tilbehør" ends.
+              On phones and tablets the search is at most max-w-xl, and the chips wrap. */}
+          <div className="mt-8 lg:col-start-1 lg:w-fit">
+            {/* The search field, and the "Filter" button on its right */}
+            <div className="flex max-w-xl gap-2 lg:max-w-none">
+              {/* The text is in the address (?sok=), like every filter; filterRecipes does the searching.
                 The first letter adds a step to the history; the next ones replace it
                 (filters.query isn't empty any more), so one press on back clears the search. */}
-            <SearchField
-              value={filters.query}
-              onChange={(query) =>
-                setFilters({ ...filters, query }, filters.query !== "")
-              }
-            />
-            {/* The panel with every other filter (recipes/filter.ts: filterGroups) */}
-            <FilterPanel
-              recipes={recipes}
-              filters={filters}
-              onChange={setFilters}
-              activeCount={activeFilterCount(filters)}
-              resultCount={visibleRecipes.length}
-            />
+              <SearchField
+                value={filters.query}
+                onChange={(query) =>
+                  setFilters({ ...filters, query }, filters.query !== "")
+                }
+              />
+              {/* The panel with every other filter (recipes/filter.ts: filterGroups) */}
+              <FilterPanel
+                recipes={recipes}
+                filters={filters}
+                onChange={setFilters}
+                activeCount={activeFilterCount(filters)}
+                resultCount={visibleRecipes.length}
+              />
+            </div>
+            <div className="mt-4">
+              {/* The meal chips are a shortcut to "Måltid" in the filter panel (the same state) */}
+              <CategoryChips
+                value={filters.chosen.category ?? []}
+                onToggle={(category) =>
+                  setFilters(toggleOption(filters, "category", category))
+                }
+                onClear={() => setFilters(clearGroup(filters, "category"))}
+              />
+            </div>
           </div>
-        </div>
-        <div className="mt-4">
-          {/* The meal chips are a shortcut to "Måltid" in the filter panel (the same state) */}
-          <CategoryChips
-            value={filters.chosen.category ?? []}
-            onToggle={(category) =>
-              setFilters(toggleOption(filters, "category", category))
-            }
-            onClear={() => setFilters(clearGroup(filters, "category"))}
-          />
         </div>
         {/* What's ticked in the panel, as chips you can remove */}
         <div className="mt-4">

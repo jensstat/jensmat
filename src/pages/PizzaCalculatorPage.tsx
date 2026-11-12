@@ -8,6 +8,7 @@ import SelectField from "../components/SelectField";
 import { calculateDough } from "../pizza/calculateDough";
 import {
   defaults,
+  isHouseRecipe,
   pizzaStyleOptions,
   pizzaStyles,
   yeastModelHint,
@@ -37,12 +38,23 @@ function PizzaCalculatorPage() {
     // The section fills <main> and carries the white background.
     // The inner div is centred with the same width and padding as the header, so they line up.
     <section className="flex-1 bg-white font-mono">
-      <div className="mx-auto max-w-6xl px-4 py-10 md:px-8 lg:py-14">
+      <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 lg:py-14">
         {/* The heading spans both columns */}
         <h1 className="font-display text-5xl md:text-6xl">Pizzakalkulator</h1>
         <p className="mt-2 text-neutral-600">
           Regn ut deigen til en perfekt pizza
         </p>
+        {/* Back to the house recipe (defaults) after trying something else.
+            Only shown when something has been changed. */}
+        {!isHouseRecipe(settings) && (
+          <button
+            type="button"
+            onClick={() => setSettings(defaults)}
+            className="mt-4 border border-black px-4 py-2.5 text-sm uppercase transition-colors hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:outline-none"
+          >
+            Husoppskriften
+          </button>
+        )}
 
         {/* Phones: one column. From lg: settings on the left, the result (320px) on the right.
             Both columns start at the same height, so "Deig" and "Resultat" line up. */}

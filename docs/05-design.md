@@ -60,7 +60,7 @@ Pages set `font-mono` once on their outermost element, and everything inside inh
 **The width:** everything is centred with the same classes as the header, so content lines up with the logo:
 
 ```
-mx-auto w-full max-w-6xl px-4 md:px-8
+mx-auto w-full max-w-7xl px-4 md:px-8
 ```
 
 Use the `Container` component for new pages. It does exactly this, plus vertical padding.

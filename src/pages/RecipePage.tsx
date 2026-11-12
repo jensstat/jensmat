@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useLoaderData, useLocation } from "react-router";
 import IngredientsPanel from "../components/recipe/IngredientsPanel";
-import MobileIngredients from "../components/recipe/MobileIngredients";
 import RecipeActions from "../components/recipe/RecipeActions";
 import RecipeImage from "../components/recipe/RecipeImage";
+import KeepScreenOn from "../components/recipe/KeepScreenOn";
 import RecipeMeta from "../components/recipe/RecipeMeta";
+import RecipeSectionNav from "../components/recipe/RecipeSectionNav";
 import StepList from "../components/recipe/StepList";
-import { recipeLabels } from "../recipes/display";
+import { recipeLabels, recipeSections } from "../recipes/display";
 import { listAddress } from "../recipes/listLink";
 import type { recipeLoader } from "../loaders";
 import { isIncomplete } from "../recipes/types";
@@ -39,10 +40,11 @@ interface RecipeViewProps {
   recipe: Recipe;
 }
 
-// The recipe, modelled on Gladkokken:
+// The recipe, modelled on Gladkokken (desktop) and Matprat (phones):
 // Desktop: a wide main column (photo, title, steps) and the ingredients in a panel on the right,
 //          whose background runs all the way to the right edge of the screen.
-// Phones:  everything in one column, and the ingredients behind an "Ingredienser" bar at the bottom.
+// Phones:  everything in one column: the ingredients in the page, before the steps, and a bar
+//          under the header to jump between "Ingredienser", "Slik gjør du" and "Tips".
 //
 // A recipe can be half-done (only the title is required), so every part is only drawn
 // when the recipe has it. Without ingredients there's no panel, and the page is one column.
@@ -56,6 +58,12 @@ function RecipeView({ recipe }: RecipeViewProps) {
 
   const hasIngredients = recipe.ingredients.length > 0;
   const labels = recipeLabels(recipe);
+  // The parts the phone's section bar can jump to
+  const sections = recipeSections(recipe);
+  // Each part's scroll margin: as tall as the header and the section bar, so jumping
+  // to it doesn't hide its heading under them (the bar is only on phones)
+  const sectionScroll =
+    "scroll-mt-[calc(var(--header-height,0px)+5rem)] lg:scroll-mt-[calc(var(--header-height,0px)+1.5rem)]";
 
   const panelProps = {
     ingredients: recipe.ingredients,
@@ -121,14 +129,17 @@ function RecipeView({ recipe }: RecipeViewProps) {
             </p>
           )}
 
-          {/* Time, portions and labels. The portions only if the recipe has them. */}
+          {/* Time, portions, difficulty and labels (main ingredient, cuisine, "Passer til" …).
+              Each only if the recipe has it. */}
           {(recipe.minutes !== undefined ||
             recipe.servings !== undefined ||
+            recipe.difficulty !== undefined ||
             labels.length > 0) && (
             <div className="mt-6">
               <RecipeMeta
                 minutes={recipe.minutes}
                 servings={recipe.servings === undefined ? undefined : servings}
+                difficulty={recipe.difficulty}
                 labels={labels}
               />
             </div>
@@ -146,30 +157,44 @@ function RecipeView({ recipe }: RecipeViewProps) {
             </div>
           )}
 
-          {/* Paper only: the ingredients, before the steps, for the chosen number of portions.
-              On screen they're in the side panel (desktop) or behind the bar (phones),
-              and neither of those works on paper. */}
+          {/* Phones: a bar under the header to jump between the parts (like Matprat) */}
+          <RecipeSectionNav sections={sections} />
+
+          {/* Phones and paper: the ingredients in the page, before the steps, with the portions.
+              (On desktop they're in the side panel on the right, which doesn't work on paper.)
+              -mx-5: the panel colour reaches the edges of the phone screen. */}
           {hasIngredients && (
-            <div className="mt-10 hidden max-w-3xl print:block">
+            <section
+              id="ingredienser"
+              className={`-mx-5 mt-6 bg-panel px-5 py-8 lg:hidden print:mx-0 print:mt-10 print:block print:max-w-3xl print:bg-transparent print:p-0 ${sectionScroll}`}
+            >
               <IngredientsPanel {...panelProps} />
-            </div>
+            </section>
           )}
 
           {/* Not every recipe has steps */}
           {recipe.steps.length > 0 && (
-            <>
-              <h2 className="mt-12 mb-8 font-serif text-[1.375rem] font-semibold break-after-avoid lg:mt-16 lg:text-[1.75rem]">
+            <section id="slik-gjor-du" className={sectionScroll}>
+              <h2 className="mt-12 mb-6 font-serif text-[1.375rem] font-semibold break-after-avoid lg:mt-16 lg:text-[1.75rem]">
                 Slik gjør du
               </h2>
               <div className="max-w-3xl">
+                {/* Cooking mode: keep the screen on, and tick off the steps by tapping the numbers */}
+                <KeepScreenOn />
+                <p className="mt-3 mb-8 text-sm text-ink/60 print:hidden">
+                  Trykk på tallet når et steg er gjort.
+                </p>
                 <StepList steps={recipe.steps} />
               </div>
-            </>
+            </section>
           )}
 
           {/* Tips and source, only when the recipe has them */}
           {(recipe.tips || recipe.source) && (
-            <aside className="mt-12 max-w-3xl bg-panel p-6">
+            <aside
+              id="tips"
+              className={`mt-12 max-w-3xl bg-panel p-6 ${sectionScroll}`}
+            >
               {recipe.tips && (
                 <>
                   <p className="text-sm font-medium uppercase tracking-wider">
@@ -198,10 +223,6 @@ function RecipeView({ recipe }: RecipeViewProps) {
             </div>
           </aside>
         )}
-
-        {/* Phones: the "Ingredienser" bar at the bottom of the screen, and the full-screen panel.
-            As the last item in the grid, the bar sticks to the bottom until the recipe ends. */}
-        {hasIngredients && <MobileIngredients {...panelProps} />}
       </div>
     </article>
   );

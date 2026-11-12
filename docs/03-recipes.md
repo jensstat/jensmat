@@ -182,7 +182,7 @@ Pure functions that turn data into readable text. The recipe page uses them now,
 
 ## 5. The recipe page
 
-The recipe section is **modelled on Gladkokken**: the same font sizes, a wide layout, an ingredient panel on the right, gold step squares, and an ingredient menu on phones. Details in [05 – Design](05-design.md).
+The recipe section is **modelled on Gladkokken** on desktop (the same font sizes, a wide layout, an ingredient panel on the right, gold step squares) and **on Matprat on phones** (the ingredients in the page, a section bar under the header, and cooking mode). Details in [05 – Design](05-design.md).
 
 ```
 Desktop (from lg:)                                        Phones
@@ -191,13 +191,17 @@ Desktop (from lg:)                                        Phones
 │ RecipeImage (photo / placeholder)  │ ·············· │   │ Skriv ut · Kopier│
 │ Skriv ut · Kopier lenke            │ [−][2][+] pors.│   │ Laksewrap        │
 │ Laksewrap              (44px)      │ ·············· │   │ intro, meta      │
-│ intro                  (22px)      │ 300 g laks     │   │ Slik gjør du     │
-│ 30 min · 2 porsjoner · Fisk · Rask │ …   (sticky)   │   │ ▣ 1 ·········    │
-│ Slik gjør du                       │                │   │ …                │
-│ ▣ 1 ···························    │                │   ├──────────────────┤
-│ text (18px)                        │                │   │ INGREDIENSER  ▲  │ ← sticks to the
-└────────────────────────────────────┴────────────────┘   └──────────────────┘   bottom; opens a
-   up to 1500px; the panel colour continues to the screen edge                   full-screen panel
+│ intro                  (22px)      │ 300 g laks     │   ├──────────────────┤
+│ 30 min · 2 porsjoner · Fisk · Rask │ …   (sticky)   │   │(Ingredienser)(Sl…│ ← sticks under
+│ Slik gjør du                       │                │   ├──────────────────┤   the header
+│ [Behold skjermen på        ○]      │                │   │ INGREDIENSER     │
+│ ▣ 1 ···························    │                │   │ [−][2][+] pors.  │
+│ text (18px)                        │                │   │ 300 g laks …     │
+└────────────────────────────────────┴────────────────┘   │ Slik gjør du     │
+   up to 1500px; the panel colour continues               │ [Behold skjermen]│
+   to the screen edge                                     │ ✓ 1 ··· (done)   │
+                                                          │ ▣ 2 ·········    │
+                                                          └──────────────────┘
 ```
 
 **Two components in one file:**
@@ -209,13 +213,33 @@ Desktop (from lg:)                                        Phones
 
 **The ingredients appear twice in the code, but only once on screen:**
 - **Desktop:** `IngredientsPanel` in a side panel (`hidden lg:block`), with sticky content that scrolls on its own if the list is taller than the screen.
-- **Phones:** `MobileIngredients`, an "INGREDIENSER" bar (`sticky bottom-0`) that opens the same `IngredientsPanel` in a full-screen `<dialog>`. Both get the **same** `servings`, so changing portions in one shows in the other.
+- **Phones and paper:** the same `IngredientsPanel` in the page, before the steps (`lg:hidden print:block`), in the panel colour from edge to edge. Both get the **same** `servings`.
+
+**The section bar on phones** (`RecipeSectionNav`, like Matprat's): «Ingredienser · Slik gjør du · Tips», only the parts the recipe has (`recipeSections` in `display.ts`), and only with two or more. It sticks just under the header: `Header` measures its own height with a `ResizeObserver` and puts it in the CSS variable `--header-height`, and the bar uses `top-[var(--header-height)]`. Tapping scrolls to the part (smoothly, unless the phone asks for less motion); each part has a `scroll-mt-…` as tall as the header and the bar, so its heading isn't hidden. The part you're reading is dark: on every scroll, the last part whose top has passed under the bars (and the last part at the very bottom).
+
+**Cooking mode:**
+- **«Behold skjermen på»** (`KeepScreenOn` + `useWakeLock`) above the steps: a switch that asks the browser to keep the screen on (the Screen Wake Lock API; Safari on iPhone from iOS 16.4). The browser lets go when you switch app, so it asks again when the page is visible. Not remembered, and hidden where the browser can't do it.
+- **Tick off steps:** the gold number is a button (`aria-pressed`); pressed, it shows ✓ and the step turns grey. Kept only while the page is open.
+
+**The line under the introduction** (`RecipeMeta`): time, portions and **difficulty** (with four small bars, filled up to the level: the place in `difficulties` in `types.ts`), then the labels from `recipeLabels` (`display.ts`): main ingredient, **cuisine**, "Rask", the tags and the themes ("Passer til"). Each part only when the recipe has it.
 
 **Portions:** `PortionStepper` changes `servings`. `IngredientsPanel` computes `scale = servings / baseServings` and passes it to `IngredientList`, which multiplies every amount: 2 → 4 portions turns 300 g into 600 g, and ½ løk into 1.
 
 **Actions:** "Skriv ut" opens the browser's print dialog. "Kopier lenke" copies the address and shows "Lenke kopiert" for 2 seconds.
 
 ## 6. The overview page (`/oppskrifter`)
+
+Desktop (from lg:), the top in two columns:
+
+```
+Oppskrifter                                   ┌─────────────────────────────┐
+Finn noe godt å lage!                         │ ┌──────┐ HVA MED…           │  ← RecipeSuggestion, as tall
+[🔍 Søk i oppskrifter      ] [⚙ Filter]       │ │photo │ Laksewrap?         │    as the left column
+(Alle) (Frokost) (Lunsj) … (Tilbehør)         │ └──────┘ ↻ Vis et annet …   │    ("Pizzatid!" on Fridays)
+                                              └─────────────────────────────┘
+```
+
+Phones and tablets, one column (and the rest of the page on every screen):
 
 ```
 Oppskrifter
@@ -233,6 +257,8 @@ Finn noe godt å lage!
 ```
 
 **How it works:**
+- **The width** is the header's (`max-w-7xl`, `px-4 md:px-8`), so the heading starts under the logo and the cards end under the menu.
+- **The top, from lg:** a grid with a fixed right column (26rem, 34rem from xl) and `grid-rows-[auto_auto_1fr]`. The suggestion is placed in the right column over all three rows (`col-start-2 row-start-1 row-span-3`); the heading, and the search + chips (one box), go down the left column. The box is `w-fit` from lg: as wide as the chips on one line, and the search row fills it, so search + Filter end where «Tilbehør» ends. Spanning the rows makes it exactly as tall as the left column (the box is `lg:h-full`, content centred), so both sides end at the same line. The last row is `1fr`, so if the card is ever taller, the extra height goes there instead of spreading out the left column. On phones the same elements simply follow the order of the code (heading, suggestion, search, chips). `RecipeSuggestion` is always a row, picture on the left, text on the right: a square picture on phones, and from lg 4:3 like the recipe cards (`aspect-[4/3]`, the height set and the width from the aspect ratio), and from lg it has no border.
 - **The state** lives in `RecipeListPage`: `view` (`"large"`, `"standard"` or `"list"`; remembered in this browser, see "The views"), `day` and `suggestion` (for "Hva med…?"). The **filters live in the address**, not in `useState`: `filters = filtersFromParams(searchParams, recipes)` on every render, and the page's own `setFilters` writes them back with `filtersToParams`. `filters` has `query` (the search text, `""` = no search) and `chosen`, the ticked options per filter group (`{ category: ["Middag"], time: ["20–40 min"] }`; missing or `[]` = nothing ticked).
 - **The address:** `/oppskrifter?sok=laks&maltid=Middag&maltid=Lunsj&kjokken=Italiensk`. The search is `sok`; each group uses its `param` (Norwegian, only a–z and `-`); several options repeat the name. Values are written as they are and encoded by `URLSearchParams`. Reading an address keeps only values the panel could have ticked, so an old or hand-typed link (`?kjokken=Marsiansk`) can't break anything. The first letter typed in the search adds a step to the history and the next ones replace it, so one press on back clears the search. Changing the filters doesn't scroll to the top (`preventScrollReset`), and doesn't fetch the recipes again: the route's `shouldRevalidate` says no when only the `?…` part changed ("Prøv igjen", which keeps the address, still fetches).
 - **Back to the same list:** the cards (and "Hva med…?") bring the list's `?…` part to the recipe page in the link's `state` (`recipes/listLink.ts`), so "← Alle oppskrifter" goes back to the filtered list, also after a reload. A recipe opened from a shared link has no `state`, and goes to the plain list.
@@ -300,7 +326,7 @@ seasons?: Season[]; // missing = not filled in yet; [] = all year
 | The recipe page, with its own look | ✅ done |
 | Ingredient groups | ✅ done (`group`) |
 | Change the number of portions | ✅ done (`PortionStepper`) |
-| An "Ingredienser" menu on phones (like Gladkokken) | ✅ done (`MobileIngredients`) |
+| The ingredients in the page on phones, a section bar, and cooking mode (like Matprat) | ✅ done (`RecipeSectionNav`, `KeepScreenOn`, `StepList`) |
 | The overview page `/oppskrifter`, with cards, grid/list view and category filter | ✅ done |
 | Search (title, description, ingredients) | ✅ done |
 | Incomplete recipes (only a title required, "Uferdig" label) | ✅ done |

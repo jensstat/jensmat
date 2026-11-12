@@ -237,3 +237,33 @@ A refactor before the next tasks, so the code is easy to come back to. Nothing c
 - **The site's rules, not GROQ copies:** the recipes are fetched with the site's own fields (`recipeFields`, split out of `recipesQuery` in `src/recipes/sanityQuery.ts`), read with `toRecipe` and checked with `completenessReport` / `similarIngredientNames`. A new check in `completeness.ts` shows up in the Studio by itself. (The older «Uferdige» and «Mangler bilde» lists are GROQ filters, kept as quick shortcuts.)
 - **Drafts too, and live:** `context.documentStore.listenQuery(…, {perspective: 'drafts'})` gives each recipe once, in its newest version, and sends the list again when a recipe changes, so the counts update while you fill in. The child of the line is that Observable (`.pipe(map(…))`, `rxjs`, now a direct dependency of the Studio). The id is the document's `_id` (a draft may not have a slug yet), and the lists ask for both `abc` and `drafts.abc`.
 - A recipe without a title isn't listed: `toRecipe` can't read it, and the Studio already shows that in red.
+
+## 21. Cuisine and difficulty on the recipe page
+
+*Coded by Claude on request.*
+- **The difficulty** in `RecipeMeta`, next to the time and portions, with an icon of four bars filled up to the level (`difficulties.indexOf` in `types.ts`, so the order of the fixed list is the order of the bars). Not a label: it's a fact about the recipe, like the time.
+- **The cuisine** as a label (`recipeLabels` in `display.ts`, after the main ingredient, with tests). "Passer til" was already there, as labels after the tags.
+- Missing values are left out, like everything else on the page.
+
+## 22. «Husoppskriften» instead of remembered settings
+
+*Coded by Claude on request.*
+- **Tried first:** remembering the settings in `localStorage` (task 4), with each saved field checked on its own. Built, tested, and then **dropped**: the default settings *are* the house recipe, which is what's usually baked, so opening on last time's experiment would mean an extra click most times.
+- **Instead:** the page always opens with the house recipe (`useState(defaults)`, as before), and a **«Husoppskriften»** button under the subtitle puts it back after trying something else. Only shown when something differs: `isHouseRecipe(settings)` in `pizza/settings.ts` (with tests) compares every field with `Object.is`, so an empty field (NaN) counts as changed too.
+
+## 23. A fuller top on the overview (desktop)
+
+*Coded by Claude on request, after the user found the right side of `/oppskrifter` empty on desktop.*
+- **"Hva med…?" on the right** from lg; heading, search and meal chips on the left. A grid with a fixed right column (26rem, 34rem from xl; the chips still fit on one line at 1440px), and the photo 4:3 like the cards below; the suggestion spans the left column's rows, so it's exactly as tall and both sides end at the same line. Phones are unchanged.
+- **First try:** a big card with the photo across the top (16:10). It made the right side much taller than the left, with an empty gap under the chips. Changed to the same row as on phones, with a bigger square photo, stretched to the left column's height. (Letting the recipe cards start next to the chips was considered, but the count line, the view buttons and the list view sit in between.)
+- **The overview now has the header's width** (`max-w-6xl`, `px-4 md:px-8`) instead of Gladkokken's 1500px, so everything lines up with the logo and the menu. (The recipe page keeps its 1500px layout with the panel to the screen edge.)
+- A suggestion without a photo shows the big grey initial; that improves as recipes get photos. Not done: preferring recipes with a photo in `pickSuggestion`.
+- **Then, after a look:** no border around the suggestion on desktop (the phone keeps it), the search row as wide as the meal chips (search + chips in one `w-fit` box, so they end at the same place), and **the whole site a bit wider**: `max-w-6xl` → `max-w-7xl` in the header, footer, `Container` and every page that used it, so everything still lines up with the logo and the menu. The recipe page keeps its own 1500px layout.
+
+## 24. The recipe page on phones, like Matprat, and cooking mode
+
+*Coded by Claude on request. The user showed Matprat's recipe page on an iPhone as the model.*
+- **The ingredients in the page** on phones, before the steps, with the portions (the same `IngredientsPanel`, `lg:hidden print:block`, which also replaces the old paper-only copy). The bottom bar with the full-screen panel (`MobileIngredients`, section 6 of this history) is removed: with the ingredients in the page, it isn't needed.
+- **A section bar under the header** (`RecipeSectionNav`): «Ingredienser · Slik gjør du · Tips», tap to jump, the current part dark. New ideas: the header measures itself (`ResizeObserver`) into a CSS variable, `--header-height`, so the bar can stick right under it; `scroll-mt` so a jump doesn't hide the heading; a small "scroll spy" (which part is under the bars).
+- **Cooking mode:** «Behold skjermen på» (`KeepScreenOn`, `useWakeLock`, the Screen Wake Lock API, with cleanup and asking again when the page is visible), and tick off steps by tapping the gold number (✓, the step greys out; state only, not saved). On desktop too. `recipeSections` in `display.ts`, with tests.
+- Checked at iPhone 17 size (402×874): the bar sticks under the header, jumps and highlights; the switch turns on; a ticked step greys out. Desktop unchanged.

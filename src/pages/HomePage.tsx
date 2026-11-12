@@ -17,7 +17,7 @@ function HomePage() {
       {/* Same width and padding as the header, so the heading starts under the logo.
           w-full: in a flex column, mx-auto alone would shrink the box to fit its content
           and centre it, leaving white space on both sides. */}
-      <div className="mx-auto w-full max-w-6xl px-4 py-16 md:px-8 lg:py-24">
+      <div className="mx-auto w-full max-w-7xl px-4 py-16 md:px-8 lg:py-24">
         {/* As big as there's room for. leading-[0.9] pulls the two lines closer together,
             which suits a tall, narrow font like Anton. */}
         <h1 className="font-display text-5xl leading-[0.9] uppercase sm:text-7xl md:text-8xl lg:text-9xl">

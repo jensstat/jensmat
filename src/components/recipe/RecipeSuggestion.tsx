@@ -9,9 +9,17 @@ import { CardDetails, CardPhoto } from "./RecipeCard";
 // - PizzaSuggestion: "Pizzatid!", linking to the pizza calculator (Fridays)
 // They only show things; the page decides which one, picks the recipe (recipes/suggest.ts)
 // and holds the state. No outer margin or width: the page decides where it goes and how wide.
+//
+// Always a row: a square picture on the left and the text on the right.
+// From lg, in the overview's right column: a bigger picture, no border (the column
+// itself sets it apart), and the box is as tall as the left column (h-full), with the
+// content centred. On phones the border marks the box between the heading and the search.
 
-// The square on the left, in two sizes (phones / from sm:). Shared by the photo and the pizza.
-const squareSize = "h-24 w-24 shrink-0 sm:h-32 sm:w-32";
+// The picture: a square on phones and tablets (h-24/32), and from lg 4:3 like the
+// recipe cards below it (the height is set, aspect-ratio gives the width), growing
+// with the room the overview gives it. Shared by the photo and the pizza.
+const pictureSize =
+  "h-24 w-24 shrink-0 sm:h-32 sm:w-32 lg:aspect-[4/3] lg:h-40 lg:w-auto xl:h-56";
 
 interface SuggestionBoxProps {
   picture: ReactNode; // the square on the left
@@ -40,13 +48,13 @@ function SuggestionBox({
   // The list's ?… part, brought along like on the cards (recipes/listLink.ts)
   const { search } = useLocation();
   return (
-    <div className="group relative isolate flex items-center gap-4 border border-ink/15 p-3 transition-colors hover:border-ink/40 sm:gap-6 sm:p-4">
+    <div className="group relative isolate flex items-center gap-4 border border-ink/15 p-3 transition-colors hover:border-ink/40 sm:gap-6 sm:p-4 lg:h-full lg:border-0 lg:p-0">
       {picture}
       <div>
         <p className="text-xs font-semibold tracking-widest text-ink/60 uppercase">
           {label}
         </p>
-        <h2 className="mt-1 font-serif text-xl leading-snug font-semibold sm:text-2xl">
+        <h2 className="mt-1 font-serif text-xl leading-snug font-semibold sm:text-2xl xl:text-[1.75rem]">
           <Link
             to={to}
             state={listState(search)}
@@ -71,10 +79,11 @@ function RecipeSuggestion({ recipe, onShowAnother }: RecipeSuggestionProps) {
   return (
     <SuggestionBox
       picture={
+        // sizes: the picture's width (up to about 270px from xl)
         <CardPhoto
           recipe={recipe}
-          sizes="128px"
-          className={`${squareSize} text-4xl sm:text-5xl`}
+          sizes="(min-width: 1024px) 270px, 128px"
+          className={`${pictureSize} text-4xl sm:text-5xl lg:text-7xl`}
         />
       }
       label="Hva med…"
@@ -119,12 +128,12 @@ export function PizzaSuggestion() {
     <SuggestionBox
       picture={
         <div
-          className={`flex items-center justify-center bg-panel text-ink/25 ${squareSize}`}
+          className={`flex items-center justify-center bg-panel text-ink/25 ${pictureSize}`}
         >
           {/* A pizza slice: the slice, the crust, and three slices of pepperoni */}
           <svg
             viewBox="0 0 24 24"
-            className="h-12 w-12 sm:h-16 sm:w-16"
+            className="h-12 w-12 sm:h-16 sm:w-16 lg:h-24 lg:w-24"
             fill="none"
             stroke="currentColor"
             strokeWidth={1.4}

@@ -82,13 +82,36 @@ export function groupIngredients(ingredients: Ingredient[]): IngredientGroup[] {
   );
 }
 
-// The short labels shown on a recipe: main ingredient, "Rask" (worked out from the time),
-// then the tags (Glutenfri …) and the themes (Barnevennlig, Kos …).
+// The short labels shown on a recipe: main ingredient, cuisine (Italiensk …),
+// "Rask" (worked out from the time), then the tags (Glutenfri …) and the themes
+// ("Passer til": Barnevennlig, Kos …). The difficulty isn't a label: it's in the line
+// with the time and portions (RecipeMeta), with its own icon.
 export function recipeLabels(recipe: Recipe): string[] {
   return [
     ...(recipe.protein ? [recipe.protein] : []),
+    ...(recipe.cuisine ? [recipe.cuisine] : []),
     ...(isQuick(recipe) ? ["Rask"] : []),
     ...recipe.tags,
     ...(recipe.themes ?? []),
   ];
+}
+
+// A part of the recipe page that the phone's section bar can jump to (RecipeSectionNav).
+// The id is the element's id on the page.
+export interface RecipeSection {
+  id: string;
+  label: string;
+}
+
+// The parts this recipe has, in the order they're on the page. A half-done recipe
+// has fewer: no ingredients, no "Ingredienser"; no steps, no "Slik gjør du".
+export function recipeSections(recipe: Recipe): RecipeSection[] {
+  const sections: RecipeSection[] = [];
+  if (recipe.ingredients.length > 0)
+    sections.push({ id: "ingredienser", label: "Ingredienser" });
+  if (recipe.steps.length > 0)
+    sections.push({ id: "slik-gjor-du", label: "Slik gjør du" });
+  if (recipe.tips) sections.push({ id: "tips", label: "Tips" });
+  else if (recipe.source) sections.push({ id: "tips", label: "Kilde" });
+  return sections;
 }

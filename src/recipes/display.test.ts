@@ -6,6 +6,7 @@ import {
   formatQuantity,
   groupIngredients,
   recipeLabels,
+  recipeSections,
 } from "./display";
 import { isIncomplete, isQuick } from "./types";
 import type { Recipe } from "./types";
@@ -98,6 +99,21 @@ describe("recipeLabels", () => {
     ).toEqual(["Fisk", "Rask", "Glutenfri"]);
   });
 
+  it("shows the cuisine after the main ingredient", () => {
+    expect(
+      recipeLabels({
+        ...base,
+        protein: "Kylling",
+        cuisine: "Italiensk",
+        minutes: 20,
+      }),
+    ).toEqual(["Kylling", "Italiensk", "Rask"]);
+  });
+
+  it("doesn't show the difficulty as a label (it's in RecipeMeta)", () => {
+    expect(recipeLabels({ ...base, difficulty: "Enkel" })).toEqual([]);
+  });
+
   it("shows the themes after the tags", () => {
     expect(
       recipeLabels({
@@ -157,5 +173,39 @@ describe("isIncomplete", () => {
         steps: [],
       }),
     ).toBe(false);
+  });
+});
+
+describe("recipeSections", () => {
+  const base: Recipe = {
+    id: "test",
+    title: "Test",
+    tags: [],
+    ingredients: [],
+    steps: [],
+    createdAt: "2026-11-12",
+  };
+  const ids = (recipe: Recipe) => recipeSections(recipe).map((s) => s.id);
+
+  it("lists the parts the recipe has, in page order", () => {
+    expect(
+      ids({
+        ...base,
+        ingredients: [{ name: "løk" }],
+        steps: ["Stek"],
+        tips: "Server varm",
+      }),
+    ).toEqual(["ingredienser", "slik-gjor-du", "tips"]);
+  });
+
+  it("leaves out what a half-done recipe doesn't have", () => {
+    expect(ids(base)).toEqual([]);
+    expect(ids({ ...base, steps: ["Stek"] })).toEqual(["slik-gjor-du"]);
+  });
+
+  it("calls the last part 'Kilde' when there's a source but no tips", () => {
+    expect(recipeSections({ ...base, source: "Mormor" })).toEqual([
+      { id: "tips", label: "Kilde" },
+    ]);
   });
 });

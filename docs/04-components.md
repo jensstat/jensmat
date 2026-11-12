@@ -33,7 +33,7 @@ The logo and the menu. **No props.**
 "© year Min matnettside". **No props.** The year is worked out once, outside the component.
 
 ### `Container`
-The shared page width: centred, `max-w-6xl`, with the same side padding as the header, so content lines up with the logo.
+The shared page width: centred, `max-w-7xl`, with the same side padding as the header, so content lines up with the logo.
 
 | Prop | Type | |
 |---|---|---|
@@ -223,12 +223,17 @@ Small, soft, rounded labels in the panel colour: "Fisk", "Rask". Shows nothing f
 | `servings` | number | the chosen number of portions |
 | `baseServings` | number | the portions the recipe's amounts are for |
 | `onServingsChange` | `(servings: number) => void` | |
-| `headingId?` | text | lets the phone dialog use the heading as its name |
+| `headingId?` | text | lets a dialog use the heading as its name (not used now) |
 
-### `MobileIngredients`
-**Phones only** (`lg:hidden`). An "INGREDIENSER" bar that sticks to the bottom of the screen (with the number of ingredients and portions), and a full-screen `<dialog>` with `IngredientsPanel` and a round close button. The browser's `<dialog>` closes on Esc and keeps Tab inside itself. The page behind can't scroll while it's open (a rule in `index.css`).
+### `RecipeSectionNav`
+**Phones only** (`lg:hidden`). A bar that sticks under the header (`top-[var(--header-height)]`, measured by `Header`) with one button per part of the recipe («Ingredienser», «Slik gjør du», «Tips»): tap to scroll there, and the part you're reading is dark (`aria-current`). Nothing is shown for fewer than two parts.
 
-Same props as `IngredientsPanel`, apart from `headingId`.
+| Prop | Type | |
+|---|---|---|
+| `sections` | `RecipeSection[]` | from `recipeSections(recipe)` in `display.ts` |
+
+### `KeepScreenOn` (and `useWakeLock`)
+The «Behold skjermen på» switch above the steps (`role="switch"`, `aria-checked`). `useWakeLock()` works like `useState(false)`, but while it's `true` the browser is asked to keep the screen on (`navigator.wakeLock`), again when the page becomes visible, and lets go on cleanup. Not shown where the browser can't do it. No props.
 
 ### `PortionStepper`
 "[−] [2] [+] porsjoner": a white number box between two square buttons. Controlled: the page holds the number. The buttons are disabled at `min` and `max`, and screen readers hear the new number (`aria-live`).
@@ -279,9 +284,10 @@ App
 ├── RecipePage
 │   ├── RecipeView (in the same file; holds the portions)
 │   │   ├── RecipeImage, RecipeActions, RecipeMeta ── LabelList
-│   │   ├── StepList
-│   │   ├── IngredientsPanel (desktop) ──┐
-│   │   └── MobileIngredients (phones) ──┴── IngredientsPanel ── PortionStepper, IngredientList
+│   │   ├── RecipeSectionNav (phones)
+│   │   ├── KeepScreenOn, StepList (tick off steps)
+│   │   └── IngredientsPanel (side panel on desktop; in the page on phones and paper)
+│   │       └── PortionStepper, IngredientList
 │   └── NotFoundPage (unknown recipe)
 ├── NotFoundPage
 │   └── Container

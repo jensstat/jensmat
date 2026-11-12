@@ -9,7 +9,7 @@ interface ContainerProps {
 // (The other pages still write these classes themselves; they can switch to Container later.)
 function Container({ children }: ContainerProps) {
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-8 lg:py-14">
+    <div className="mx-auto w-full max-w-7xl px-4 py-10 md:px-8 lg:py-14">
       {children}
     </div>
   );
