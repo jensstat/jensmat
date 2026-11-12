@@ -149,6 +149,11 @@ export function isQuick(recipe: Recipe) {
   return recipe.minutes !== undefined && recipe.minutes <= quickMinutes;
 }
 
+// "Rask" as a choice in the filter's "Tid" group, made from the same number as isQuick,
+// so the "Rask" label on a recipe and the filter always mean the same thing.
+// It overlaps the time ranges below, and that's fine: ticked choices in "Tid" are "or".
+export const quickOption = `Rask (inntil ${quickMinutes} min)`;
+
 // The time ranges in the filter, worked out from minutes (like isQuick), so there's
 // nothing extra to fill in. Each range is "up to and including max minutes";
 // the last has no max. The first range that fits is used.

@@ -40,7 +40,7 @@ The shared page width: centred, `max-w-7xl`, with the same side padding as the h
 |---|---|---|
 | `children` | anything | the content |
 
-Used by: `PizzaCalculatorPage`, `NotFoundPage`, `RouteErrorPage`. (`HomePage` and `RecipeListPage` write the same width with their own vertical padding, and `RecipePage` is deliberately wider: up to 1500px.)
+Used by: `PizzaCalculatorPage`, `NotFoundPage`, `RouteErrorPage`. (`HomePage` and `RecipeListPage` write the same width with their own vertical padding, and `RecipePage` has the same width, but its own two-column layout.)
 
 ### Icons (`icons.tsx`)
 Small line icons, drawn on a 24×24 grid in the text colour: `CloseIcon` (✕), `CheckIcon` (✓), `ChevronDownIcon`, `FilterIcon`, `SearchIcon`. Each takes only `className?` (the size, e.g. `"h-5 w-5"`, and maybe a colour). They're hidden from screen readers; the button around them carries the words.
@@ -181,6 +181,14 @@ Props: `filters`, `onChange`.
 | `recipe` | `Recipe` |
 | `onShowAnother` | `() => void` |
 
+### `SortSelect`
+"Sorter [Nyeste ▾]" next to the view buttons: the browser's own `<select>` (the phone's own list on phones), with its own arrow. The word "Sorter" is only for screen readers on phones, where the row is tight. Controlled: the page holds the order, in the address.
+
+| Prop | Type |
+|---|---|
+| `value` | `SortOrder` (`"nyeste"`, `"alfabetisk"`, `"raskest"`) |
+| `onChange` | `(value: SortOrder) => void` |
+
 ### `ViewToggle`
 Icon buttons for the overview's view (grid ▦ / list ☰). The chosen one is dark. Also exports the `RecipeView` type.
 
@@ -207,15 +215,15 @@ One line: a clock icon with the time, a plate icon with the portions, four bars 
 |---|---|
 | `minutes`, `servings` | number |
 | `difficulty` | `Difficulty` |
-| `labels` | `string[]` (use `recipeLabels(recipe)`) |
+| `labels` | `RecipeLabel[]` (use `recipeLabels(recipe)`) |
 | `className?` | text, the space around it (`"mt-6"`) |
 
 ### `LabelList`
-Small, soft, rounded labels in the panel colour: "Fisk", "Rask". Shows nothing for an empty list. Will be reused on the recipe cards.
+Small, soft, rounded labels in the panel colour: "Fisk", "Rask". Shows nothing for an empty list. A label with a filter group is a link to the overview filtered on it (`filterLink`, with the label's `option`, or the label itself): «Rask» ticks «Rask (inntil 30 min)» in «Tid». A label without a group would be plain text.
 
 | Prop | Type |
 |---|---|
-| `labels` | `string[]` |
+| `labels` | `RecipeLabel[]`: `{ label, group?, option? }`, from `recipeLabels(recipe)` |
 
 ### `IngredientsPanel`
 **The content of the ingredient panel:** the "INGREDIENSER" heading, `PortionStepper` between two dotted lines, and `IngredientList`. Used in two places: the side panel on desktop, and in the page (before the steps) on phones and paper.
@@ -280,7 +288,7 @@ App
 │   ├── RecipeSuggestion / PizzaSuggestion ── SuggestionBox
 │   ├── SearchField
 │   ├── FilterPanel ── FilterGroupSection (× each filter group)
-│   ├── CategoryChips, ActiveFilters, ViewToggle
+│   ├── CategoryChips, ActiveFilters, SortSelect, ViewToggle
 │   └── RecipeCard (× each recipe) ── CardPhoto
 ├── DataCheckPage
 ├── RecipePage

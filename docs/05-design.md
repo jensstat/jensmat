@@ -161,9 +161,9 @@ Defined in `src/index.css`, so they become classes like `bg-panel`, `text-ink` a
 
 ### Layout
 
-- **Up to 1500px wide**, with 40px side margins on desktop and 20px on phones. Wider than the rest of the site, so the content starts further left than the logo on most screens.
+- **The header's width** (`max-w-7xl`, side padding `px-4 md:px-8`), like the rest of the site: the photo and title start under the logo, and the ingredient list ends under the menu.
 - **Desktop:** the main column + a 420px panel (480px from `xl:`). The panel colour continues to the right edge of the screen (see [03](03-recipes.md), "The panel to the screen edge").
-- **Phones:** one column, and the ingredients behind a dark bar at the bottom of the screen.
+- **Phones:** one column, like Matprat: the ingredients in the page before the steps (the panel colour from edge to edge), and a section bar under the header.
 - **Lines:** dotted lines around the portion selector and after each step number; thin solid lines (`border-ink/10`) between ingredients.
 - **Readable line length:** the steps and introduction are kept to `max-w-3xl`.
 

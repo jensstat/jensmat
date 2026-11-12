@@ -1,4 +1,4 @@
-import { formatMinutes } from "../../recipes/display";
+import { formatMinutes, type RecipeLabel } from "../../recipes/display";
 import { difficulties, type Difficulty } from "../../recipes/types";
 import LabelList from "./LabelList";
 
@@ -6,7 +6,7 @@ interface RecipeMetaProps {
   minutes?: number; // left out if the recipe has no time yet
   servings?: number; // left out if the recipe has no portions yet
   difficulty?: Difficulty; // left out if the recipe has no difficulty yet
-  labels: string[];
+  labels: RecipeLabel[];
   className?: string; // the space around it, set by the page (e.g. "mt-6")
 }
 

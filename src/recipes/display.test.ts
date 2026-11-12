@@ -75,6 +75,9 @@ describe("groupIngredients", () => {
 });
 
 describe("recipeLabels", () => {
+  // Only the text of each label; the groups are checked in their own test
+  const texts = (recipe: Recipe) =>
+    recipeLabels(recipe).map((label) => label.label);
   const base: Recipe = {
     id: "test",
     title: "Test",
@@ -90,7 +93,7 @@ describe("recipeLabels", () => {
 
   it("shows the main ingredient, 'Rask' for quick recipes, then the tags", () => {
     expect(
-      recipeLabels({
+      texts({
         ...base,
         protein: "Fisk",
         minutes: 20,
@@ -101,7 +104,7 @@ describe("recipeLabels", () => {
 
   it("shows the cuisine after the main ingredient", () => {
     expect(
-      recipeLabels({
+      texts({
         ...base,
         protein: "Kylling",
         cuisine: "Italiensk",
@@ -111,12 +114,12 @@ describe("recipeLabels", () => {
   });
 
   it("doesn't show the difficulty as a label (it's in RecipeMeta)", () => {
-    expect(recipeLabels({ ...base, difficulty: "Enkel" })).toEqual([]);
+    expect(texts({ ...base, difficulty: "Enkel" })).toEqual([]);
   });
 
   it("shows the themes after the tags", () => {
     expect(
-      recipeLabels({
+      texts({
         ...base,
         tags: ["Glutenfri"],
         themes: ["Barnevennlig", "Kos"],
@@ -125,7 +128,26 @@ describe("recipeLabels", () => {
   });
 
   it("leaves out what doesn't apply", () => {
-    expect(recipeLabels(base)).toEqual([]);
+    expect(texts(base)).toEqual([]);
+  });
+
+  it("gives each label its filter group; 'Rask' ticks 'Rask (inntil 30 min)' in Tid", () => {
+    expect(
+      recipeLabels({
+        ...base,
+        protein: "Fisk",
+        cuisine: "Italiensk",
+        minutes: 20,
+        tags: ["Glutenfri"],
+        themes: ["Kos"],
+      }),
+    ).toEqual([
+      { label: "Fisk", group: "protein" },
+      { label: "Italiensk", group: "cuisine" },
+      { label: "Rask", group: "time", option: "Rask (inntil 30 min)" },
+      { label: "Glutenfri", group: "properties" },
+      { label: "Kos", group: "themes" },
+    ]);
   });
 });
 

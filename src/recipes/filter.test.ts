@@ -7,6 +7,7 @@ import {
   filterGroups,
   filterRecipes,
   filtersFromParams,
+  filterLink,
   filtersToParams,
   ingredientNames,
   mostUsedOptions,
@@ -501,6 +502,17 @@ describe("time, difficulty and cuisine", () => {
     ]);
   });
 
+  it("has 'Rask (inntil 30 min)' in Tid, the same rule as the 'Rask' label", () => {
+    const thirty = makeRecipe({ id: "thirty", minutes: 30 });
+    const thirtyOne = makeRecipe({ id: "thirtyOne", minutes: 31 });
+    expect(
+      filterRecipes([quick, thirty, thirtyOne, medium, notFilledIn], {
+        ...noFilters,
+        chosen: { time: ["Rask (inntil 30 min)"] },
+      }),
+    ).toEqual([quick, thirty]);
+  });
+
   it("filters on difficulty and cuisine ('or' within each)", () => {
     expect(tick("difficulty", ["Superenkel", "Enkel"])).toEqual([
       quick,
@@ -724,5 +736,24 @@ describe("filtersFromParams (the address → filters)", () => {
   it("gives every group its own name in the address", () => {
     const names = filterGroups.map((group) => group.param);
     expect(new Set([...names, "sok"]).size).toBe(names.length + 1);
+  });
+});
+
+describe("filterLink (a label on the recipe page → the filtered overview)", () => {
+  it("gives the overview's address with one option ticked", () => {
+    expect(filterLink("cuisine", "Italiensk")).toBe(
+      "/oppskrifter?kjokken=Italiensk",
+    );
+    expect(filterLink("themes", "Matpakke og tur")).toBe(
+      "/oppskrifter?passer-til=Matpakke+og+tur",
+    );
+  });
+
+  it("gives an address the overview reads back as that one option", () => {
+    const address = filterLink("protein", "Fisk");
+    const params = new URLSearchParams(address.split("?")[1]);
+    expect(filtersFromParams(params, recipes).chosen).toEqual({
+      protein: ["Fisk"],
+    });
   });
 });

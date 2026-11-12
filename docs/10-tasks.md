@@ -12,9 +12,9 @@ Known bugs and quirks are in [08 – Status](08-status.md); this file is about w
 Agreed 12 November, after the first order was finished. Small things that help right away come first; the biggest (own posting) comes last, when you've used the Studio on the phone for a while and know better what your own form should do differently.
 
 **Next, agreed 12 November (evening), for the design:**
-- [ ] **The recipe page lined up with the header**: the rest of the site is `max-w-7xl`; the recipe page is still up to 1500px, so it starts left of the logo (08, issue 12). The panel colour can still reach the screen edge
-- [ ] **Clickable labels** on the recipe page: «Italiensk» → `/oppskrifter?kjokken=Italiensk` (the filters are already in the address)
-- [ ] **Sorting** on the overview (Nyeste, A–Å, Raskest)
+- [x] **The recipe page lined up with the header** ✅ (12 November): `max-w-7xl` and the header's padding, checked at 1024, 1440 and 1920px (the title under the logo, the ingredients ending under the menu). The panel colour still reaches the screen edge
+- [x] **Clickable labels** on the recipe page ✅ (12 November): «Italiensk» → `/oppskrifter?kjokken=Italiensk` (`filterLink` in `filter.ts`, with tests). «Rask» → «Rask (inntil 30 min)», a new choice in «Tid»
+- [x] **Sorting** on the overview (Nyeste, A–Å, Raskest) ✅ (12 November): `recipes/sort.ts` with tests, `SortSelect`, in the address (`?sortering=raskest`)
 - ~~A layout for recipes without a photo~~ Not needed: every dish should have a photo
 
 **The second list:**

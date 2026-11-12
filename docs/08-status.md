@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 11 November 2026. Type check, lint, 218 tests and the build all pass. The recipes come from Sanity, and the site is online (Vercel). Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
+*Last checked: 12 November 2026. Type check, lint, 256 tests and the build all pass (the Studio's type check and build too). The recipes come from Sanity, and the site is online (Vercel). Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -14,7 +14,7 @@ Where the project stands: what works, what's missing, and known issues. **Update
 |---|---|---|
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
 | Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises. Always opens with the house recipe; «Husoppskriften» puts it back after a change |
-| Recipe overview | `/oppskrifter` | ✅ Recipe cards (three views, the chosen one remembered), search (title, description, ingredients), "Hva med…?" (pizza on Fridays; on the right from lg), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, grid/list view, a message when nothing matches. The search and the filters are kept in the address, so reload, back and a shared link keep them |
+| Recipe overview | `/oppskrifter` | ✅ Recipe cards (three views, the chosen one remembered), search (title, description, ingredients), "Hva med…?" (pizza on Fridays; on the right from lg), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, sorting (Nyeste, A–Å, Raskest), grid/list view, a message when nothing matches. The search and the filters are kept in the address, so reload, back and a shared link keep them |
 | Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same |
 | Recipes from Sanity | | ✅ The site reads published recipes from Sanity with GROQ (`sanityClient.ts`, `sanityQuery.ts`), through `toRecipe`. Drafts don't show. Photos come in the right size from Sanity's image service, with the hotspot kept in view |
 | Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings. Tabs, templates («Ny middag», «Ny dessert»), ingredient names to pick from, «Lim inn liste» (paste a whole ingredient list), and the Datasjekk in the left column |
@@ -24,7 +24,7 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken on desktop (wide layout, ingredient panel) and Matprat on phones (the ingredients in the page, a section bar under the header): portion selector, groups, time/portions/difficulty and labels (with cuisine), cooking mode («Behold skjermen på», tick off steps), print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| Tests | `npm test` | ✅ 218 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
+| Tests | `npm test` | ✅ 256 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, sorting, pasted ingredient lists, the recipe page's labels and sections, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
 
 ---
 
@@ -65,7 +65,7 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **11. ~~Publishing needs one setting.~~** ✅ Fixed: `vercel.json` sends every address to `index.html`. When the site is put online (Netlify, Vercel …), the server must send every address to `index.html`, otherwise reloading on `/pizza` gives the host's own 404 page. Each host has a short guide for "single page apps".
 
-**12. The recipe page is wider than the header.** The recipe content starts further left than the logo, because the recipe page is up to 1500px wide and the rest of the site `max-w-7xl` (1280px). Agreed 12 November to line it up: it's the first design task in [10](10-tasks.md).
+**12. ~~The recipe page is wider than the header.~~** ✅ Fixed (12 November): the recipe page has the header's width, so the title starts under the logo and the ingredients end under the menu. The panel colour still reaches the screen edge.
 
 **13. ~~Printing prints the whole page.~~** ✅ Fixed: the header, footer, menu, buttons and photo placeholder are hidden on paper, and the ingredients are printed before the steps (they used to be missing, since on paper the page is phone-width and they're behind the bar). Chromium may still put "Slik gjør du" alone at the bottom of a page. "Skriv ut" prints the header, the menu and the photo placeholder too. A print style (`print:hidden` on more elements) can make it tidier.
 

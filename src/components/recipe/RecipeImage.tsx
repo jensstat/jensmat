@@ -5,9 +5,10 @@ interface RecipeImageProps {
   recipe: Recipe;
 }
 
-// How wide the photo is shown: the whole screen on phones, at most 960 px (60rem) on
-// bigger screens. The browser fetches a photo that's sharp enough (see recipes/image.ts).
-const photoSizes = "(min-width: 1024px) 960px, 100vw";
+// How wide the photo is shown: the whole screen on phones and tablets, and the main column
+// (about 700 px next to the panel, up to 60rem without it) on bigger screens.
+// The browser fetches a photo that's sharp enough (see recipes/image.ts).
+const photoSizes = "(min-width: 1024px) 860px, 100vw";
 
 // The recipe's photo (16:9, like Gladkokken). Without a photo, a calm, lower placeholder (5:2),
 // so a missing photo doesn't take up half the screen.

@@ -8,6 +8,8 @@ import {
   difficulties,
   proteins,
   tags,
+  isQuick,
+  quickOption,
   themes,
   timeRangeOf,
   timeRanges,
@@ -100,9 +102,11 @@ export const filterGroups: FilterGroup[] = [
     param: "tid",
     label: "Tid",
     combine: "any",
-    // Worked out from minutes (timeRangeOf in types.ts): nothing extra to fill in
-    options: () => timeRanges.map((range) => range.label),
-    matches: (recipe, option) => timeRangeOf(recipe) === option,
+    // Worked out from minutes (isQuick and timeRangeOf in types.ts): nothing extra to fill in.
+    // "Rask (inntil 30 min)" first, the same rule as the "Rask" label, then the ranges.
+    options: () => [quickOption, ...timeRanges.map((range) => range.label)],
+    matches: (recipe, option) =>
+      option === quickOption ? isQuick(recipe) : timeRangeOf(recipe) === option,
     hasInfo: (recipe) => recipe.minutes !== undefined,
   },
   {
@@ -324,6 +328,16 @@ export function filtersToParams(filters: RecipeFilters): URLSearchParams {
     }
   }
   return params;
+}
+
+// The overview's address filtered on one option: filterLink("cuisine", "Italiensk")
+// → "/oppskrifter?kjokken=Italiensk". Used by the labels on the recipe page.
+export function filterLink(groupId: string, option: string): string {
+  const params = filtersToParams({
+    query: "",
+    chosen: { [groupId]: [option] },
+  });
+  return `/oppskrifter?${params}`;
 }
 
 // The filters from an address: the opposite of filtersToParams.

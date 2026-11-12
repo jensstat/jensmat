@@ -105,8 +105,8 @@ function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
         recipe={recipe}
         sizes={
           large
-            ? // 1 per row on phones, 2 from 640 px, 3 from 1280 px, and the page stops at 1500 px
-              "(min-width: 1500px) 460px, (min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+            ? // 1 per row on phones, 2 from 640 px, 3 (about 350 px, the page is max-w-7xl) from 1280 px
+              "(min-width: 1280px) 360px, (min-width: 640px) 50vw, 100vw"
             : // 2 per row, 3 from 1024 px, 4 (about 300 px each) from 1280 px
               "(min-width: 1280px) 320px, (min-width: 1024px) 33vw, 50vw"
         }

@@ -16,6 +16,7 @@ The recipes ("Oppskrifter") are the main part of the site going forward: all my 
 | `recipes/display.test.ts` | test | Checks `display.ts` |
 | `recipes/filter.ts` (+ test) | knowledge | **Which recipes to show** in the overview: `filterRecipes(recipes, filters)`, the filter groups (`filterGroups`), and the counts and helpers the panel uses |
 | `recipes/suggest.ts` (+ test) | knowledge | **"Hva med…?"**: `pickSuggestion(recipes, day, current)` and `isPizzaDay` |
+| `recipes/sort.ts` (+ test) | knowledge | **The order on the overview**: `sortRecipes(recipes, order)` (Nyeste, A–Å, Raskest) and `sortFromParams` |
 | `recipes/completeness.ts` (+ test) | knowledge | **The Datasjekk**: what each recipe is missing (`missingInfo`, `completenessReport`) |
 | `recipes/parseIngredients.ts` (+ test) | knowledge | **A pasted ingredient list → ingredient lines** (`parseIngredientList`), used by «Lim inn liste» in the Studio |
 | `recipes/testRecipe.ts` | test | `makeRecipe({ … })`: a made-up recipe for the tests |
@@ -80,7 +81,7 @@ A recipe can be posted half-done, for example quickly from the phone with just a
 | **`amount` is a number**, not text like "3 dl" | So portions can be scaled: 2 → 4 portions is just "× 2" |
 | **`protein` is its own field**, not a tag | A dish has *one* main ingredient. As a field it can't be forgotten (TypeScript checks), and it makes nice filter buttons |
 | **"Rask" (quick) isn't stored** | It's worked out: `isQuick(recipe)` is `minutes <= 30`. Then it can never be wrong if you change the time. No time means not quick |
-| **Time ranges aren't stored** | The filter's "Under 20 min", "20–40 min", "40–60 min", "Over 60 min" come from `minutes` (`timeRangeOf` in `types.ts`). Nothing extra to fill in |
+| **Time ranges aren't stored** | The filter's "Rask (inntil 30 min)", "Under 20 min", "20–40 min", "40–60 min", "Over 60 min" come from `minutes` (`isQuick` and `timeRangeOf` in `types.ts`). Nothing extra to fill in |
 | **`themes` is its own field, not tags** | Tags are diet needs (Glutenfri, Laktosefri): `[]` means "none apply", so they're never "missing". Themes are the mood or occasion, and *missing* means "not filled in yet" (the Datasjekk asks for it), while `[]` means "you've decided none fit". Both are shown as labels on the recipe |
 | **"Uferdig" isn't stored either** | `isIncomplete(recipe)`, for the same reason: it can't still say "Uferdig" after you've added the ingredients |
 | **`createdAt` as `"2026-11-09"`** | The standard date format every database and CMS uses. It also sorts correctly as plain text |
@@ -198,7 +199,7 @@ Desktop (from lg:)                                        Phones
 │ ▣ 1 ···························    │                │   │ [−][2][+] pors.  │
 │ text (18px)                        │                │   │ 300 g laks …     │
 └────────────────────────────────────┴────────────────┘   │ Slik gjør du     │
-   up to 1500px; the panel colour continues               │ [Behold skjermen]│
+   the header's width; the panel colour continues         │ [Behold skjermen]│
    to the screen edge                                     │ ✓ 1 ··· (done)   │
                                                           │ ▣ 2 ·········    │
                                                           └──────────────────┘
@@ -209,7 +210,9 @@ Desktop (from lg:)                                        Phones
 - `RecipeView` draws it, and holds the **number of portions** in state.
 - `RecipePage` gives `RecipeView` a `key={recipe.id}`. When you move to another recipe, React starts `RecipeView` afresh, so the portions start at the new recipe's own number.
 
-**The panel to the screen edge:** the main column and the panel sit in a container of at most 1500px. To make the panel colour continue to the right edge on wide screens, the `<article>` gets a background that's white on the left half and panel-coloured on the right half (`linear-gradient(to right, white 50%, panel 50%)`). The main column is white on top of it, so the panel colour only shows to the right of the main column.
+**Lined up with the header:** the main column and the panel sit in a container with the header's width (`max-w-7xl`); the main column has the header's left padding (`px-4 md:px-8`), and the panel `pr-8`, so the title starts under the logo and the ingredients end under the menu.
+
+**The panel to the screen edge:** the main column and the panel sit in that container. To make the panel colour continue to the right edge on wide screens, the `<article>` gets a background that's white on the left half and panel-coloured on the right half (`linear-gradient(to right, white 50%, panel 50%)`). The main column is white on top of it, so the panel colour only shows to the right of the main column.
 
 **The ingredients appear twice in the code, but only once on screen:**
 - **Desktop:** `IngredientsPanel` in a side panel (`hidden lg:block`), with sticky content that scrolls on its own if the list is taller than the screen.
@@ -221,7 +224,7 @@ Desktop (from lg:)                                        Phones
 - **«Behold skjermen på»** (`KeepScreenOn` + `useWakeLock`) above the steps: a switch that asks the browser to keep the screen on (the Screen Wake Lock API; Safari on iPhone from iOS 16.4). The browser lets go when you switch app, so it asks again when the page is visible. Not remembered, and hidden where the browser can't do it.
 - **Tick off steps:** the gold number is a button (`aria-pressed`); pressed, it shows ✓ and the step turns grey. Kept only while the page is open.
 
-**The line under the introduction** (`RecipeMeta`): time, portions and **difficulty** (with four small bars, filled up to the level: the place in `difficulties` in `types.ts`), then the labels from `recipeLabels` (`display.ts`): main ingredient, **cuisine**, "Rask", the tags and the themes ("Passer til"). Each part only when the recipe has it.
+**The line under the introduction** (`RecipeMeta`): time, portions and **difficulty** (with four small bars, filled up to the level: the place in `difficulties` in `types.ts`), then the labels from `recipeLabels` (`display.ts`): main ingredient, **cuisine**, "Rask", the tags and the themes ("Passer til"). Each part only when the recipe has it. **The labels are links** to the overview filtered on them («Italiensk» → `/oppskrifter?kjokken=Italiensk`, made by `filterLink` in `filter.ts`): each label knows its filter group. «Rask» links to «Rask (inntil 30 min)», a choice in «Tid» made from the same rule (`quickOption` and `isQuick` in `types.ts`), so the label and the filter always mean the same.
 
 **Portions:** `PortionStepper` changes `servings`. `IngredientsPanel` computes `scale = servings / baseServings` and passes it to `IngredientList`, which multiplies every amount: 2 → 4 portions turns 300 g into 600 g, and ½ løk into 1.
 
@@ -248,7 +251,7 @@ Finn noe godt å lage!
 [🔍 Søk i oppskrifter        ✕] [⚙ Filter 2]                       ← SearchField + FilterPanel
 (Alle) (Frokost) (Lunsj) (Middag) (Dessert) (Bakst) (Tilbehør)   ← CategoryChips (shortcut to "Måltid")
 (20–40 min ✕) (Uten løk ✕)                                         ← ActiveFilters
-4 oppskrifter                                    [▬] [▦] [☰]      ← count + ViewToggle (Store, Standard, List)
+4 oppskrifter              Sorter [Nyeste ▾]  [▬] [▦] [☰]      ← count + SortSelect + ViewToggle (Store, Standard, List)
 ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐
 │ photo│ │ photo│ │ photo│ │ photo│                              ← RecipeCard (variant "card")
 │Title │ │Title │ │Title │ │Title │
@@ -260,6 +263,7 @@ Finn noe godt å lage!
 - **The width** is the header's (`max-w-7xl`, `px-4 md:px-8`), so the heading starts under the logo and the cards end under the menu.
 - **The top, from lg:** a grid with a fixed right column (26rem, 34rem from xl) and `grid-rows-[auto_auto_1fr]`. The suggestion is placed in the right column over all three rows (`col-start-2 row-start-1 row-span-3`); the heading, and the search + chips (one box), go down the left column. The box is `w-fit` from lg: as wide as the chips on one line, and the search row fills it, so search + Filter end where «Tilbehør» ends. Spanning the rows makes it exactly as tall as the left column (the box is `lg:h-full`, content centred), so both sides end at the same line. The last row is `1fr`, so if the card is ever taller, the extra height goes there instead of spreading out the left column. On phones the same elements simply follow the order of the code (heading, suggestion, search, chips). `RecipeSuggestion` is always a row, picture on the left, text on the right: a square picture on phones, and from lg 4:3 like the recipe cards (`aspect-[4/3]`, the height set and the width from the aspect ratio), and from lg it has no border.
 - **The state** lives in `RecipeListPage`: `view` (`"large"`, `"standard"` or `"list"`; remembered in this browser, see "The views"), `day` and `suggestion` (for "Hva med…?"). The **filters live in the address**, not in `useState`: `filters = filtersFromParams(searchParams, recipes)` on every render, and the page's own `setFilters` writes them back with `filtersToParams`. `filters` has `query` (the search text, `""` = no search) and `chosen`, the ticked options per filter group (`{ category: ["Middag"], time: ["20–40 min"] }`; missing or `[]` = nothing ticked).
+- **The order** (`SortSelect`, `recipes/sort.ts`): Nyeste (the default: `createdAt`, newest first), A–Å (by title, the Norwegian way) and Raskest (the shortest time first; recipes without a time last). Kept in the address like the filters, `?sortering=raskest`, and left out for Nyeste. The page writes the filters and the order together (`writeAddress`), so changing one keeps the other. Sorting comes after filtering, on every render; nothing is stored.
 - **The address:** `/oppskrifter?sok=laks&maltid=Middag&maltid=Lunsj&kjokken=Italiensk`. The search is `sok`; each group uses its `param` (Norwegian, only a–z and `-`); several options repeat the name. Values are written as they are and encoded by `URLSearchParams`. Reading an address keeps only values the panel could have ticked, so an old or hand-typed link (`?kjokken=Marsiansk`) can't break anything. The first letter typed in the search adds a step to the history and the next ones replace it, so one press on back clears the search. Changing the filters doesn't scroll to the top (`preventScrollReset`), and doesn't fetch the recipes again: the route's `shouldRevalidate` says no when only the `?…` part changed ("Prøv igjen", which keeps the address, still fetches).
 - **Back to the same list:** the cards (and "Hva med…?") bring the list's `?…` part to the recipe page in the link's `state` (`recipes/listLink.ts`), so "← Alle oppskrifter" goes back to the filtered list, also after a reload. A recipe opened from a shared link has no `state`, and goes to the plain list.
 - **Search** looks in the title, the description and the ingredient names. It ignores upper/lower case and spaces at the ends, but the field still shows exactly what was typed: the cleaning happens in `filterRecipes`, not in the state. The placeholder is short ("Søk i oppskrifter") so it fits next to the Filter button on phones.

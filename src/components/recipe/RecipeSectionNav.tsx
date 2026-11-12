@@ -74,7 +74,7 @@ function RecipeSectionNav({ sections }: RecipeSectionNavProps) {
     // z-[5]: above the page, below the header (z-10).
     <nav
       aria-label="Deler av oppskriften"
-      className="sticky top-[var(--header-height,0px)] z-[5] -mx-5 mt-8 border-b border-ink/10 bg-white px-5 py-3 lg:hidden print:hidden"
+      className="sticky top-[var(--header-height,0px)] z-[5] -mx-4 mt-8 border-b border-ink/10 bg-white px-4 py-3 md:-mx-8 md:px-8 lg:hidden print:hidden"
     >
       <ul className="flex gap-2">
         {sections.map((section) => (

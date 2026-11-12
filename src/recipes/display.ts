@@ -3,7 +3,7 @@
 // and reused by the recipe page, the recipe cards and portion scaling.
 
 import type { Ingredient, Recipe } from "./types";
-import { isQuick } from "./types";
+import { isQuick, quickOption } from "./types";
 
 // Common kitchen fractions, shown as fraction characters like in a cookbook.
 const fractions: [number, string][] = [
@@ -82,17 +82,32 @@ export function groupIngredients(ingredients: Ingredient[]): IngredientGroup[] {
   );
 }
 
+// A short label on a recipe ("Fisk", "Italiensk", "Rask"), and where it links: the filter
+// group (an id in filterGroups, filter.ts) and the option to tick there, so the label can
+// link to the overview filtered on it. The option is usually the label itself; "Rask" ticks
+// "Rask (inntil 30 min)" in "Tid". No group: plain text.
+export interface RecipeLabel {
+  label: string;
+  group?: string;
+  option?: string; // the option to tick, if it's not the same as the label
+}
+
 // The short labels shown on a recipe: main ingredient, cuisine (Italiensk …),
 // "Rask" (worked out from the time), then the tags (Glutenfri …) and the themes
 // ("Passer til": Barnevennlig, Kos …). The difficulty isn't a label: it's in the line
 // with the time and portions (RecipeMeta), with its own icon.
-export function recipeLabels(recipe: Recipe): string[] {
+export function recipeLabels(recipe: Recipe): RecipeLabel[] {
   return [
-    ...(recipe.protein ? [recipe.protein] : []),
-    ...(recipe.cuisine ? [recipe.cuisine] : []),
-    ...(isQuick(recipe) ? ["Rask"] : []),
-    ...recipe.tags,
-    ...(recipe.themes ?? []),
+    ...(recipe.protein ? [{ label: recipe.protein, group: "protein" }] : []),
+    ...(recipe.cuisine ? [{ label: recipe.cuisine, group: "cuisine" }] : []),
+    ...(isQuick(recipe)
+      ? [{ label: "Rask", group: "time", option: quickOption }]
+      : []),
+    ...recipe.tags.map((tag) => ({ label: tag, group: "properties" })),
+    ...(recipe.themes ?? []).map((theme) => ({
+      label: theme,
+      group: "themes",
+    })),
   ];
 }
 

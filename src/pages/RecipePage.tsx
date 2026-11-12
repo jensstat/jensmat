@@ -41,8 +41,10 @@ interface RecipeViewProps {
 }
 
 // The recipe, modelled on Gladkokken (desktop) and Matprat (phones):
-// Desktop: a wide main column (photo, title, steps) and the ingredients in a panel on the right,
+// Desktop: a main column (photo, title, steps) and the ingredients in a panel on the right,
 //          whose background runs all the way to the right edge of the screen.
+//          The same width as the header, so the photo starts under the logo and the
+//          ingredients end under the menu.
 // Phones:  everything in one column: the ingredients in the page, before the steps, and a bar
 //          under the header to jump between "Ingredienser", "Slik gjør du" and "Tips".
 //
@@ -85,19 +87,23 @@ function RecipeView({ recipe }: RecipeViewProps) {
           : ""
       }`}
     >
-      {/* Up to 1500px wide (93.75rem, like Gladkokken). Two columns from lg: the main column, and a panel
-          of 420px (480px from xl). On phones: one column. Sizes in rem, so they follow the 90 % in index.css. */}
+      {/* The header's width (max-w-7xl). Two columns from lg: the main column, and a panel
+          of 420px (480px from xl). On phones: one column. Sizes in rem, so they follow the 90 % in index.css.
+          The panel colour can start no further left than the middle of the screen (the background
+          trick above); it doesn't, since the container is always more than twice the panel's width. */}
       <div
-        className={`mx-auto grid w-full max-w-[93.75rem] ${
+        className={`mx-auto grid w-full max-w-7xl ${
           hasIngredients
             ? "lg:flex-1 lg:grid-cols-[minmax(0,1fr)_26.25rem] xl:grid-cols-[minmax(0,1fr)_30rem] print:grid-cols-1"
             : ""
         }`}
       >
-        {/* The main column. Without a panel next to it, it keeps about the same width
-            as with one (60rem), so the photo doesn't stretch across the whole screen. */}
+        {/* The main column. The header's side padding on the left (px-4 md:px-8), so it lines up
+            with the logo; from lg more on the right, as space before the panel.
+            Without a panel next to it, it keeps about the same width as with one (60rem),
+            so the photo doesn't stretch across the whole screen. */}
         <div
-          className={`bg-white px-5 pt-5 pb-12 lg:px-10 lg:pt-6 lg:pb-20 xl:pr-16 ${
+          className={`bg-white px-4 pt-5 pb-12 md:px-8 lg:pt-6 lg:pr-10 lg:pb-20 xl:pr-16 ${
             hasIngredients ? "" : "w-full max-w-[60rem]"
           }`}
         >
@@ -155,11 +161,11 @@ function RecipeView({ recipe }: RecipeViewProps) {
 
           {/* Phones and paper: the ingredients in the page, before the steps, with the portions.
               (On desktop they're in the side panel on the right, which doesn't work on paper.)
-              -mx-5: the panel colour reaches the edges of the phone screen. */}
+              -mx-4 md:-mx-8 (the main column's padding): the panel colour reaches the screen edges. */}
           {hasIngredients && (
             <section
               id="ingredienser"
-              className={`-mx-5 mt-6 bg-panel px-5 py-8 lg:hidden print:mx-0 print:mt-10 print:block print:max-w-3xl print:bg-transparent print:p-0 ${sectionScroll}`}
+              className={`-mx-4 mt-6 bg-panel px-4 py-8 md:-mx-8 md:px-8 lg:hidden print:mx-0 print:mt-10 print:block print:max-w-3xl print:bg-transparent print:p-0 ${sectionScroll}`}
             >
               <IngredientsPanel {...panelProps} />
             </section>
@@ -210,9 +216,10 @@ function RecipeView({ recipe }: RecipeViewProps) {
 
         {/* The ingredient panel, desktop only. The content is sticky, so it stays in view while you
             read the steps (2rem under the header, measured by Header.tsx), and scrolls on its own
-            if the list is taller than the screen. */}
+            if the list is taller than the screen. pr-8: the header's padding, so the list ends
+            under the menu; the panel colour itself goes on to the screen edge. */}
         {hasIngredients && (
-          <aside className="hidden bg-panel lg:block lg:px-10 lg:py-16 xl:px-16 print:hidden">
+          <aside className="hidden bg-panel lg:block lg:py-16 lg:pr-8 lg:pl-10 xl:pl-14 print:hidden">
             <div className="sticky top-[calc(var(--header-height,0px)+2rem)] max-h-[calc(100dvh-var(--header-height,0px)-4rem)] overflow-y-auto">
               <IngredientsPanel {...panelProps} />
             </div>

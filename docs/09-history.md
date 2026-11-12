@@ -267,3 +267,25 @@ A refactor before the next tasks, so the code is easy to come back to. Nothing c
 - **A section bar under the header** (`RecipeSectionNav`): «Ingredienser · Slik gjør du · Tips», tap to jump, the current part dark. New ideas: the header measures itself (`ResizeObserver`) into a CSS variable, `--header-height`, so the bar can stick right under it; `scroll-mt` so a jump doesn't hide the heading; a small "scroll spy" (which part is under the bars).
 - **Cooking mode:** «Behold skjermen på» (`KeepScreenOn`, `useWakeLock`, the Screen Wake Lock API, with cleanup and asking again when the page is visible), and tick off steps by tapping the gold number (✓, the step greys out; state only, not saved). On desktop too. `recipeSections` in `display.ts`, with tests.
 - Checked at iPhone 17 size (402×874): the bar sticks under the header, jumps and highlights; the switch turns on; a ticked step greys out. Desktop unchanged.
+
+## 25. The recipe page lined up with the header
+
+*Coded by Claude on request.*
+- **The header's width** (`max-w-7xl`) instead of Gladkokken's 1500px, and the header's side padding: the main column `px-4 md:px-8`, the panel `pr-8`. Measured in a browser at 1024, 1440 and 1920px: the title starts exactly under the logo, the ingredient list ends exactly under the menu, no sideways scrolling. The panel colour still reaches the screen edge (the background trick works as long as the container is more than twice the panel's width, which it always is).
+- The phone's edge-to-edge parts (the ingredients, the section bar) follow the new padding (`-mx-4 md:-mx-8`).
+- **Photo sizes updated** to the narrower layout: the recipe photo (`sizes` 860px from lg) and the overview's big cards (360px from 1280px; the old value assumed the 1500px page).
+
+## 26. Clickable labels on the recipe page
+
+*Coded by Claude on request.*
+- `recipeLabels` gives `{ label, group }` instead of only text: the group is the filter group's id (`protein`, `cuisine`, `properties`, `themes`). `filterLink(group, option)` in `filter.ts` builds the overview's address with `filtersToParams`, so it's the same address the filter panel would make (with tests, including that the overview reads it back).
+- `LabelList` draws a `Link` for a label with a group (dark on hover). At first "Rask" was plain text: it's 30 minutes or less, and no time range matches that, so a link to "20–40 min" would have shown recipes that aren't quick. **Then (asked by the user): «Rask (inntil 30 min)» became a choice in «Tid»** (`quickOption` in `types.ts`, from the same `quickMinutes` as `isQuick`), first in the group and overlapping the ranges ("or" within the group), and the label links to it (`RecipeLabel.option`). With tests (30 min is quick, 31 isn't).
+- Checked in a browser: «Fusion» on Laksewrap → `/oppskrifter?kjokken=Fusion`, one recipe, the «Fusion ×» chip.
+
+## 27. Sorting on the overview
+
+*Coded by Claude on request.*
+- **`recipes/sort.ts`** (with tests): `sortOptions` as a real list with the type made from it (like the views), `sortRecipes(recipes, order)` returns a new, sorted list (stable, so equal recipes keep their order; recipes without a time last on Raskest), and `sortFromParams` ignores unknown values.
+- **In the address, like the filters** (`?sortering=raskest`; nothing for Nyeste), since the order is part of *what* you look at and belongs in a shared link. The page writes filters and order together (`writeAddress`), so ticking a filter keeps the order and choosing an order keeps the filters.
+- **`SortSelect`:** the browser's own `<select>`. On phones the word "Sorter" is screen-reader only, so «3 oppskrifter», the list and the view buttons fit on one line at 402px.
+- Checked in a browser: each order, a meal chip keeps the order, reload and back keep it, no sideways scrolling on the phone.

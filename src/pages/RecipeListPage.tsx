@@ -9,6 +9,7 @@ import RecipeSuggestion, {
   PizzaSuggestion,
 } from "../components/recipe/RecipeSuggestion";
 import SearchField from "../components/recipe/SearchField";
+import SortSelect from "../components/recipe/SortSelect";
 import ViewToggle from "../components/recipe/ViewToggle";
 import { readSavedView, saveView } from "../components/recipe/recipeView";
 import type { RecipeView } from "../components/recipe/recipeView";
@@ -24,6 +25,13 @@ import {
   toggleOption,
 } from "../recipes/filter";
 import type { RecipeFilters } from "../recipes/filter";
+import {
+  defaultSort,
+  sortFromParams,
+  sortParam,
+  sortRecipes,
+} from "../recipes/sort";
+import type { SortOrder } from "../recipes/sort";
 import { isPizzaDay, pickSuggestion } from "../recipes/suggest";
 
 // The grid's classes for each view.
@@ -82,6 +90,19 @@ function RecipeListPage() {
   // Every filter (the search too), read from the address on every render, never stored.
   // The recipes are passed in, so values that aren't an option are left out (filter.ts).
   const filters = filtersFromParams(searchParams, recipes);
+  // The order (Nyeste, A–Å, Raskest), also in the address (?sortering=raskest)
+  const sort = sortFromParams(searchParams);
+  // Writes the filters and the order to the address together, so changing one keeps the other.
+  // The default order ("nyeste") isn't written, so a plain list keeps a plain address.
+  function writeAddress(
+    newFilters: RecipeFilters,
+    newSort: SortOrder,
+    replace = false,
+  ) {
+    const params = filtersToParams(newFilters);
+    if (newSort !== defaultSort) params.set(sortParam, newSort);
+    setSearchParams(params, { replace, preventScrollReset: true });
+  }
   // Changing a filter = changing the address. Same name and shape as a useState setter,
   // so everything below that calls setFilters works as before.
   // - replace: true replaces the current step in the history instead of adding one
@@ -89,10 +110,7 @@ function RecipeListPage() {
   // - preventScrollReset: a new address normally scrolls to the top (ScrollRestoration
   //   in App.tsx); here it's the same page, so you stay where you were.
   function setFilters(newFilters: RecipeFilters, replace = false) {
-    setSearchParams(filtersToParams(newFilters), {
-      replace,
-      preventScrollReset: true,
-    });
+    writeAddress(newFilters, sort, replace);
   }
   // The view (grid/list), remembered in this browser (components/recipe/recipeView.ts)
   const [view, setView] = useState(readSavedView);
@@ -113,9 +131,9 @@ function RecipeListPage() {
     pickSuggestion(recipes, day),
   );
 
-  // Calculated on every render from recipes and filters, never stored:
+  // Calculated on every render from recipes, filters and order, never stored:
   // if you can calculate it, don't store it.
-  const visibleRecipes = filterRecipes(recipes, filters);
+  const visibleRecipes = sortRecipes(filterRecipes(recipes, filters), sort);
 
   return (
     <section className="flex-1 bg-white font-sans text-ink">
@@ -196,14 +214,23 @@ function RecipeListPage() {
         <div className="mt-4">
           <ActiveFilters filters={filters} onChange={setFilters} />
         </div>
-        {/* The number of recipes shown on the left, the view buttons on the right */}
-        <div className="mt-8 flex items-center justify-between">
+        {/* The number of recipes shown on the left; the order and the view buttons on the right */}
+        <div className="mt-8 flex items-center justify-between gap-4">
           {/* aria-live: screen readers hear the new number while you type */}
-          <p aria-live="polite" className="text-sm text-ink/60">
+          <p
+            aria-live="polite"
+            className="text-sm whitespace-nowrap text-ink/60"
+          >
             {visibleRecipes.length}{" "}
             {visibleRecipes.length === 1 ? "oppskrift" : "oppskrifter"}
           </p>
-          <ViewToggle value={view} onChange={chooseView} />
+          <div className="flex items-center gap-3 sm:gap-6">
+            <SortSelect
+              value={sort}
+              onChange={(newSort) => writeAddress(filters, newSort)}
+            />
+            <ViewToggle value={view} onChange={chooseView} />
+          </div>
         </div>
         {/* Either the cards, or a message when no recipe matches the filters */}
         {visibleRecipes.length === 0 ? (
