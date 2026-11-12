@@ -20,17 +20,27 @@ export const recipe = defineType({
   name: 'recipe', // the document type in the data: _type == "recipe"
   title: 'Oppskrift', // what the Studio calls it
   type: 'document',
+  // Tabs at the top of the form. They only change how the form looks, not the data.
+  // default: true = the form opens on this tab (quick posting from the phone).
+  groups: [
+    {name: 'raskt', title: 'Raskt', default: true},
+    {name: 'detaljer', title: 'Detaljer'},
+    {name: 'ingredienser', title: 'Ingredienser'},
+    {name: 'fremgangsmate', title: 'Fremgangsmåte'},
+  ],
   fields: [
     defineField({
       name: 'title',
       title: 'Tittel',
       type: 'string',
+      group: 'raskt',
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'slug',
       title: 'Adresse (slug)',
       type: 'slug',
+      group: 'raskt',
       description: 'Brukes i adressen: /oppskrifter/<slug>. Ikke endre etter publisering.',
       options: {source: 'title'},
       validation: (rule) => rule.required(),
@@ -39,6 +49,7 @@ export const recipe = defineType({
       name: 'image',
       title: 'Bilde',
       type: 'image',
+      group: 'raskt',
       description:
         'Klikk på bildet etterpå og velg det viktigste (hotspot), så det blir med når bildet beskjæres.',
       options: {hotspot: true},
@@ -48,6 +59,7 @@ export const recipe = defineType({
       name: 'description',
       title: 'Beskrivelse',
       type: 'text',
+      group: 'detaljer',
       rows: 3,
       validation: (rule) => rule.required().warning('Mangler beskrivelse'),
     }),
@@ -57,6 +69,7 @@ export const recipe = defineType({
       name: 'category',
       title: 'Måltid',
       type: 'string',
+      group: 'detaljer',
       options: {list: [...categories]},
       validation: (rule) => rule.required().warning('Mangler måltid'),
     }),
@@ -64,6 +77,7 @@ export const recipe = defineType({
       name: 'protein',
       title: 'Hovedingrediens',
       type: 'string',
+      group: 'detaljer',
       options: {list: [...proteins]},
       // The same rule as the Datasjekk: desserts, baking and side dishes often don't have one,
       // so it's only asked for on breakfast, lunch, dinner, or when the meal isn't chosen yet.
@@ -81,6 +95,7 @@ export const recipe = defineType({
       name: 'cuisine',
       title: 'Kjøkken',
       type: 'string',
+      group: 'detaljer',
       options: {list: [...cuisines]},
       validation: (rule) => rule.required().warning('Mangler kjøkken'),
     }),
@@ -88,6 +103,7 @@ export const recipe = defineType({
       name: 'difficulty',
       title: 'Vanskelighetsgrad',
       type: 'string',
+      group: 'detaljer',
       options: {list: [...difficulties], layout: 'radio', direction: 'horizontal'},
       validation: (rule) => rule.required().warning('Mangler vanskelighetsgrad'),
     }),
@@ -96,6 +112,7 @@ export const recipe = defineType({
       name: 'tags',
       title: 'Tilpasninger',
       type: 'array',
+      group: 'detaljer',
       of: [{type: 'string'}],
       options: {list: [...tags]},
     }),
@@ -103,6 +120,7 @@ export const recipe = defineType({
       name: 'themes',
       title: 'Passer til',
       type: 'array',
+      group: 'detaljer',
       of: [{type: 'string'}],
       options: {list: [...themes]},
       validation: (rule) => rule.required().warning('Mangler «Passer til»'),
@@ -111,6 +129,7 @@ export const recipe = defineType({
       name: 'occasions',
       title: 'Ukedag / Helgemat',
       type: 'array',
+      group: 'detaljer',
       of: [{type: 'string'}],
       description: 'Når middagen passer. Tomt = ukedag.',
       options: {list: [...occasions]},
@@ -123,7 +142,9 @@ export const recipe = defineType({
       name: 'servings',
       title: 'Porsjoner',
       type: 'number',
+      group: ['detaljer', 'ingredienser'],
       description: 'Hvor mange porsjoner mengdene er for.',
+      placeholder: 'f.eks. 4',
       validation: (rule) => [
         rule.required().warning('Mangler porsjoner'),
         rule.integer().positive(),
@@ -133,7 +154,9 @@ export const recipe = defineType({
       name: 'minutes',
       title: 'Tid (minutter)',
       type: 'number',
+      group: 'detaljer',
       description: 'Total tid. 30 eller mindre teller som «Rask».',
+      placeholder: 'f.eks. 30',
       validation: (rule) => [rule.required().warning('Mangler tid'), rule.integer().positive()],
     }),
 
@@ -142,6 +165,7 @@ export const recipe = defineType({
       name: 'ingredients',
       title: 'Ingredienser',
       type: 'array',
+      group: 'ingredienser',
       of: [{type: 'ingredient'}], // the object type in ingredient.ts
       validation: (rule) =>
         rule.min(1).warning('Mangler ingredienser (oppskriften vises som «Uferdig»)'),
@@ -150,6 +174,7 @@ export const recipe = defineType({
       name: 'steps',
       title: 'Fremgangsmåte',
       type: 'array',
+      group: 'fremgangsmate',
       description: 'Ett steg per felt. Ikke alle oppskrifter trenger steg.',
       of: [{type: 'text', rows: 2}],
     }),
@@ -157,12 +182,14 @@ export const recipe = defineType({
       name: 'tips',
       title: 'Tips',
       type: 'text',
+      group: 'fremgangsmate',
       rows: 3,
     }),
     defineField({
       name: 'source',
       title: 'Kilde',
       type: 'string',
+      group: 'detaljer',
       description: '«Mormor», en kokebok, en nettadresse …',
     }),
   ],
