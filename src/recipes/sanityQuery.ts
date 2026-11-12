@@ -18,7 +18,10 @@
 //
 // Fields that aren't filled in come back as null. toRecipe treats null as missing.
 // Drafts aren't included: a public dataset only gives published documents to the site.
-export const recipesQuery = `*[_type == "recipe" && defined(slug.current)] | order(_createdAt desc) {
+//
+// The fields, on their own, so the Studio's Datasjekk (studio/dataCheck.ts) can ask for the
+// same shape and run it through the same toRecipe and completeness rules as the site.
+export const recipeFields = `
   "id": slug.current,
   title,
   description,
@@ -38,4 +41,6 @@ export const recipesQuery = `*[_type == "recipe" && defined(slug.current)] | ord
   tips,
   source,
   "createdAt": _createdAt
-}`;
+`;
+
+export const recipesQuery = `*[_type == "recipe" && defined(slug.current)] | order(_createdAt desc) {${recipeFields}}`;

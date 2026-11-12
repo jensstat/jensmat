@@ -204,3 +204,36 @@ A refactor before the next tasks, so the code is easy to come back to. Nothing c
 - **Templates on the "+" button** (`schema.templates` in `sanity.config.ts`): "Ny middag" and "Ny dessert" start with the meal type filled in, and plain "Oppskrift" is kept (`...prev`). *Why:* choosing the template *is* the decision, so the value isn't a guess.
 - **Own lists in the left column** (`studio/structure.ts`, the Structure tool): Alle oppskrifter, Uferdige (no ingredients, the same rule as `isIncomplete`) and Mangler bilde. Each list is a GROQ filter, so nothing extra is stored and a recipe leaves the list by itself.
 - **Deployed** with `npx sanity deploy`: the phone uses a built copy of the Studio, so every change in `studio/` needs a new deploy to reach it.
+
+## 17. Ingredient names to pick from
+
+*Built as a tutorial, the code typed by Claude after each idea. Only `studio/` changed.*
+- **An own input component** on the ingredient's name (`components: {input: IngredientNameInput}` in `ingredient.ts`, the component in `studio/components/IngredientNameInput.tsx`). Started as a wrapper around Sanity's own input (`renderDefault`), then replaced by Sanity UI's `Autocomplete` (imported from `@sanity/ui/autocomplete` in Sanity UI 4; `@sanity/ui` is now in the Studio's `package.json`).
+- **The names come from GROQ inside the Studio:** `useClient` (logged in as you, so drafts count too, and no token in the code) and `array::unique(*[_type == "recipe"].ingredients[].name)`, fetched once in a `useEffect`.
+- **A clean list:** no `null`/empty names, cleaned with the site's own `cleanName` (imported from `src/recipes/filter.ts`, so "Kesam" and "kesam" are one), each name once (`Set`), sorted the Norwegian way.
+- **Suggestions, not a closed list:** typing saves the text as it is (`onQueryChange`), choosing a suggestion saves that name; the input passes on Sanity's `elementProps` so the label, validation and focus still work, and saves with patches (`set` / `unset`).
+- **Why not ingredients as their own documents:** slower on the phone, and every recipe would need converting. Only worth it if ingredients get their own data (nutrition, a shopping list).
+
+## 18. The overview remembers the view, and "Store"
+
+*Built as a tutorial, the code typed by Claude after each idea.*
+- **The view is remembered** in `localStorage` (`components/recipe/recipeView.ts`, with tests). First plainly, with an `as` cast, to see it work; then made safe, because `localStorage` is outside the code like Sanity: `recipeViews` is a real list with the type made from it, `.find` checks the saved text without `as`, and `try`/`catch` handles a browser that blocks storage. *Why not in the address, like the filters:* the filters are *what* you look at (a shared link should bring them); the view is *how you like to look* (a preference, per browser).
+- **"Store" (`large`)**: big cards, 1/2/3 per row. Adding `"large"` to `recipeViews` made TypeScript point at `layouts` (`Record<RecipeView, string>`); the button in `ViewToggle` had to be remembered. The page picks the card with a second lookup, `cardVariants`, instead of a chain of `? :`.
+- **Sharp photos in the big cards:** `RecipeCard` got a `"large"` variant with its own `sizes`, matching the grid, since the browser picks a photo before it knows the layout. Checked in a browser: a big card on a phone fetches `w=1280`, a standard one `w=640`.
+
+## 19. Pasting a whole ingredient list
+
+*Step 1 (wrapping the list) shown as a tutorial; the rest coded by Claude on request.*
+- **Wrap, not replace:** an own input on the `ingredients` array (`components: {input: IngredientListInput}` in `recipe.ts`). It draws Sanity's own list with `props.renderDefault(props)` (add, drag, delete, edit still work) and adds a «Lim inn liste» box under it. *Why:* unlike the name input, the list does a lot we want to keep. Props type: `ArrayOfObjectsInputProps`. (Sanity UI 4: `Stack` takes `gap`, not `space`.)
+- **The reading is a pure function in `src/recipes/parseIngredients.ts`** (`parseIngredientLine`, `parseIngredientList`, with tests), like `cleanName`: no Sanity in it, so a future `/ny-oppskrift` form can use it too. Rules: amount (decimal comma, `½`, `1 ½`, `1/2`) → a known unit → the **first comma** splits name and note (`Løk, finhakket`), a bracket moves to the note, names through `cleanName`, bullets removed, `Til sausen:` = group for the lines after.
+- **Never invent a number:** a range (`2-3 fedd`), a word amount (`en klype`) or `0` leaves the whole line as the name, to fix by hand. A wrong amount is easy to miss; a messy name shows up (and "Like ingrediensnavn" catches some).
+- **Adding the lines with patches:** each line gets `_type: 'ingredient'` and its own `_key`, then `setIfMissing([])` + `insert(items, 'after', [-1])`: added at the end, nothing replaced. The box empties afterwards, so a second click can't add the lines twice.
+- Not done: splitting on ` / ` on one line, and number words ("en", "to").
+
+## 20. The Datasjekk in the Studio
+
+*Coded by Claude on request.*
+- **«Datasjekk» in the Studio's left column** (`studio/dataCheck.ts`, added in `structure.ts`): one line per check with a count ("Mangler bilde (1)"), and «Like ingrediensnavn» with the name pairs. Clicking a line opens a normal Studio list of those recipes.
+- **The site's rules, not GROQ copies:** the recipes are fetched with the site's own fields (`recipeFields`, split out of `recipesQuery` in `src/recipes/sanityQuery.ts`), read with `toRecipe` and checked with `completenessReport` / `similarIngredientNames`. A new check in `completeness.ts` shows up in the Studio by itself. (The older «Uferdige» and «Mangler bilde» lists are GROQ filters, kept as quick shortcuts.)
+- **Drafts too, and live:** `context.documentStore.listenQuery(…, {perspective: 'drafts'})` gives each recipe once, in its newest version, and sends the list again when a recipe changes, so the counts update while you fill in. The child of the line is that Observable (`.pipe(map(…))`, `rxjs`, now a direct dependency of the Studio). The id is the document's `_id` (a draft may not have a slug yet), and the lists ask for both `abc` and `drafts.abc`.
+- A recipe without a title isn't listed: `toRecipe` can't read it, and the Studio already shows that in red.

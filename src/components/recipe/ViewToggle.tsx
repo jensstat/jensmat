@@ -1,10 +1,22 @@
 import type { ReactNode } from "react";
-
-// The ways the recipe overview can be shown. Exported, so the page can use the same type.
-export type RecipeView = "standard" | "list";
+import type { RecipeView } from "./recipeView";
 
 // Small icons for the buttons. fill="currentColor": they follow the text colour,
 // so they turn white when the button is dark.
+function LargeIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="13" />
+      <rect x="3" y="18" width="12" height="3" />
+    </svg>
+  );
+}
+
 function GridIcon() {
   return (
     <svg
@@ -40,6 +52,7 @@ function ListIcon() {
 // One entry per view: the value, the name (read by screen readers), and the icon.
 // A third view later is one more line here (and a layout in the page).
 const options: { value: RecipeView; label: string; icon: ReactNode }[] = [
+  { value: "large", label: "Vis store kort", icon: <LargeIcon /> },
   { value: "standard", label: "Vis som rutenett", icon: <GridIcon /> },
   { value: "list", label: "Vis som liste", icon: <ListIcon /> },
 ];

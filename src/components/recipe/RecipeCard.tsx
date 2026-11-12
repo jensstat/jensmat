@@ -5,9 +5,12 @@ import { listState } from "../../recipes/listLink";
 import { isIncomplete } from "../../recipes/types";
 import type { Recipe } from "../../recipes/types";
 
+// The card's looks: "card" (the grid), "large" (big cards, "Store") and "row" (the list)
+export type CardVariant = "card" | "large" | "row";
+
 interface RecipeCardProps {
   recipe: Recipe;
-  variant?: "card" | "row"; // optional; "card" if not set
+  variant?: CardVariant; // optional; "card" if not set
 }
 
 interface CardPhotoProps {
@@ -89,20 +92,32 @@ function RecipeCard({ recipe, variant = "card" }: RecipeCardProps) {
       </Link>
     );
   }
+  // "card" and "large" look the same, only bigger. `sizes` must match the page's grid
+  // (layouts in RecipeListPage), so the browser fetches a photo that's sharp enough.
+  const large = variant === "large";
   return (
     <Link
       to={`/oppskrifter/${recipe.id}`}
       state={state}
       className="group block"
     >
-      {/* Two cards per row (half the screen), three from 1024 px, four (about 300 px each) from 1280 px */}
       <CardPhoto
         recipe={recipe}
-        sizes="(min-width: 1280px) 320px, (min-width: 1024px) 33vw, 50vw"
-        className="aspect-[4/3] text-4xl sm:text-6xl"
+        sizes={
+          large
+            ? // 1 per row on phones, 2 from 640 px, 3 from 1280 px, and the page stops at 1500 px
+              "(min-width: 1500px) 460px, (min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+            : // 2 per row, 3 from 1024 px, 4 (about 300 px each) from 1280 px
+              "(min-width: 1280px) 320px, (min-width: 1024px) 33vw, 50vw"
+        }
+        className={`aspect-[4/3] ${large ? "text-6xl" : "text-4xl sm:text-6xl"}`}
       />
 
-      <h2 className="mt-2 font-serif text-base leading-snug font-semibold group-hover:text-gold sm:mt-3 sm:text-xl">
+      <h2
+        className={`mt-2 font-serif leading-snug font-semibold group-hover:text-gold sm:mt-3 ${
+          large ? "text-xl sm:text-2xl" : "text-base sm:text-xl"
+        }`}
+      >
         {recipe.title}
       </h2>
       <CardDetails recipe={recipe} />

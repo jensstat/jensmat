@@ -8,6 +8,7 @@ import {
   tags,
   themes,
 } from '../../src/recipes/types'
+import {IngredientListInput} from '../components/IngredientListInput'
 
 // A recipe in Sanity. The Studio makes the form from this.
 // The field names are the same as in the Recipe interface in src/recipes/types.ts,
@@ -167,6 +168,7 @@ export const recipe = defineType({
       type: 'array',
       group: 'ingredienser',
       of: [{type: 'ingredient'}], // the object type in ingredient.ts
+      components: {input: IngredientListInput}, // Sanity's list + «Lim inn liste»
       validation: (rule) =>
         rule.min(1).warning('Mangler ingredienser (oppskriften vises som «Uferdig»)'),
     }),

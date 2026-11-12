@@ -4,12 +4,14 @@ import ActiveFilters from "../components/recipe/ActiveFilters";
 import CategoryChips from "../components/recipe/CategoryChips";
 import FilterPanel from "../components/recipe/FilterPanel";
 import RecipeCard from "../components/recipe/RecipeCard";
+import type { CardVariant } from "../components/recipe/RecipeCard";
 import RecipeSuggestion, {
   PizzaSuggestion,
 } from "../components/recipe/RecipeSuggestion";
 import SearchField from "../components/recipe/SearchField";
 import ViewToggle from "../components/recipe/ViewToggle";
-import type { RecipeView } from "../components/recipe/ViewToggle";
+import { readSavedView, saveView } from "../components/recipe/recipeView";
+import type { RecipeView } from "../components/recipe/recipeView";
 import type { recipeListLoader } from "../loaders";
 import {
   activeFilterCount,
@@ -27,9 +29,18 @@ import { isPizzaDay, pickSuggestion } from "../recipes/suggest";
 // The grid's classes for each view.
 // Record<RecipeView, string>: TypeScript makes sure every view has a layout.
 const layouts: Record<RecipeView, string> = {
+  // Big cards: 1 per row on phones, 2 from 640 px, 3 from 1280 px
+  large: "grid gap-y-10 sm:grid-cols-2 sm:gap-x-8 xl:grid-cols-3",
   standard:
     "grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-3 xl:grid-cols-4",
   list: "grid gap-y-3 lg:grid-cols-2 lg:gap-x-10",
+};
+
+// Which card each view uses (RecipeCard's variant)
+const cardVariants: Record<RecipeView, CardVariant> = {
+  large: "large",
+  standard: "card",
+  list: "row",
 };
 
 // The message when no recipe matches: names the search, and says whether it's
@@ -81,7 +92,13 @@ function RecipeListPage() {
       preventScrollReset: true,
     });
   }
-  const [view, setView] = useState<RecipeView>("standard");
+  // The view (grid/list), remembered in this browser (components/recipe/recipeView.ts)
+  const [view, setView] = useState(readSavedView);
+  // Choosing a view: show it, and save it for next time
+  function chooseView(newView: RecipeView) {
+    setView(newView);
+    saveView(newView);
+  }
   // The weekday, read from the clock once when the page opens. It's state (never changed),
   // so every render sees the same day, and the page and the suggestion always agree.
   // The page passes it in, so the functions in recipes/suggest.ts stay pure and testable.
@@ -166,7 +183,7 @@ function RecipeListPage() {
             {visibleRecipes.length}{" "}
             {visibleRecipes.length === 1 ? "oppskrift" : "oppskrifter"}
           </p>
-          <ViewToggle value={view} onChange={setView} />
+          <ViewToggle value={view} onChange={chooseView} />
         </div>
         {/* Either the cards, or a message when no recipe matches the filters */}
         {visibleRecipes.length === 0 ? (
@@ -187,10 +204,7 @@ function RecipeListPage() {
           <ul className={`mt-4 ${layouts[view]}`}>
             {visibleRecipes.map((recipe) => (
               <li key={recipe.id}>
-                <RecipeCard
-                  recipe={recipe}
-                  variant={view === "list" ? "row" : "card"}
-                />
+                <RecipeCard recipe={recipe} variant={cardVariants[view]} />
               </li>
             ))}
           </ul>

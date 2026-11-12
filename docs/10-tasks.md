@@ -3,7 +3,26 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 12 November 2026. Tasks 1–4 and 6 are done (task 6: Sanity, the CMS: the Studio, also on the phone, the site reading from Sanity, and the site online on Vercel). The small fixes are done too. Task 5 is done too (12 November: the search and the filters in the address, and "← Alle oppskrifter" back to the filtered list). The friendlier Studio is done too (12 November: tabs, placeholders, "Ny middag"/"Ny dessert", own lists). Next, in this order (agreed 12 November): ~~1. a friendlier Studio~~ ✅, **2. ingredient names to pick from** in the Studio (suggestions from the names already used; a new name can still be typed), **3. the overview**: remember grid/list (`localStorage`) and the "Store" view, **4. the front page**: "Nyeste oppskrifter".*
+*Last updated: 12 November 2026. Tasks 1–4 and 6 are done (task 6: Sanity, the CMS: the Studio, also on the phone, the site reading from Sanity, and the site online on Vercel). The small fixes are done too. Task 5 is done too (12 November: the search and the filters in the address, and "← Alle oppskrifter" back to the filtered list). The friendlier Studio is done too (12 November: tabs, placeholders, "Ny middag"/"Ny dessert", own lists). Next, in this order (agreed 12 November): ~~1. a friendlier Studio~~ ✅, ~~2. ingredient names to pick from~~ ✅, ~~3. the overview~~ ✅ (the view remembered, and "Store"), ~~4. the front page: "Nyeste oppskrifter"~~ (dropped 12 November: the front page stays as it is, only the heading and the two buttons). **A new order** was agreed after that: see "Now: the next tasks, in order" below.*
+
+---
+
+## Now: the next tasks, in order
+
+Agreed 12 November, after the first order was finished. Small things that help right away come first; the biggest (own posting) comes last, when you've used the Studio on the phone for a while and know better what your own form should do differently.
+
+1. [x] **Paste a whole ingredient list in the Studio** ✅ (12 November: «Lim inn liste» under the ingredients, `studio/components/IngredientListInput.tsx` + `src/recipes/parseIngredients.ts`, with tests): paste "2 dl melk / 3 egg / salt" and get three ingredient lines. Builds on the own input from "ingredient names to pick from"
+2. [x] **The Datasjekk in the Studio** ✅ (12 November: «Datasjekk» in the left column, `studio/dataCheck.ts`, live counts): a list in the left column of recipes missing something, reusing the rules in `src/recipes/completeness.ts` (like the Studio already reuses `cleanName`)
+3. [ ] **Cuisine, difficulty and "Passer til" on the recipe page** (the labels already show the themes)
+4. [ ] **The pizza calculator remembers its settings** (`localStorage`, checked when it's read, like the overview's view)
+5. [ ] **Another way to post recipes** (the long-term goal), in parts:
+   - [ ] 5a. **A server function** on Vercel that holds the Sanity **token** (never in the browser) and creates the recipe
+   - [ ] 5b. **A login**, so only you can post
+   - [ ] 5c. **The form** at `/ny-oppskrift`: title, a photo from the camera, the rest optional (the same fields as `Recipe`)
+   - [ ] 5d. **Make it feel like an app**: a *PWA*, installable on the phone's home screen with its own icon
+   - [ ] 5e. **A real phone app** (App Store), only if the PWA isn't enough
+
+**Writing ingredients by feel** (asked 12 November, about Laksewrap's "½ salat, ¼ paprika"): no new feature needed. Leave the amount empty, and say it in a group ("Grønnsaker (etter ønske)") or the note ("etter ønske"). See `docs/03-recipes.md`, section 2.
 
 ---
 
@@ -66,13 +85,14 @@ Suggested tutorial steps:
 - [x] 6.12 Check: a title-only recipe, a recipe with a photo, an unpublished draft (shouldn't show), no internet (the error page), and on the phone
 
 **Maybe later, with Sanity:**
-- [ ] Ingredient names to pick from: the Studio suggests names already used, so "tomat" and "tomater" don't both happen. Suggestions, not a closed list: a new name can still be typed, and is suggested next time (the list is "every name used so far", from GROQ). Not ingredients as their own documents with references: slower on the phone, and every recipe would need converting; only worth it if ingredients get their own data (nutrition, shopping list)
-- [ ] The Datasjekk in the Studio: a list of recipes missing something (a custom Studio view, using the same GROQ)
+- [x] Ingredient names to pick from (12 November, `studio/components/IngredientNameInput.tsx`): the Studio suggests names already used, so "tomat" and "tomater" don't both happen. Suggestions, not a closed list: a new name can still be typed, and is suggested next time (the list is "every name used so far", from GROQ). Not ingredients as their own documents with references: slower on the phone, and every recipe would need converting; only worth it if ingredients get their own data (nutrition, shopping list)
+- [x] The Datasjekk in the Studio ✅ (`studio/dataCheck.ts`, the site's own rules)
 - [ ] Sanity TypeGen (makes TypeScript types from the schema). Not needed now: `toRecipe` is the border
 
 **A friendlier way to post recipes** (asked 11 November 2026, after 6.10). Three levels, least work first:
 - [x] **A friendlier Studio** (12 November): tabs (`groups`): **Raskt** (title, address, photo; the form opens there), Detaljer, Ingredienser, Fremgangsmåte (Porsjoner on two tabs); **placeholders** on Porsjoner and Tid (a hint, never saved, so the Datasjekk still sees what's missing); **templates** on the "+" button, "Ny middag" and "Ny dessert" (`schema.templates` in `sanity.config.ts`); **own lists** in the left column, "Uferdige" and "Mangler bilde" (`studio/structure.ts`, GROQ filters). Deployed and checked on the phone. *Not* plain `initialValue` on fields: a starting value is real data and would hide a missing field from the Datasjekk
-- [ ] Own input components in the Studio: ingredient names to pick from (next, task 2 in the order above), and paste a whole ingredient list and split it into lines
+- [x] Own input components in the Studio: ingredient names to pick from ✅
+- [x] Paste a whole ingredient list and split it into lines (an own input on the ingredient list) ✅
 - [ ] **An own form on the site** (`/ny-oppskrift`): writing needs a Sanity **token**, which must never be in the browser (nothing secret in `VITE_…`). So: the form → a **server function** on the host (Vercel/Netlify, after 6.11) that holds the token, checks that it's you (a login), uploads the photo (`client.assets.upload`) and creates the recipe → Sanity. The form fills in the same fields as `Recipe`, and the site keeps reading through `toRecipe`. Alternative: Sanity's **App SDK** (own React apps that use the Sanity login, no token on an own server); check Sanity's docs for how it's set up
 - [ ] **A phone app** (the long-term goal): the same as the form, as an app
 
@@ -118,8 +138,8 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 - [x] 5.6 (found in the check) "← Alle oppskrifter" on a recipe went to the plain list. Now the cards bring the list's `?…` part along in the link's `state` (`recipes/listLink.ts`), so it goes back to the filtered list
 
 **Maybe later on the overview:**
-- [ ] The third view, "Store" (big cards, 1 per row on phones)
-- [ ] Remember the chosen view with `localStorage`
+- [x] The third view, "Store" (big cards, 1 per row on phones, with photos big enough: its own `sizes`) (12 November)
+- [x] Remember the chosen view with `localStorage`, checked when it's read (`components/recipe/recipeView.ts`, with tests) (12 November)
 - [ ] Show cuisine, difficulty and "Passer til" on the recipe page (the labels already show the themes)
 
 ---
@@ -127,7 +147,7 @@ Store the search and every filter in the address (`/oppskrifter?sok=laks&maltid=
 ## Ideas (no order)
 
 **Front page**
-- [ ] "Nyeste oppskrifter": the newest recipes, reusing `RecipeCard`
+- ~~"Nyeste oppskrifter": the newest recipes, reusing `RecipeCard`~~ Dropped (12 November): tried, and the front page should stay as it is, with only the heading and the two buttons
 - [ ] "Hva skal vi spise i dag?": a random recipe
 
 **Pizza calculator**
