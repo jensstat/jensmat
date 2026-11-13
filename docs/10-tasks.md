@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 12 November 2026 (evening). Done: tasks 1–6 of the first list (Sanity, the filters in the address …), a friendlier Studio, ingredient names to pick from, the overview's views, and from the second list tasks 1–4 (pasting an ingredient list, the Datasjekk in the Studio, cuisine and difficulty on the recipe page; remembering the pizza settings was dropped for a «Husoppskriften» button). After that, the design: the overview's top in two columns, the whole site a bit wider, and the recipe page on phones like Matprat, with cooking mode (sections 23–24 in [09](09-history.md)). Then a clean-up of the code and the docs. **Next:** see "Now" below.*
+*Last updated: 13 November 2026 (task 5 rewritten: an admin mode on the site, with editing on the recipe page; an iPhone app is only a thought). Before that, 12 November (evening). Done: tasks 1–6 of the first list (Sanity, the filters in the address …), a friendlier Studio, ingredient names to pick from, the overview's views, and from the second list tasks 1–4 (pasting an ingredient list, the Datasjekk in the Studio, cuisine and difficulty on the recipe page; remembering the pizza settings was dropped for a «Husoppskriften» button). After that, the design: the overview's top in two columns, the whole site a bit wider, and the recipe page on phones like Matprat, with cooking mode (sections 23–24 in [09](09-history.md)). Then a clean-up of the code and the docs. **Next:** see "Now" below.*
 
 ---
 
@@ -23,12 +23,22 @@ Agreed 12 November, after the first order was finished. Small things that help r
 2. [x] **The Datasjekk in the Studio** ✅ (12 November: «Datasjekk» in the left column, `studio/dataCheck.ts`, live counts): a list in the left column of recipes missing something, reusing the rules in `src/recipes/completeness.ts` (like the Studio already reuses `cleanName`)
 3. [x] **Cuisine, difficulty and "Passer til" on the recipe page** ✅ (12 November: the difficulty with a bars icon in `RecipeMeta`, the cuisine as a label) (the labels already show the themes)
 4. [x] ~~**The pizza calculator remembers its settings**~~ Dropped (12 November): the house recipe is what's usually baked, so the page always opens with it. Instead: a **«Husoppskriften»** button that puts it back after a change (`localStorage`, checked when it's read, like the overview's view)
-5. [ ] **Another way to post recipes** (the long-term goal), in parts:
-   - [ ] 5a. **A server function** on Vercel that holds the Sanity **token** (never in the browser) and creates the recipe
-   - [ ] 5b. **A login**, so only you can post
-   - [ ] 5c. **The form** at `/ny-oppskrift`: title, a photo from the camera, the rest optional (the same fields as `Recipe`)
-   - [ ] 5d. **Make it feel like an app**: a *PWA*, installable on the phone's home screen with its own icon
-   - [ ] 5e. **A real phone app** (App Store), only if the PWA isn't enough
+5. [ ] **Post and edit recipes from the site** (the long-term goal, updated 13 November). The goal: an **admin mode on the site**, on desktop and phone, where you post new recipes and edit them like a blog, right on the recipe page (a new photo, change the ingredients, write more). The Studio keeps working as a backup, so you never *have* to open it. The shape: **one API and one login**, used by the admin mode (and maybe one day an app):
+
+   ```
+   Admin mode on the site ──► your API on Vercel ──► Sanity (stores the recipes and photos)
+   (and maybe an app)         (the token + login)        │
+                                                         ▼
+   Sanity Studio (backup) ───────────────────────► the site reads them, as today
+   ```
+
+   - [ ] 5a. **The API**: server functions in `api/` on Vercel that hold the Sanity **token** and **create** a recipe, **update** one (a *patch*: only what changed), and **upload a photo**. Incoming data is checked like at the border (`toRecipe`). Tested locally (`vercel dev`), and never deployed without a lock (a password, `POST_SECRET`, until 5b)
+   - [ ] 5b. **A login**, so only you can post and edit. One login for the whole admin mode (preferably a ready-made login service, not a home-made one)
+   - [ ] 5c. **The admin mode on the site**: «Ny oppskrift» at `/ny-oppskrift` (title and a photo from the camera, the rest optional), and **«Rediger» on the recipe page**: the photo, title, text, ingredients and steps become editable, and «Lagre» sends only the changes. Only shown when you're logged in; visitors see nothing of it
+   - [ ] 5d. **Make it feel like an app**: a *PWA*, installable on the phone's home screen with its own icon, with the camera
+   - [ ] 5e. *Just a thought, not planned:* **a real iPhone app** (React Native with Expo, in TypeScript, reusing `Recipe` and `toRecipe`), calling the same API. Only if the PWA isn't enough. The App Store needs Apple's paid developer account
+
+   **Keeping the token secret** (decided 13 November): the token lives only in `.env.local` (never committed: `.gitignore` has `*.local`) and in Vercel's Environment Variables. **Never** with a `VITE_` name (Vite puts those in the browser code), and only code in `api/` uses it, never `src/`. After a build, check that the token isn't in `dist/`. If it ever leaks: delete it at sanity.io/manage and make a new one. Everything else (project id, dataset, the code) may be public
 
 **Writing ingredients by feel** (asked 12 November, about Laksewrap's "½ salat, ¼ paprika"): no new feature needed. Leave the amount empty, and say it in a group ("Grønnsaker (etter ønske)") or the note ("etter ønske"). See `docs/03-recipes.md`, section 2.
 
@@ -101,8 +111,8 @@ Suggested tutorial steps:
 - [x] **A friendlier Studio** (12 November): tabs (`groups`): **Raskt** (title, address, photo; the form opens there), Detaljer, Ingredienser, Fremgangsmåte (Porsjoner on two tabs); **placeholders** on Porsjoner and Tid (a hint, never saved, so the Datasjekk still sees what's missing); **templates** on the "+" button, "Ny middag" and "Ny dessert" (`schema.templates` in `sanity.config.ts`); **own lists** in the left column, "Uferdige" and "Mangler bilde" (`studio/structure.ts`, GROQ filters). Deployed and checked on the phone. *Not* plain `initialValue` on fields: a starting value is real data and would hide a missing field from the Datasjekk
 - [x] Own input components in the Studio: ingredient names to pick from ✅
 - [x] Paste a whole ingredient list and split it into lines (an own input on the ingredient list) ✅
-- [ ] **An own form on the site** (`/ny-oppskrift`): writing needs a Sanity **token**, which must never be in the browser (nothing secret in `VITE_…`). So: the form → a **server function** on the host (Vercel/Netlify, after 6.11) that holds the token, checks that it's you (a login), uploads the photo (`client.assets.upload`) and creates the recipe → Sanity. The form fills in the same fields as `Recipe`, and the site keeps reading through `toRecipe`. Alternative: Sanity's **App SDK** (own React apps that use the Sanity login, no token on an own server); check Sanity's docs for how it's set up
-- [ ] **A phone app** (the long-term goal): the same as the form, as an app
+- [ ] **An own form on the site** (`/ny-oppskrift`), now part of task 5 above (the admin mode): writing needs a Sanity **token**, which must never be in the browser (nothing secret in `VITE_…`). So: the form → a **server function** on the host (Vercel/Netlify, after 6.11) that holds the token, checks that it's you (a login), uploads the photo (`client.assets.upload`) and creates the recipe → Sanity. The form fills in the same fields as `Recipe`, and the site keeps reading through `toRecipe`. Alternative: Sanity's **App SDK** (own React apps that use the Sanity login, no token on an own server); check Sanity's docs for how it's set up
+- [ ] **A phone app**: just a thought for now (5e above), on the same API as the admin mode
 
 ---
 
