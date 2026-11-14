@@ -289,3 +289,49 @@ A refactor before the next tasks, so the code is easy to come back to. Nothing c
 - **In the address, like the filters** (`?sortering=raskest`; nothing for Nyeste), since the order is part of *what* you look at and belongs in a shared link. The page writes filters and order together (`writeAddress`), so ticking a filter keeps the order and choosing an order keeps the filters.
 - **`SortSelect`:** the browser's own `<select>`. On phones the word "Sorter" is screen-reader only, so «3 oppskrifter», the list and the view buttons fit on one line at 402px.
 - Checked in a browser: each order, a meal chip keeps the order, reload and back keep it, no sideways scrolling on the phone.
+
+## 28. The API on Vercel (task 5a)
+
+*A tutorial, 13–14 November: written by you (`api/hello.ts`, `_sanity.ts`, the lock in `_auth.ts`, `photo.ts`) and by Claude on request (`tsconfig.api.json`, `_slug.ts`, `POST` and `PATCH` in `recipes.ts`, `_changes.ts`, `scripts/check-api.mjs`).*
+
+The first part of "post and edit recipes from the site": **server functions** that write to Sanity, so the admin mode (5c) and maybe an app one day can use them. The Studio keeps working as before.
+
+**The files**
+
+| File | What it does |
+|---|---|
+| `api/recipes.ts` | `POST /api/recipes` `{ "title": "…" }`: creates a **published** recipe (201). `PATCH /api/recipes?slug=…`: changes only the fields sent (200) |
+| `api/photo.ts` | `POST /api/photo?slug=…`, with the photo's bytes as the body: uploads it (an *asset*) and points the recipe's `image` to it |
+| `api/_sanity.ts` | The server's own Sanity client, with the **write token**, `useCdn: false`. Also `findRecipeId(slug)`, used by `PATCH` and the photo |
+| `api/_auth.ts` | The lock: `Authorization: Bearer <POST_SECRET>`, compared with `timingSafeEqual`. No `POST_SECRET` set = nobody gets in ("fail closed") |
+| `api/_slug.ts` | `toSlug` (the same as the Studio: `havregrot-med-baer`) and `nextFreeSlug` (`laksewrap-2`). Pure, with tests |
+| `api/_changes.ts` | `readChanges`: the **allow-list** of fields `PATCH` may change, and a check for each. Pure, with tests |
+| `scripts/check-api.mjs` | `npm run test:api`: 34 checks against the running API, then deletes what it made |
+| `tsconfig.api.json` | TypeScript settings for `api/`: Node (`process`, no `window`), and `nodenext`, so imports need `.js` |
+
+Files in `api/` starting with `_` are helpers, not addresses.
+
+**Why it's built this way**
+- **The token lives only on the server.** It's in `.env.local` (never committed) and in Vercel's Environment Variables (Production only, *Sensitive*). Never with a `VITE_` name, because Vite copies those into the browser code. Only `api/` uses it. After a build, `dist/` was searched for both secrets: not there.
+- **The lock is checked first**, before the body is read or Sanity is asked, so someone without the password learns nothing. It's a stand-in for the login (5b), which will send a *Bearer* too.
+- **An allow-list, not a block-list.** `PATCH` only accepts the fields in `editable`; anything else is a 400 (`Kan ikke endre «slug»`). Looked up with `Object.hasOwn`, because every object "has" built-in names like `constructor`. Wrong values are refused, not saved half-right; empty steps are left out.
+- **The fixed lists come from `src/recipes/types.ts`**, like the site and the Studio. Node can only load it because `types.ts` imports nothing itself (Vite fills in file endings; Node doesn't).
+- **The slug is the id** (what the site knows), and **never changes**, so links keep working. A taken address gets `-2`, `-3` …; drafts' addresses count as taken too (`perspective: "raw"`).
+- **Ingredient lines get `_type: "ingredient"` and a random `_key`**, as the Studio adds them. Without a key, the Studio shows «Missing keys».
+- **Recipes are published at once**, like a post from the phone: «Uferdig» until they have ingredients.
+- **Status codes that explain:** 201 created, 400 your request is wrong (with a message), 401 no access, 404 no such recipe, 405 wrong method, 500 the server failed.
+
+**Things we ran into (and the fixes)**
+- **`vercel dev` sent Vite's own files to `index.html`** ("Failed to parse source for import analysis"). The rule in `vercel.json` now only catches page addresses: `/((?!api/|@)[^.]*)`, so not `/api/…`, not Vite's `/@…`, and nothing with a dot.
+- **An old, global Vercel CLI crashed on TypeScript 7** (`ts.sys.fileExists`, a 502). Fixed with `npm install -g vercel@latest`.
+- **`vercel dev` reads `.env`, not `.env.local`.** So `_sanity.ts` loads `.env.local` itself (`process.loadEnvFile`) if the file exists. Online it doesn't, and Vercel gives the values instead.
+- **Online, the functions don't read the committed `.env` either**, so `VITE_SANITY_PROJECT_ID` and `VITE_SANITY_DATASET` are on Vercel too.
+- **curl sends `Expect: 100-continue` with big files**, which `vercel dev` can't handle (a 500). Add `-H "Expect:"` when sending a photo to `vercel dev`. Browsers never send it, and Vercel online is fine.
+- **`.env` files must have no spaces around `=`**, or `source .env.local` fails ("command not found").
+
+**Limits to know about**
+- Vercel takes **at most about 4.5 MB** in a request, so the form (5c) must shrink phone photos before sending.
+- An old photo isn't deleted when it's replaced; it stays unused in Sanity's media library.
+- `PATCH` changes the **published** recipe. An unpublished draft of the same recipe in the Studio doesn't see the change, and publishing it later would overwrite it.
+
+**Testing:** `npm test` (the pure rules), and `npm run test:api` with `vercel dev` running, or `API_URL=https://<the site> npm run test:api` online. Each run uses its own titles («API-test m3k9x2») and deletes its recipes and photos at the end.

@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 12 November 2026. Type check, lint, 256 tests and the build all pass (the Studio's type check and build too). The recipes come from Sanity, and the site is online (Vercel). Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
+*Last checked: 14 November 2026. Type check, lint, 276 tests and the build all pass (the Studio's type check and build too). The recipes come from Sanity, and the site is online (Vercel), now with its own API (`api/`): `npm run test:api` passes all 34 checks locally and online. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -18,13 +18,15 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same |
 | Recipes from Sanity | | ✅ The site reads published recipes from Sanity with GROQ (`sanityClient.ts`, `sanityQuery.ts`), through `toRecipe`. Drafts don't show. Photos come in the right size from Sanity's image service, with the hotspot kept in view |
 | Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings. Tabs, templates («Ny middag», «Ny dessert»), ingredient names to pick from, «Lim inn liste» (paste a whole ingredient list), and the Datasjekk in the left column |
-| The site online | Vercel | ✅ Published from GitHub; `vercel.json` sends every address to `index.html` |
+| The site online | Vercel | ✅ Published from GitHub; `vercel.json` sends every page address to `index.html` (not `/api/…`, Vite's `/@…` or files with a dot) |
+| The API | `/api/recipes`, `/api/photo` | ✅ Server functions on Vercel (task 5a): create a recipe (`POST`), change it field by field (`PATCH`), add a photo. Behind a password (`POST_SECRET`) until the login (5b). The write token and the password are only in `.env.local` and Vercel's Environment Variables (Production only, Sensitive). Run locally with `vercel dev` (port 3000). See [09](09-history.md), section 28 |
 | Loading and errors | | ✅ Each recipe page loads its data first ("Laster…"), and "Kunne ikke hente oppskriftene" + "Prøv igjen" if it fails. Every recipe is checked at the border (`toRecipe`) |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken on desktop (wide layout, ingredient panel) and Matprat on phones (the ingredients in the page, a section bar under the header): portion selector, groups, time/portions/difficulty and labels (with cuisine), cooking mode («Behold skjermen på», tick off steps), print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| Tests | `npm test` | ✅ 256 tests: yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, sorting, pasted ingredient lists, the recipe page's labels and sections, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
+| API tests | `npm run test:api` | ✅ 34 checks against the running API (`vercel dev`, or online with `API_URL=https://…`): the lock, creating, the free address, what's refused, the photo, `PATCH` and every kind of field. Uses its own titles and deletes what it made |
+| Tests | `npm test` | ✅ 276 tests: the API's rules (`toSlug`, `nextFreeSlug`, `readChanges`), yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, sorting, pasted ingredient lists, the recipe page's labels and sections, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
 
 ---
 

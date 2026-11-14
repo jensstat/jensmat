@@ -58,7 +58,13 @@ Add an entry to `pizzaStyles` in `src/pizza/settings.ts`, with `label`, `hint` a
 
 ## … add a category, main ingredient, tag, theme, cuisine or difficulty
 
-Add the value to its list in `src/recipes/types.ts` (`categories`, `proteins`, `tags`, `themes`, `cuisines` or `difficulties`). The type updates by itself, and the filter panel shows the new option.
+Add the value to its list in `src/recipes/types.ts` (`categories`, `proteins`, `tags`, `themes`, `cuisines` or `difficulties`). The type updates by itself, the filter panel shows the new option, the Studio offers it, and the API (`PATCH`) accepts it.
+
+---
+
+## … let the API change a new field
+
+Add a line to `editable` in `api/_changes.ts`, with a check (`text`, `wholeNumber`, `oneOf(list)` …), and a test in `api/_changes.test.ts`. Anything not in `editable` is refused, on purpose. Then `npm test`, and `npm run test:api` with `vercel dev` running.
 
 ---
 

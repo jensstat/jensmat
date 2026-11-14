@@ -61,6 +61,13 @@ src/
 └── recipes/        RECIPE KNOWLEDGE. Plain TypeScript, no React: what a recipe is, the data,
                     the data layer, how things are shown as text, the filters, the
                     "Hva med…?" suggestion and the Datasjekk. Tests next to each file.
+
+api/                THE SERVER. Runs on Vercel, never in the browser, so it may hold the
+                    Sanity write token. Each file is an address (recipes.ts → /api/recipes,
+                    photo.ts → /api/photo); files starting with _ are helpers (_sanity, _auth,
+                    _slug, _changes). Uses only types.ts from src/. Own tsconfig.api.json.
+scripts/            check-api.mjs: npm run test:api, which tests the API for real
+studio/             Sanity Studio, the editing tool (own package.json)
 ```
 
 ### The three layers
@@ -112,8 +119,9 @@ Everything else (grams, steps, labels, the filtered recipes, the counts in the f
 | **Vite** | Runs the dev server (`npm run dev`) and builds the finished site (`npm run build`) | `vite.config.ts` |
 | **React Router** | Connects addresses to pages, loads their data first (loaders), and gives you `Link`, `NavLink` and `useLoaderData` | set up in `main.tsx` and `routes.tsx` |
 | **Tailwind CSS** | Styling with classes directly in the JSX (`className="mt-4 text-sm"`) | `src/index.css` (fonts in `@theme`) |
-| **Vitest** | Runs the tests in `*.test.ts` | uses `vite.config.ts` |
+| **Vitest** | Runs the tests in `*.test.ts` (in `src/` and `api/`) | uses `vite.config.ts` |
+| **Vercel** | Hosts the site, and runs the functions in `api/`. `vercel dev` runs both on your Mac (port 3000) | `vercel.json`, the Environment Variables in Vercel's dashboard |
 | **Oxlint** | Finds common mistakes and bad habits | `.oxlintrc.json` |
-| **Prettier** | Formats the code the same way everywhere (`npm run format`). Only `src/`; the docs are left as written | `.prettierrc.json` (Prettier's defaults), `.prettierignore` |
+| **Prettier** | Formats the code the same way everywhere (`npm run format`). `src/`, `api/` and `scripts/`; the docs are left as written | `.prettierrc.json` (Prettier's defaults), `.prettierignore` |
 
 Fonts (Anton and IBM Plex Mono) are loaded from Google Fonts in `index.html`.

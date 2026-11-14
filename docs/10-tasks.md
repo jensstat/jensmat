@@ -3,7 +3,7 @@
 The to-do list. **Tick things off (`- [x]`) as you go, and move the "Now" marker down.**
 Known bugs and quirks are in [08 – Status](08-status.md); this file is about what to *build* next.
 
-*Last updated: 13 November 2026 (task 5 rewritten: an admin mode on the site, with editing on the recipe page; an iPhone app is only a thought). Before that, 12 November (evening). Done: tasks 1–6 of the first list (Sanity, the filters in the address …), a friendlier Studio, ingredient names to pick from, the overview's views, and from the second list tasks 1–4 (pasting an ingredient list, the Datasjekk in the Studio, cuisine and difficulty on the recipe page; remembering the pizza settings was dropped for a «Husoppskriften» button). After that, the design: the overview's top in two columns, the whole site a bit wider, and the recipe page on phones like Matprat, with cooking mode (sections 23–24 in [09](09-history.md)). Then a clean-up of the code and the docs. **Next:** see "Now" below.*
+*Last updated: 14 November 2026. **5a is done:** the API on Vercel (create, change and add a photo to a recipe, behind a password), tested with `npm run test:api` locally and online; section 28 in [09](09-history.md). **Next: 5b, the login.** Before that: 13 November (task 5 rewritten: an admin mode on the site, with editing on the recipe page; an iPhone app is only a thought), and 12 November (evening). Done: tasks 1–6 of the first list (Sanity, the filters in the address …), a friendlier Studio, ingredient names to pick from, the overview's views, and from the second list tasks 1–4 (pasting an ingredient list, the Datasjekk in the Studio, cuisine and difficulty on the recipe page; remembering the pizza settings was dropped for a «Husoppskriften» button). After that, the design: the overview's top in two columns, the whole site a bit wider, and the recipe page on phones like Matprat, with cooking mode (sections 23–24 in [09](09-history.md)). Then a clean-up of the code and the docs. **Next:** see "Now" below.*
 
 ---
 
@@ -32,7 +32,7 @@ Agreed 12 November, after the first order was finished. Small things that help r
    Sanity Studio (backup) ───────────────────────► the site reads them, as today
    ```
 
-   - [ ] 5a. **The API**: server functions in `api/` on Vercel that hold the Sanity **token** and **create** a recipe, **update** one (a *patch*: only what changed), and **upload a photo**. Incoming data is checked like at the border (`toRecipe`). Tested locally (`vercel dev`), and never deployed without a lock (a password, `POST_SECRET`, until 5b)
+   - [x] 5a. **The API** ✅ (14 November, section 28 in [09](09-history.md)): server functions in `api/` on Vercel that hold the Sanity **token**: `POST /api/recipes` (create, with a free address: `laksewrap-2`), `PATCH /api/recipes?slug=…` (change only the fields sent, checked against an allow-list and the fixed lists in `types.ts`; `null` removes a field) and `POST /api/photo?slug=…` (upload a photo and put it on the recipe). Everything behind a password (`POST_SECRET`, `Authorization: Bearer …`, until 5b). Tested with `npm run test:api` (34 checks, locally against `vercel dev` and online with `API_URL=…`). Recipes made this way are **published at once**. The slug never changes
    - [ ] 5b. **A login**, so only you can post and edit. One login for the whole admin mode (preferably a ready-made login service, not a home-made one)
    - [ ] 5c. **The admin mode on the site**: «Ny oppskrift» at `/ny-oppskrift` (title and a photo from the camera, the rest optional), and **«Rediger» on the recipe page**: the photo, title, text, ingredients and steps become editable, and «Lagre» sends only the changes. Only shown when you're logged in; visitors see nothing of it
    - [ ] 5d. **Make it feel like an app**: a *PWA*, installable on the phone's home screen with its own icon, with the camera
@@ -54,9 +54,9 @@ For a task, for example (task 6 is done, kept as an example):
 
 > We're working on **Sanity, the CMS** (task 6 in `docs/10-tasks.md`). Read task 6 there, `docs/03-recipes.md` sections 2 and 3, `src/recipes/types.ts`, `src/recipes/toRecipe.ts` and `src/recipes/recipes.ts`. I want to **learn how Sanity works**: tutorial, one small step per message, and teach me the ideas (Studio, schemas, documents, GROQ …) before the code. Start with step 6.1.
 
-For task 5, the next task:
+For 5b, the next task:
 
-> We're working on **the filters in the address** (task 5 in `docs/10-tasks.md`). Read `docs/03-recipes.md` sections 3 and 6, `docs/06-react-and-typescript.md` (React Router), `src/routes.tsx`, `src/loaders.ts`, `src/recipes/filter.ts`, `src/recipes/filter.test.ts` and `src/pages/RecipeListPage.tsx`. Tutorial, one small step per message, and teach me the ideas behind the code. Start with step 5.1.
+> We're working on **5b, the login** (task 5 in `docs/10-tasks.md`). Read task 5 there, section 28 in `docs/09-history.md` (how the API and its lock work), and `api/_auth.ts`, `api/recipes.ts` and `api/photo.ts`. First help me **choose how to log in** (compare the options, with a recommendation), then a tutorial: one small step per message, teach me the idea, then ask whether I code it or you do («continue» = you code it).
 
 If you're not interested in a part, say so ("just build this part"), and ask for a tutorial again for the next.
 
