@@ -328,8 +328,9 @@ function EditorForm({
         </section>
       </div>
 
-      {/* sticky: «Lagre» stays in view at the bottom of the screen in a long form */}
-      <div className="sticky bottom-0 z-[5] -mx-4 mt-8 flex flex-wrap items-center gap-3 border-t border-ink/10 bg-white px-4 py-3 md:-mx-8 md:px-8 lg:mx-0 lg:px-0">
+      {/* sticky: «Lagre» stays in view at the bottom of the screen in a long form.
+          standalone: in the app on a phone, clear of the rounded corners and the home line */}
+      <div className="sticky bottom-0 z-[5] -mx-4 mt-8 flex flex-wrap items-center gap-3 border-t border-ink/10 bg-white px-4 py-3 md:-mx-8 md:px-8 lg:mx-0 lg:px-0 standalone:pb-7 max-md:standalone:px-7">
         {/* Says what will happen: «Lagre 3 endringer», or nothing to save */}
         <button
           type="submit"

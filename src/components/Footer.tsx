@@ -13,8 +13,9 @@ function Footer() {
 
   return (
     <footer className="font-mono border-t border-neutral-200 bg-white print:hidden">
-      {/* Inside JSX, curly braces {} let you use normal JavaScript values, like year. */}
-      <div className="mx-auto flex max-w-7xl justify-between gap-4 px-4 py-4 text-sm text-neutral-500 md:px-8">
+      {/* Inside JSX, curly braces {} let you use normal JavaScript values, like year.
+          standalone: in the app, a bit further from the screen's rounded corners */}
+      <div className="mx-auto flex max-w-7xl justify-between gap-4 px-4 py-4 text-sm text-neutral-500 md:px-8 standalone:pb-7 max-md:standalone:px-7">
         <span>© {year} Jens matnettside</span>
         {/* The admin's way in, on every page and in the app on the home screen (which
             has no address bar to type /logg-inn). Hidden when logged in: then

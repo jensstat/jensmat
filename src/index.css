@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* standalone: = running as an app from the home screen (the PWA), not in a browser tab.
+   There the page reaches into the iPhone's rounded corners and the thin home line at
+   the bottom, so things at the very bottom get a little more room (Footer, «Lagre»). */
+@custom-variant standalone (@media (display-mode: standalone));
+
 /* The site's design values. Each variable becomes Tailwind classes:
    --font-display → font-display, --color-panel → bg-panel / text-panel / border-panel … */
 @theme {
