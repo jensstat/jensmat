@@ -4,7 +4,7 @@ import { findRecipeId, sanityWrite } from "./_sanity.js";
 // POST /api/photo?slug=laksewrap, with the photo itself as the body.
 // Uploads it to Sanity and makes it the recipe's photo (replacing any old one).
 export async function POST(request: Request) {
-  if (!isAllowed(request)) {
+  if (!(await isAllowed(request))) {
     return Response.json({ error: "Ikke tilgang" }, { status: 401 });
   }
 

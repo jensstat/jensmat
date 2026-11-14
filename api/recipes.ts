@@ -8,7 +8,7 @@ const TAKEN_SLUGS = `*[_type == "recipe" && defined(slug.current)].slug.current`
 // POST /api/recipes: creates a new, published recipe from { "title": "…" }
 export async function POST(request: Request) {
   // 0. The lock: no password, no entry. Checked before anything else
-  if (!isAllowed(request)) {
+  if (!(await isAllowed(request))) {
     return Response.json({ error: "Ikke tilgang" }, { status: 401 });
   }
 
@@ -65,7 +65,7 @@ function readTitle(body: unknown): string | undefined {
 // { "minutes": 40, "tips": null } sets the time and removes the tips
 export async function PATCH(request: Request) {
   // 0. The lock, first, as always
-  if (!isAllowed(request)) {
+  if (!(await isAllowed(request))) {
     return Response.json({ error: "Ikke tilgang" }, { status: 401 });
   }
 

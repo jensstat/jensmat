@@ -9,7 +9,7 @@ import PizzaCalculatorPage from "./pages/PizzaCalculatorPage";
 import RecipeListPage from "./pages/RecipeListPage";
 import RecipePage from "./pages/RecipePage";
 import RouteErrorPage from "./pages/RouteErrorPage";
-
+import LoginPage from "./pages/LoginPage";
 // Every address on the site, and what's shown there. Used by main.tsx.
 // Written as a list of objects (not <Route> tags) because only this way can a route
 // have a loader: what it needs before it's shown (see loaders.ts).
@@ -51,6 +51,8 @@ export const routes: RouteObject[] = [
             element: <RecipePage />,
             loader: recipeLoader,
           },
+          // Not in the menu: the admin's login (src/auth/firebase.ts)
+          { path: "/logg-inn", element: <LoginPage /> },
           // Not in the menu: which recipes are missing what (recipes/completeness.ts).
           // A fixed address wins over :id, so no recipe can be called "datasjekk".
           {
