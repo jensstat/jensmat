@@ -1,13 +1,30 @@
 import { signInWithPopup, signOut } from "firebase/auth";
 import { useState } from "react";
 import { auth, googleLogin } from "../auth/firebase";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useUser } from "../auth/useUser";
 import Container from "../components/Container";
 
-// Not in the menu: the admin's way in (bookmark /logg-inn)
+// The admin's way in: «Logg inn» in the footer (or /logg-inn). Not in the menu
+// Where to go after logging in: the page the footer link was pressed on (its
+// state.from), or the recipes. Only addresses on this site (starting with one /)
+function returnAddress(state: unknown): string {
+  const from =
+    typeof state === "object" && state !== null && "from" in state
+      ? state.from
+      : undefined;
+  return typeof from === "string" &&
+    from.startsWith("/") &&
+    !from.startsWith("//")
+    ? from
+    : "/oppskrifter";
+}
+
 function LoginPage() {
   const user = useUser();
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const backTo = returnAddress(useLocation().state);
 
   // Opens Google's login window. No setUser: useUser hears the change.
   // signInWithPopup is the first thing that happens after the tap, with nothing
@@ -16,6 +33,9 @@ function LoginPage() {
     setError("");
     try {
       await signInWithPopup(auth, googleLogin);
+      // Back to where you were, now with the admin bar. replace: the back button
+      // shouldn't lead to the login page again
+      navigate(backTo, { replace: true });
     } catch {
       setError("Innloggingen ble avbrutt. Prøv igjen.");
     }
@@ -36,12 +56,21 @@ function LoginPage() {
               <br />
               <span className="text-neutral-500">Bruker-id: {user.uid}</span>
             </p>
-            <button
-              onClick={() => signOut(auth)}
-              className="mt-6 border border-black px-4 py-2 hover:bg-black hover:text-white"
-            >
-              Logg ut
-            </button>
+            {/* In the app there's no back button: never be stuck here */}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                to={backTo}
+                className="border border-black bg-black px-4 py-2 text-white hover:bg-white hover:text-black"
+              >
+                {backTo === "/oppskrifter" ? "Til oppskriftene" : "Tilbake"}
+              </Link>
+              <button
+                onClick={() => signOut(auth)}
+                className="border border-black px-4 py-2 hover:bg-black hover:text-white"
+              >
+                Logg ut
+              </button>
+            </div>
           </div>
         ) : (
           <button
