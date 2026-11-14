@@ -20,6 +20,7 @@ src/routes.tsx        Every address, its page, and its loader (what it needs fir
    │                    /oppskrifter       → RecipeListPage (all recipes)        loader
    │                    /oppskrifter/:id   → RecipePage   (:id = "laksewrap")    loader
    │                    /oppskrifter/datasjekk → DataCheckPage (not in the menu) loader
+   │                    /logg-inn          → LoginPage    (not in the menu, the admin's login)
    │                    *  (anything else) → NotFoundPage
    │                  If a loader fails: RouteErrorPage ("Kunne ikke hente oppskriftene").
    ▼
@@ -47,7 +48,10 @@ src/
 │
 ├── pages/          ONE FILE PER ADDRESS. Puts a whole page together, and holds its state.
 │                   HomePage, PizzaCalculatorPage, RecipeListPage, RecipePage,
-│                   DataCheckPage, NotFoundPage, LoadingPage, RouteErrorPage
+│                   DataCheckPage, LoginPage, NotFoundPage, LoadingPage, RouteErrorPage
+│
+├── auth/           THE LOGIN (Firebase, Google). firebase.ts (the connection), useUser.ts
+│                   (who is logged in), adminFetch.ts (fetch with your login, for the API)
 │
 ├── components/     UI BUILDING BLOCKS. Get data through props, report changes through onChange.
 │   │               Header, Footer, Container, the input fields, ResultPanel, Instructions,
@@ -63,7 +67,8 @@ src/
                     "Hva med…?" suggestion and the Datasjekk. Tests next to each file.
 
 api/                THE SERVER. Runs on Vercel, never in the browser, so it may hold the
-                    Sanity write token. Each file is an address (recipes.ts → /api/recipes,
+                    Sanity write token. _auth.ts lets in your Firebase login or the
+                    script key (POST_SECRET). Each file is an address (recipes.ts → /api/recipes,
                     photo.ts → /api/photo); files starting with _ are helpers (_sanity, _auth,
                     _slug, _changes). Uses only types.ts from src/. Own tsconfig.api.json.
 scripts/            check-api.mjs: npm run test:api, which tests the API for real

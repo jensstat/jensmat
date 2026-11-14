@@ -62,6 +62,14 @@ Add the value to its list in `src/recipes/types.ts` (`categories`, `proteins`, `
 
 ---
 
+## … log in as the admin
+
+Go to `/logg-inn` (not in the menu, so bookmark it) and log in with Google. You stay logged in after a reload. Only your Google account gets through the API's lock: `api/_auth.ts` checks that the token's user id is `ADMIN_UID`. To call the API from the site, use `adminFetch` from `src/auth/adminFetch.ts` instead of `fetch`. Locally, run `vercel dev` (not `npm run dev`), because only it runs `api/`.
+
+**If the login stops working online:** check that Vercel's Environment Variables have `ADMIN_UID` and `VITE_FIREBASE_PROJECT_ID` (then Redeploy), and that the site's address is under Authorized domains in Firebase (Authentication → Settings).
+
+---
+
 ## … let the API change a new field
 
 Add a line to `editable` in `api/_changes.ts`, with a check (`text`, `wholeNumber`, `oneOf(list)` …), and a test in `api/_changes.test.ts`. Anything not in `editable` is refused, on purpose. Then `npm test`, and `npm run test:api` with `vercel dev` running.

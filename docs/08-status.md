@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 14 November 2026. Type check, lint, 276 tests and the build all pass (the Studio's type check and build too). The recipes come from Sanity, and the site is online (Vercel), now with its own API (`api/`): `npm run test:api` passes all 34 checks locally and online. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
+*Last checked: 14 November 2026. Type check, lint, 276 tests and the build all pass (the Studio's type check and build too). The recipes come from Sanity, and the site is online (Vercel), now with its own API (`api/`) and a login (`/logg-inn`, Google via Firebase): `npm run test:api` passes all 34 checks locally and online, and the login gets through the API's lock online. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -19,7 +19,8 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Recipes from Sanity | | ✅ The site reads published recipes from Sanity with GROQ (`sanityClient.ts`, `sanityQuery.ts`), through `toRecipe`. Drafts don't show. Photos come in the right size from Sanity's image service, with the hotspot kept in view |
 | Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings. Tabs, templates («Ny middag», «Ny dessert»), ingredient names to pick from, «Lim inn liste» (paste a whole ingredient list), and the Datasjekk in the left column |
 | The site online | Vercel | ✅ Published from GitHub; `vercel.json` sends every page address to `index.html` (not `/api/…`, Vite's `/@…` or files with a dot) |
-| The API | `/api/recipes`, `/api/photo` | ✅ Server functions on Vercel (task 5a): create a recipe (`POST`), change it field by field (`PATCH`), add a photo. Behind a password (`POST_SECRET`) until the login (5b). The write token and the password are only in `.env.local` and Vercel's Environment Variables (Production only, Sensitive). Run locally with `vercel dev` (port 3000). See [09](09-history.md), section 28 |
+| The API | `/api/recipes`, `/api/photo` | ✅ Server functions on Vercel (task 5a): create a recipe (`POST`), change it field by field (`PATCH`), add a photo. Behind a lock: your Firebase login (`ADMIN_UID`), or the script key (`POST_SECRET`) for `npm run test:api`. The write token and the script key are only in `.env.local` and Vercel's Environment Variables (Production only, Sensitive). Run locally with `vercel dev` (port 3000). See [09](09-history.md), section 28 |
+| The login | `/logg-inn` | ✅ Not in the menu. Log in with Google (Firebase Auth, task 5b), stays logged in after a reload, «Logg ut». The API only lets in your user id. See [09](09-history.md), section 29 |
 | Loading and errors | | ✅ Each recipe page loads its data first ("Laster…"), and "Kunne ikke hente oppskriftene" + "Prøv igjen" if it fails. Every recipe is checked at the border (`toRecipe`) |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken on desktop (wide layout, ingredient panel) and Matprat on phones (the ingredients in the page, a section bar under the header): portion selector, groups, time/portions/difficulty and labels (with cuisine), cooking mode («Behold skjermen på», tick off steps), print and copy link |
@@ -78,6 +79,8 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 **16. ~~The data layer answers instantly.~~** ✅ Fixed in task 4.3–4.5: a `Promise`, loaders, "Laster…" and an error page.
 
 **17. Almost-the-same ingredient names become separate filter options.** ✅ Mostly handled: the Studio suggests names already used (`IngredientNameInput`), and the Datasjekk (on the site and in the Studio) lists names that are almost the same; fixing them is still by hand. "tomat" and "tomater" are two options, and "Uten tomat" misses the other. Pasted lists («Lim inn liste») skip the suggestions, so check those.
+
+**18. Firebase makes the site's code bigger.** Since the login (5b), the main JavaScript file is about 610 kB (190 kB compressed), and `vite build` warns about the chunk size. It works, but every visitor downloads the login code too. Fix in 5c: load Firebase only where it's needed (a dynamic `import()`, or `React.lazy` for the admin pages).
 
 ---
 

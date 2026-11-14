@@ -3,23 +3,11 @@ import { useState } from "react";
 import { auth, googleLogin } from "../auth/firebase";
 import { useUser } from "../auth/useUser";
 import Container from "../components/Container";
-import { adminFetch } from "../auth/adminFetch";
 
 // Not in the menu: the admin's way in (bookmark /logg-inn)
 function LoginPage() {
   const user = useUser();
   const [error, setError] = useState("");
-  const [answer, setAnswer] = useState("");
-
-  // Temporary (5b.6): does the API let me in? 404 = yes, 401 = no
-  async function testApi() {
-    const response = await adminFetch("/api/recipes?slug=finnes-ikke", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ minutes: 10 }),
-    });
-    setAnswer(`${response.status} ${await response.text()}`);
-  }
 
   // Opens Google's login window. No setUser: useUser hears the change
   async function logIn() {
@@ -52,13 +40,6 @@ function LoginPage() {
             >
               Logg ut
             </button>
-            <button
-              onClick={testApi}
-              className="mt-6 ml-3 border border-black px-4 py-2 hover:bg-black hover:text-white"
-            >
-              Test API
-            </button>
-            {answer && <p className="mt-3 text-neutral-500">{answer}</p>}
           </div>
         ) : (
           <button

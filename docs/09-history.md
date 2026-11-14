@@ -335,3 +335,49 @@ Files in `api/` starting with `_` are helpers, not addresses.
 - `PATCH` changes the **published** recipe. An unpublished draft of the same recipe in the Studio doesn't see the change, and publishing it later would overwrite it.
 
 **Testing:** `npm test` (the pure rules), and `npm run test:api` with `vercel dev` running, or `API_URL=https://<the site> npm run test:api` online. Each run uses its own titles («API-test m3k9x2») and deletes its recipes and photos at the end.
+
+## 29. The login (task 5b)
+
+*A tutorial, 14 November: written by you (the Firebase project, the first `LoginPage`, `adminFetch.ts` and the test button, the settings on Vercel) and by Claude on request (`firebase.ts`, `useUser.ts`, the final `LoginPage`, the new lock in `_auth.ts`, the clean-up).*
+
+Until now, the API's lock was one password (`POST_SECRET`). That's fine for curl, but a password can't be put in the site's code: anyone can read what the browser downloads. So the site needed a real login: prove who you are once, get a pass that expires, and let the server check the pass.
+
+**Choosing a login service**
+
+| Option | Why not / why |
+|---|---|
+| Clerk | The nicest fit for React, but running it for real needs your own domain, not `*.vercel.app` |
+| Supabase Auth | Free projects are **paused after about a week** without use, login included |
+| Home-made (password → cookie) | You own all the security yourself; task 5 said "preferably ready-made" |
+| **Firebase Auth, with Google** ✅ | Ready-made, free (Spark plan, no card), never paused, works on `*.vercel.app` |
+
+**The files**
+
+| File | What it does |
+|---|---|
+| `src/auth/firebase.ts` | The connection to Firebase (`initializeApp`, `getAuth`), set up once, like `sanityClient.ts`. The values come from `.env` (`VITE_FIREBASE_…`) and aren't secret: they only name the project |
+| `src/auth/useUser.ts` | A hook: who is logged in. `undefined` = not known yet («Sjekker …»), `null` = nobody, a `User` = you |
+| `src/auth/adminFetch.ts` | Like `fetch`, but adds `Authorization: Bearer <your ID token>`. The admin mode (5c) uses it for every call to the API |
+| `src/pages/LoginPage.tsx` | `/logg-inn`, not in the menu: «Logg inn med Google», then your name, user id and «Logg ut» |
+| `api/_auth.ts` | The lock: lets in your Firebase login (`ADMIN_UID`) **or** the script key (`POST_SECRET`) |
+
+**How it works**
+- **Logging in:** `signInWithPopup(auth, googleLogin)` opens Google's own window. Your password is typed at Google, never on the site. Firebase remembers the login in the browser (IndexedDB), so it survives a reload.
+- **Listening, not asking once:** `onAuthStateChanged` calls back at the start and on every log in or log out. It runs inside `useEffect`, and what it returns stops the listening when the component disappears. `logIn` and `logOut` never set the state themselves; the listener does.
+- **Three states, not two:** checking the saved login takes a moment. Starting at `null` would flash the login button before you're recognised. `user === undefined` is checked first, because `undefined` is "false" too.
+- **The token is a JWT:** `header.payload.signature`. Anyone can read it, but no one can change it without breaking Google's signature. Google signs with a private key and publishes the public keys; the server checks with those (`jwtVerify` from `jose`, which also keeps the keys so it doesn't fetch them every time). No Firebase package on the server.
+- **Four checks on the server:** the signature is Google's, it's for our project (`aud` and `iss` with `VITE_FIREBASE_PROJECT_ID`), it hasn't expired (one hour), and **`sub` is `ADMIN_UID`**. Anyone with a Google account can log in to Firebase, but only you get past the last check.
+- **`getIdToken()` every time:** it gives the saved token while it's fresh, and quietly fetches a new one when it's about to expire.
+- **`POST_SECRET` stays** as the key for scripts, so `npm run test:api` works without a login.
+
+**Things we ran into**
+- **The `await` trap:** checking a token is `async`, so `isAllowed` now returns a `Promise<boolean>`. A Promise is an object, and an object is always "true": without `await`, `!isAllowed(request)` is always `false`, and the lock lets everyone in. All three places are now `if (!(await isAllowed(request)))`. **TypeScript doesn't save you here:** it warns about `if (isAllowed(request))` ("always return true"), but not with `!` in front (checked). So `npm run test:api` has to show `401` for a wrong password after any change to the lock.
+- **The Google panel in Firebase** asks about SHA-1 fingerprints and client ids: those are for Android apps and other projects, not for us. Only «Enable» and the support email matter.
+- **Firebase's setup code** puts the values in the code; we put them in `.env`, and only three are needed (`apiKey`, `authDomain`, `projectId`).
+- **Online, the functions don't read `.env`** (as in 5a), so `ADMIN_UID` and `VITE_FIREBASE_PROJECT_ID` are in Vercel's Environment Variables, and the site's address is under Authorized domains in Firebase.
+
+**Limits to know about**
+- **The site's code got bigger** (about 610 kB, 190 kB compressed), because Firebase is loaded on every page. Issue 18 in [08](08-status.md); to be fixed in 5c.
+- Only one admin. Another person would need their user id added to the check.
+
+**Testing:** locally with `vercel dev` (port 3000), online on the site: log in at `/logg-inn`; a temporary «Test API» button sent `PATCH` to a recipe that doesn't exist and got `404` (through the lock) instead of `401`. `npm run test:api` still passes with the script key, locally and online.
