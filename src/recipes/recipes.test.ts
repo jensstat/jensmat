@@ -12,12 +12,37 @@ import {
 // test decides what the fake answers. Normally: the recipes in data.ts.
 // vi.hoisted: vi.mock is moved to the top of the file, before the imports, so the
 // fake must be made up there too.
+// Two fakes, one per client, so a test can see which one was asked
 const fakeFetch = vi.hoisted(() => vi.fn<() => Promise<unknown>>());
-vi.mock("./sanityClient", () => ({ sanity: { fetch: fakeFetch } }));
+const fakeFreshFetch = vi.hoisted(() => vi.fn<() => Promise<unknown>>());
+vi.mock("./sanityClient", () => ({
+  sanity: { fetch: fakeFetch },
+  sanityFresh: { fetch: fakeFreshFetch },
+}));
+// The login note, so a test can pretend to be logged in
+const fakeLoginHint = vi.hoisted(() => vi.fn(() => false));
+vi.mock("../auth/loginHint", () => ({ hasLoginHint: fakeLoginHint }));
 
 // Before every test: "the fetch worked, and Sanity answered with data.ts"
 beforeEach(() => {
-  fakeFetch.mockResolvedValue(testRecipes);
+  fakeFetch.mockReset().mockResolvedValue(testRecipes);
+  fakeFreshFetch.mockReset().mockResolvedValue(testRecipes);
+  fakeLoginHint.mockReturnValue(false);
+});
+
+describe("which client the data layer asks", () => {
+  it("a visitor reads from the CDN", async () => {
+    await getAllRecipes();
+    expect(fakeFetch).toHaveBeenCalled();
+    expect(fakeFreshFetch).not.toHaveBeenCalled();
+  });
+
+  it("logged in, it reads straight from Sanity", async () => {
+    fakeLoginHint.mockReturnValue(true);
+    await getAllRecipes();
+    expect(fakeFreshFetch).toHaveBeenCalled();
+    expect(fakeFetch).not.toHaveBeenCalled();
+  });
 });
 
 describe("the data layer", () => {

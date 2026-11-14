@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 14 November 2026. Type check, lint, 276 tests and the build all pass (the Studio's type check and build too). The recipes come from Sanity, and the site is online (Vercel), now with its own API (`api/`) and a login (`/logg-inn`, Google via Firebase): `npm run test:api` passes all 34 checks locally and online, and the login gets through the API's lock online. Every page was checked in the browser at phone and desktop width: no errors, no sideways scrolling. The filter panel was also checked with the keyboard.*
+*Last checked: 14 November 2026 (evening). Type check, lint, Prettier, 325 tests and the build all pass. The recipes come from Sanity, and the site is online (Vercel), with its own API (`api/`), a login (Google via Firebase) and **the admin mode** (task 5c): quick posting at `/ny-oppskrift`, «Rediger» on the recipe page, the admin bar. `npm run test:api` has 42 checks. Every 5c step was tried in the browser at phone and desktop width, with stand-ins for the login and the API, and checked by you with `vercel dev` and the real login. The main JavaScript file is back to its size before Firebase (about 507 kB).*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -14,20 +14,23 @@ Where the project stands: what works, what's missing, and known issues. **Update
 |---|---|---|
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
 | Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises. Always opens with the house recipe; «Husoppskriften» puts it back after a change |
-| Recipe overview | `/oppskrifter` | ✅ Recipe cards (three views, the chosen one remembered), search (title, description, ingredients), "Hva med…?" (pizza on Fridays; on the right from lg), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, sorting (Nyeste, A–Å, Raskest), grid/list view, a message when nothing matches. The search and the filters are kept in the address, so reload, back and a shared link keep them |
-| Datasjekk | `/oppskrifter/datasjekk` | ✅ Not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same |
+| Recipe overview | `/oppskrifter` | ✅ Visitors only see finished recipes; you see all, «Uferdig» marked. Recipe cards (three views, the chosen one remembered), search (title, description, ingredients), "Hva med…?" (pizza on Fridays; on the right from lg), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, sorting (Nyeste, A–Å, Raskest), grid/list view, a message when nothing matches. The search and the filters are kept in the address, so reload, back and a shared link keep them |
+| Datasjekk | `/oppskrifter/datasjekk` | ✅ In the admin bar, not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same. Logged in: «Rediger» on each recipe, and each missing thing opens the editor at that field |
 | Recipes from Sanity | | ✅ The site reads published recipes from Sanity with GROQ (`sanityClient.ts`, `sanityQuery.ts`), through `toRecipe`. Drafts don't show. Photos come in the right size from Sanity's image service, with the hotspot kept in view |
 | Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings. Tabs, templates («Ny middag», «Ny dessert»), ingredient names to pick from, «Lim inn liste» (paste a whole ingredient list), and the Datasjekk in the left column |
 | The site online | Vercel | ✅ Published from GitHub; `vercel.json` sends every page address to `index.html` (not `/api/…`, Vite's `/@…` or files with a dot) |
-| The API | `/api/recipes`, `/api/photo` | ✅ Server functions on Vercel (task 5a): create a recipe (`POST`), change it field by field (`PATCH`), add a photo. Behind a lock: your Firebase login (`ADMIN_UID`), or the script key (`POST_SECRET`) for `npm run test:api`. The write token and the script key are only in `.env.local` and Vercel's Environment Variables (Production only, Sensitive). Run locally with `vercel dev` (port 3000). See [09](09-history.md), section 28 |
-| The login | `/logg-inn` | ✅ Not in the menu. Log in with Google (Firebase Auth, task 5b), stays logged in after a reload, «Logg ut». The API only lets in your user id. See [09](09-history.md), section 29 |
+| The API | `/api/recipes`, `/api/photo` | ✅ Server functions on Vercel (task 5a): create a recipe (`POST`), change it field by field (`PATCH`, also the photo's focus point), delete it (`DELETE`), add a photo. Behind a lock: your Firebase login (`ADMIN_UID`), or the script key (`POST_SECRET`) for `npm run test:api`. The write token and the script key are only in `.env.local` and Vercel's Environment Variables (Production only, Sensitive). Run locally with `vercel dev` (port 3000). See [09](09-history.md), section 28 |
+| The login | `/logg-inn` | ✅ Not in the menu. Log in with Google (Firebase Auth, task 5b), stays logged in after a reload. «Logg ut» in the admin bar. The API only lets in your user id. Firebase is only downloaded on the admin's pages. See [09](09-history.md), section 29 |
+| Quick posting | `/ny-oppskrift` | ✅ The admin's quick way to post (task 5c), made for the phone: a title and maybe a photo (shrunk in the browser). «Lagre» → the recipe, «Lagre og fyll ut resten» → «Rediger». See [09](09-history.md), section 30 |
+| «Rediger» | `/oppskrifter/:id?rediger` | ✅ The whole recipe as a form, only for the admin. Sends only the changes; «Mangler», a jump bar, name suggestions, «Lim inn liste», the photo's focus point, «Slett oppskrift». Asks before unsaved changes are lost, keeps a draft in the browser, «Logg inn igjen» if the login runs out |
+| The admin bar | every page | ✅ Only when logged in: `Admin · + Ny oppskrift · Datasjekk · Logg ut`, on top of the header |
 | Loading and errors | | ✅ Each recipe page loads its data first ("Laster…"), and "Kunne ikke hente oppskriftene" + "Prøv igjen" if it fails. Every recipe is checked at the border (`toRecipe`) |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
 | Recipe page | `/oppskrifter/:id` | ✅ Modelled on Gladkokken on desktop (wide layout, ingredient panel) and Matprat on phones (the ingredients in the page, a section bar under the header): portion selector, groups, time/portions/difficulty and labels (with cuisine), cooking mode («Behold skjermen på», tick off steps), print and copy link |
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
-| API tests | `npm run test:api` | ✅ 34 checks against the running API (`vercel dev`, or online with `API_URL=https://…`): the lock, creating, the free address, what's refused, the photo, `PATCH` and every kind of field. Uses its own titles and deletes what it made |
-| Tests | `npm test` | ✅ 276 tests: the API's rules (`toSlug`, `nextFreeSlug`, `readChanges`), yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, sorting, pasted ingredient lists, the recipe page's labels and sections, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
+| API tests | `npm run test:api` | ✅ 42 checks against the running API (`vercel dev`, or online with `API_URL=https://…`): the lock, creating, the free address, what's refused, the photo, `PATCH` and every kind of field, the focus point, `DELETE`. Uses its own titles and deletes what it made |
+| Tests | `npm test` | ✅ 325 tests: the admin mode's rules (`recipeChanges`, `readForm`, ingredient lines, drafts, photo sizes), the API's rules (`toSlug`, `nextFreeSlug`, `readChanges`), yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, sorting, pasted ingredient lists, the recipe page's labels and sections, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
 
 ---
 
@@ -80,7 +83,15 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 
 **17. Almost-the-same ingredient names become separate filter options.** ✅ Mostly handled: the Studio suggests names already used (`IngredientNameInput`), and the Datasjekk (on the site and in the Studio) lists names that are almost the same; fixing them is still by hand. "tomat" and "tomater" are two options, and "Uten tomat" misses the other. Pasted lists («Lim inn liste») skip the suggestions, so check those.
 
-**18. Firebase makes the site's code bigger.** Since the login (5b), the main JavaScript file is about 610 kB (190 kB compressed), and `vite build` warns about the chunk size. It works, but every visitor downloads the login code too. Fix in 5c: load Firebase only where it's needed (a dynamic `import()`, or `React.lazy` for the admin pages).
+**18. ~~Firebase makes the site's code bigger.~~** ✅ Fixed in 5c: the login page and the admin pages are their own files (`lazy`), and the public pages only read the login note (`auth/loginHint.ts`), so visitors never download Firebase. The main file is back to about 507 kB. `vite build` still warns about it being over 500 kB, as it did before Firebase (React, React Router and Sanity's client).
+
+**19. Old photos stay in Sanity.** A replaced photo, and the photo of a deleted recipe, stay in the media library (unused). Delete them in the Studio's media browser now and then, if the space matters.
+
+**20. The site and the Studio don't see each other's unsaved work.** «Rediger» changes the published recipe. If the same recipe has an unpublished draft in the Studio, publishing that draft later overwrites what was saved on the site. Edit a recipe in one place at a time.
+
+**21. A draft from «Rediger» is kept in one browser only,** and without a new photo. It's a safety net for crashes, not a way to move work between the phone and the Mac.
+
+**22. Most recipes are hidden from visitors right now.** Only finished recipes (with ingredients) are shown on the overview, and at the time of writing that's 3 of 9. Fill them in from the Datasjekk.
 
 ---
 

@@ -33,16 +33,18 @@ function check(name, ok, details = "") {
   if (!ok) failures++;
 }
 
-// Sends the password (5a.6). null = send no password at all
+// Sends one request to the API, and reads the answer. Every check uses it.
+// password: the script key (POST_SECRET) by default; null = send no password at all
 // (not undefined: that would give the default, the real password)
-async function post(body, method = "POST", password = process.env.POST_SECRET) {
-  const headers = { "Content-Type": "application/json" };
+async function call(
+  method,
+  path,
+  { body, type = "application/json", password = process.env.POST_SECRET } = {},
+) {
+  const headers = {};
+  if (body !== undefined) headers["Content-Type"] = type;
   if (password !== null) headers.Authorization = `Bearer ${password}`;
-  const response = await fetch(`${API}/api/recipes`, {
-    method,
-    headers,
-    body: method === "POST" ? body : undefined,
-  });
+  const response = await fetch(`${API}${path}`, { method, headers, body });
   const text = await response.text();
   let json;
   try {
@@ -50,8 +52,21 @@ async function post(body, method = "POST", password = process.env.POST_SECRET) {
   } catch {
     json = undefined;
   }
-  if (json?.id) created.push(json.id);
   return { status: response.status, json, text };
+}
+
+// "?slug=…", or nothing for the checks that leave it out on purpose
+const slugQuery = (slug) => (slug ? `?slug=${encodeURIComponent(slug)}` : "");
+
+// POST /api/recipes (or another method on the same address, like GET for 405).
+// Remembers what it made, so it's deleted at the end
+async function post(body, method = "POST", password) {
+  const answer = await call(method, "/api/recipes", {
+    body: method === "POST" ? body : undefined,
+    password,
+  });
+  if (answer.json?.id) created.push(answer.json.id);
+  return answer;
 }
 
 // A 1×1 pixel PNG, so the photo tests need no file
@@ -60,48 +75,14 @@ const TINY_PNG = Buffer.from(
   "base64",
 );
 
-async function sendPhoto(
-  slug,
-  body,
-  type = "image/png",
-  password = process.env.POST_SECRET,
-) {
-  const headers = { "Content-Type": type };
-  if (password !== null) headers.Authorization = `Bearer ${password}`;
-  const query = slug ? `?slug=${encodeURIComponent(slug)}` : "";
-  const response = await fetch(`${API}/api/photo${query}`, {
-    method: "POST",
-    headers,
-    body,
-  });
-  const text = await response.text();
-  let json;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    json = undefined;
-  }
-  return { status: response.status, json, text };
-}
+const sendPhoto = (slug, body, type = "image/png", password) =>
+  call("POST", `/api/photo${slugQuery(slug)}`, { body, type, password });
 
-async function sendPatch(slug, body, password = process.env.POST_SECRET) {
-  const headers = { "Content-Type": "application/json" };
-  if (password !== null) headers.Authorization = `Bearer ${password}`;
-  const query = slug ? `?slug=${encodeURIComponent(slug)}` : "";
-  const response = await fetch(`${API}/api/recipes${query}`, {
-    method: "PATCH",
-    headers,
-    body,
-  });
-  const text = await response.text();
-  let json;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    json = undefined;
-  }
-  return { status: response.status, json, text };
-}
+const sendPatch = (slug, body, password) =>
+  call("PATCH", `/api/recipes${slugQuery(slug)}`, { body, password });
+
+const sendDelete = (slug, password) =>
+  call("DELETE", `/api/recipes${slugQuery(slug)}`, { password });
 
 async function expectCreated(name, title, slug) {
   const answer = await post(JSON.stringify({ title }));
@@ -359,6 +340,76 @@ try {
       "32 a value that isn't in types.ts: 400",
       wrong.status === 400,
       `got ${wrong.status} ${wrong.text.slice(0, 200)}`,
+    );
+  }
+
+  console.log("\nG: the photo's focus point (imageFocus → image.hotspot)");
+  if (trimmed?.slug) {
+    // "API-test pai" has no photo
+    const noPhoto = await sendPatch(
+      trimmed.slug,
+      '{"imageFocus":{"x":0.2,"y":0.8}}',
+    );
+    check(
+      "33 no photo: 400 «Oppskriften har ikke bilde»",
+      noPhoto.status === 400 &&
+        noPhoto.json?.error === "Oppskriften har ikke bilde",
+      `got ${noPhoto.status} ${noPhoto.text.slice(0, 200)}`,
+    );
+  }
+  if (first?.id) {
+    // "API-test" got a photo in 14
+    const focused = await sendPatch(
+      first.slug,
+      '{"imageFocus":{"x":0.2,"y":0.8}}',
+    );
+    const image = await sanity.getDocument(first.id).then((d) => d?.image);
+    check(
+      "34 with a photo: 200, the hotspot moved, and the photo is kept",
+      focused.status === 200 &&
+        image?.hotspot?._type === "sanity.imageHotspot" &&
+        image?.hotspot?.x === 0.2 &&
+        image?.hotspot?.y === 0.8 &&
+        typeof image?.asset?._ref === "string",
+      `got ${focused.status} ${focused.text.slice(0, 200)}, ${JSON.stringify(image)}`,
+    );
+    const outside = await sendPatch(
+      first.slug,
+      '{"imageFocus":{"x":1.5,"y":0.5}}',
+    );
+    check(
+      "35 a point outside the photo: 400",
+      outside.status === 400,
+      `got ${outside.status} ${outside.text.slice(0, 200)}`,
+    );
+  }
+
+  console.log("\nH: deleting a recipe (DELETE /api/recipes)");
+  const doomed = await expectCreated(
+    "36 a recipe to delete",
+    `API-test slett ${run}`,
+    `api-test-slett-${run}`,
+  );
+  if (doomed?.slug) {
+    const deleteRefusals = [
+      ["37 no password", doomed.slug, null, 401],
+      ["38 unknown recipe", `finnes-ikke-${run}`, undefined, 404],
+      ["39 no slug", "", undefined, 400],
+    ];
+    for (const [name, slug, password, status] of deleteRefusals) {
+      const answer = await sendDelete(slug, password);
+      check(
+        `${name}: ${status}`,
+        answer.status === status && typeof answer.json?.error === "string",
+        `got ${answer.status} ${answer.text.slice(0, 200)}`,
+      );
+    }
+    const deleted = await sendDelete(doomed.slug);
+    const left = await sanity.getDocument(doomed.id);
+    check(
+      "40 delete: 200, and it's gone from Sanity",
+      deleted.status === 200 && left === undefined,
+      `got ${deleted.status} ${deleted.text.slice(0, 200)}, ${JSON.stringify(left)}`,
     );
   }
 } finally {

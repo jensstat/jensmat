@@ -10,6 +10,7 @@ import {
   tags,
   isQuick,
   quickOption,
+  isIncomplete,
   themes,
   timeRangeOf,
   timeRanges,
@@ -361,4 +362,12 @@ export function filtersFromParams(
     if (options.length > 0) chosen[group.id] = options;
   }
   return { query: params.get("sok") ?? "", chosen };
+}
+
+// The recipes the overview shows. Visitors only see recipes they can cook: an
+// «Uferdig» one (no ingredients yet, often just posted quickly from the phone) is
+// left out until it's filled in. The admin sees everything, «Uferdig» marked.
+// A direct link to an «Uferdig» recipe still works for anyone.
+export function shownRecipes(recipes: Recipe[], isAdmin: boolean): Recipe[] {
+  return isAdmin ? recipes : recipes.filter((recipe) => !isIncomplete(recipe));
 }

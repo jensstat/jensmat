@@ -10,7 +10,8 @@ import type { Ingredient } from "./types";
 
 // Units that are read as the unit when they come right after the amount.
 // Anything else is part of the name: "3 egg" has no unit, the name is "egg".
-const units = [
+// Also the suggestions in the unit field in «Rediger» (IngredientsField).
+export const units = [
   "g",
   "kg",
   "hg",
@@ -58,7 +59,8 @@ const amountPattern =
 const bulletPattern = /^(?:[-–•*·▪◦]|\[[ xX]?\]|[☐☑▢])\s*/;
 
 // "1,5" → 1.5, "1 ½" → 1.5, "1/2" → 0.5. undefined if it isn't a number above 0.
-function toAmount(text: string): number | undefined {
+// Also used by the amount field in «Rediger» (src/admin/ingredientLines.ts).
+export function toAmount(text: string): number | undefined {
   let amount: number;
   if (text.includes("/")) {
     const [top, bottom] = text.split("/").map(Number);

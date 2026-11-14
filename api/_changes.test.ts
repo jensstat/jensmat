@@ -110,4 +110,30 @@ describe("readChanges", () => {
       });
     }
   });
+
+  it("reads the photo's focus point, and keeps only x and y", () => {
+    expect(readChanges({ imageFocus: { x: 0.2, y: 1, z: 5 } })).toEqual({
+      set: { imageFocus: { x: 0.2, y: 1 } },
+      unset: [],
+    });
+  });
+
+  it("refuses a focus point outside the photo, or not a point", () => {
+    for (const imageFocus of [
+      { x: 1.2, y: 0.5 },
+      { x: 0.5 },
+      "midten",
+      [0.5, 0.5],
+    ]) {
+      expect(readChanges({ imageFocus })).toEqual({
+        error: "Ugyldig verdi for «imageFocus»",
+      });
+    }
+  });
+
+  it("never removes the focus point", () => {
+    expect(readChanges({ imageFocus: null })).toEqual({
+      error: "Fokuspunktet kan ikke fjernes",
+    });
+  });
 });

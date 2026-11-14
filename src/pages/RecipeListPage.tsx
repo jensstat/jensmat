@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { useLoaderData, useSearchParams } from "react-router";
+import { useLoaderData, useLocation, useSearchParams } from "react-router";
+import { useLoginHint } from "../auth/loginHint";
+import Notice from "../components/Notice";
+import { useNotice } from "../components/useNotice";
 import ActiveFilters from "../components/recipe/ActiveFilters";
 import CategoryChips from "../components/recipe/CategoryChips";
 import FilterPanel from "../components/recipe/FilterPanel";
@@ -23,6 +26,7 @@ import {
   noFilters,
   tickedOptions,
   toggleOption,
+  shownRecipes,
 } from "../recipes/filter";
 import type { RecipeFilters } from "../recipes/filter";
 import {
@@ -84,9 +88,21 @@ function today() {
 function RecipeListPage() {
   // The recipes, already fetched by the loader before the page is shown (loaders.ts).
   // <typeof recipeListLoader>: TypeScript gets the type from what the loader returns.
-  const recipes = useLoaderData<typeof recipeListLoader>();
+  // Visitors don't see «Uferdig» recipes; the admin sees them all (filter.ts: shownRecipes)
+  const isAdmin = useLoginHint();
+  const recipes = shownRecipes(
+    useLoaderData<typeof recipeListLoader>(),
+    isAdmin,
+  );
   // The query string of the address (?sok=laks …). The address is the state.
   const [searchParams, setSearchParams] = useSearchParams();
+  // After «Slett oppskrift» in «Rediger», the editor comes here with the title in the
+  // link's state: say it's done, for a few seconds
+  const deleted: unknown = useLocation().state?.deleted;
+  const [notice] = useNotice(
+    typeof deleted === "string" ? `«${deleted}» er slettet` : undefined,
+    4,
+  );
   // Every filter (the search too), read from the address on every render, never stored.
   // The recipes are passed in, so values that aren't an option are left out (filter.ts).
   const filters = filtersFromParams(searchParams, recipes);
@@ -257,6 +273,7 @@ function RecipeListPage() {
           </ul>
         )}
       </div>
+      {notice && <Notice message={notice} />}
     </section>
   );
 }

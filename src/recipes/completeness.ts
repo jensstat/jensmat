@@ -9,6 +9,9 @@ import type { Recipe } from "./types";
 
 interface Check {
   label: string; // what's missing, as shown on the Datasjekk page
+  // Which field on the recipe it's about, so «Rediger» can jump straight to it
+  // (/oppskrifter/laksewrap?rediger=cuisine)
+  field: keyof Recipe;
   has: (recipe: Recipe) => boolean;
   // Only checked for some recipes. A dessert doesn't need a main ingredient.
   appliesTo?: (recipe: Recipe) => boolean;
@@ -19,38 +22,77 @@ interface Check {
 // Not here on purpose: tags ([] = none apply), steps (not every recipe needs them),
 // occasions (missing = "Ukedag").
 export const checks: Check[] = [
-  { label: "Ingredienser", has: (recipe) => recipe.ingredients.length > 0 },
-  { label: "Bilde", has: (recipe) => recipe.image !== undefined },
+  {
+    label: "Ingredienser",
+    field: "ingredients",
+    has: (recipe) => recipe.ingredients.length > 0,
+  },
+  {
+    label: "Bilde",
+    field: "image",
+    has: (recipe) => recipe.image !== undefined,
+  },
   {
     label: "Beskrivelse",
+    field: "description",
     has: (recipe) => (recipe.description ?? "").trim() !== "",
   },
-  { label: "Måltid", has: (recipe) => recipe.category !== undefined },
+  {
+    label: "Måltid",
+    field: "category",
+    has: (recipe) => recipe.category !== undefined,
+  },
   {
     label: "Hovedingrediens",
+    field: "protein",
     has: (recipe) => recipe.protein !== undefined,
     // Desserts, baking and side dishes often don't have one
     appliesTo: (recipe) =>
       recipe.category === undefined ||
       ["Frokost", "Lunsj", "Middag"].includes(recipe.category),
   },
-  { label: "Tid", has: (recipe) => recipe.minutes !== undefined },
-  { label: "Porsjoner", has: (recipe) => recipe.servings !== undefined },
+  {
+    label: "Tid",
+    field: "minutes",
+    has: (recipe) => recipe.minutes !== undefined,
+  },
+  {
+    label: "Porsjoner",
+    field: "servings",
+    has: (recipe) => recipe.servings !== undefined,
+  },
   {
     label: "Vanskelighetsgrad",
+    field: "difficulty",
     has: (recipe) => recipe.difficulty !== undefined,
   },
-  { label: "Kjøkken", has: (recipe) => recipe.cuisine !== undefined },
+  {
+    label: "Kjøkken",
+    field: "cuisine",
+    has: (recipe) => recipe.cuisine !== undefined,
+  },
   // [] counts as filled in: you've decided none fit
-  { label: "Passer til", has: (recipe) => recipe.themes !== undefined },
+  {
+    label: "Passer til",
+    field: "themes",
+    has: (recipe) => recipe.themes !== undefined,
+  },
 ];
 
-// What this recipe is missing, as labels: ["Bilde", "Kjøkken"]. [] = nothing missing.
-export function missingInfo(recipe: Recipe): string[] {
+// What this recipe is missing, with the field each is about:
+// [{ label: "Kjøkken", field: "cuisine" }]. [] = nothing missing.
+export function missingFields(
+  recipe: Recipe,
+): { label: string; field: keyof Recipe }[] {
   return checks
     .filter((check) => check.appliesTo?.(recipe) ?? true)
     .filter((check) => !check.has(recipe))
-    .map((check) => check.label);
+    .map(({ label, field }) => ({ label, field }));
+}
+
+// What this recipe is missing, as labels: ["Bilde", "Kjøkken"]. [] = nothing missing.
+export function missingInfo(recipe: Recipe): string[] {
+  return missingFields(recipe).map((missing) => missing.label);
 }
 
 // Every recipe with what it's missing, the most missing first

@@ -381,3 +381,94 @@ Until now, the API's lock was one password (`POST_SECRET`). That's fine for curl
 - Only one admin. Another person would need their user id added to the check.
 
 **Testing:** locally with `vercel dev` (port 3000), online on the site: log in at `/logg-inn`; a temporary «Test API» button sent `PATCH` to a recipe that doesn't exist and got `404` (through the lock) instead of `401`. `npm run test:api` still passes with the script key, locally and online.
+
+## 30. The admin mode (task 5c)
+
+*14 November. Written by you (`lazy` on `/logg-inn`) and by Claude on request (everything else), in small steps, each checked in the browser before the next.*
+
+The goal from task 5: **post and edit recipes on the site itself**, on the phone and the Mac, like a blog, so the Studio is only a backup. 5a made the API and 5b the login; 5c is everything you see and use.
+
+**Two ways to post, on purpose**
+- **The quick way: «Ny oppskrift»** (`/ny-oppskrift`, «+ Ny oppskrift» in the admin bar). Made for the phone: a title, and a photo if you have one. «Lagre» posts it at once (published, «Uferdig» until it has ingredients) and goes to the recipe. Nothing more is asked for, so posting takes seconds; the rest can wait.
+- **The full way: «Rediger»** on the recipe page. Every part of the recipe as a form: the photo and its focus point, the title and description, portions, time, the dropdowns and checkboxes, the ingredients, the steps, tips and source. «Lagre og fyll ut resten» on `/ny-oppskrift` goes straight there.
+
+**What «Rediger» does for you**
+- **Only what changed is sent.** «Lagre» says how many changes there are («Lagre 3 endringer», or a grey «Ingen endringer»), and `PATCH` gets only those fields.
+- **«Mangler 3 av 9»** at the top: what the Datasjekk says this recipe lacks. Tap one to jump to its field; it's ticked off as soon as you fill it in.
+- **A jump bar** (Bilde · Detaljer · Ingredienser · Steg), and «Lagre» always in view at the bottom.
+- **Fast typing:** Enter in an ingredient line goes to the next line (or makes one), new lines get the cursor, and the name field suggests names used in other recipes (so «tomat» and «tomater» don't both happen). «Lim inn liste» works as in the Studio, with the same parser.
+- **The photo:** «Bytt bilde» (shrunk in the browser, like on `/ny-oppskrift`), and tap the photo to choose what always stays in view (the hotspot in the Studio).
+- **Nothing is lost by accident.** Leaving with unsaved changes asks first (a link, the back button, «Avbryt», closing the tab). While you type, a **draft** is kept in the browser; after a crash or a closed tab, «Rediger (utkast)» and «Gjenopprett» bring it back. If the login has run out, «Logg inn igjen» opens Google's window and keeps the form as it is.
+- **«Slett oppskrift»**, at the bottom, asks first, then goes to the overview («… er slettet»).
+- **It lives in the address:** `/oppskrifter/laksewrap?rediger`. A reload stays in the editor, and `?rediger=cuisine` opens it at that field. The Datasjekk uses that: when you're logged in, each recipe has «Rediger», and each missing thing («Kjøkken», «Tid» …) links straight to its field.
+
+**For you only, and invisible to visitors**
+- **The admin bar** at the very top: `Admin · + Ny oppskrift · Datasjekk · Logg ut`. A bar rather than a menu item, because the phone menu was full, and a dropdown would make quick posting two taps.
+- **«Uferdig» recipes are hidden from visitors** on the overview (`shownRecipes` in `filter.ts`). You see them all. A direct link still works for anyone.
+- Visitors never download the editor or Firebase (see "Firebase only where it's needed" below).
+
+**The files**
+
+| File | What it does |
+|---|---|
+| `src/pages/NewRecipePage.tsx` + `src/admin/newRecipeAction.ts` | `/ny-oppskrift`: the form, and what «Lagre» does (a React Router `action`) |
+| `src/admin/RecipeEditor.tsx` | «Rediger»: the form, counting changes, saving, deleting, the warnings, the draft |
+| `src/admin/PhotoField.tsx`, `DetailsFields.tsx`, `IngredientsField.tsx`, `StepsField.tsx` | The parts of the form |
+| `src/admin/MissingList.tsx`, `DraftNotice.tsx`, `jumpTo.ts`, `editorStyles.ts` | «Mangler», the draft notice, jumping to a field, the shared look |
+| `src/admin/readForm.ts` | Reads the whole form (`FormData`) into the changes. With tests |
+| `src/admin/recipeChanges.ts` | Compares the form with the recipe, field by field: only what changed. With tests |
+| `src/admin/ingredientLines.ts` | An ingredient to field text and back (`amountText`, exact: «0,15», «⅓»). With tests |
+| `src/admin/draft.ts` | The draft in `localStorage` (`utkast:<slug>`), and `withChanges`. With tests |
+| `src/admin/photo.ts` + `photoSize.ts` | Shrinks a photo in a `<canvas>` (longest side 2000 px, JPEG). `fitInside` has tests |
+| `src/admin/api.ts` | The site's four calls to the API: `createRecipe`, `updateRecipe`, `deleteRecipe`, `uploadPhoto` |
+| `src/auth/loginHint.ts` | The login note (`innlogget` in `localStorage`), and `useLoginHint` |
+| `src/auth/session.ts` | `logIn` and `logOut`, loading Firebase only when they run |
+| `src/components/AdminBar.tsx` | The admin bar |
+| `src/components/Notice.tsx` + `useNotice.ts` | «Lagret ✓» and «… er slettet», for a few seconds |
+| `api/recipes.ts` | New: `DELETE`, and `imageFocus` in `PATCH` (written into the photo's hotspot) |
+
+**Why it's built this way**
+- **Firebase only where it's needed** (issue 18). The login page and the admin pages are loaded with `lazy` (their own files), and the editor with `React.lazy`. The public pages use only the **login note**: a line in `localStorage` saying "someone has logged in here". It's a *hint, not proof*: anyone could write it, and all it does is show the admin links and read fresh data. Everything that writes goes through the API's lock, which checks the real Google token. The main file is back to its size before Firebase.
+- **Fresh data when logged in.** Visitors read from Sanity's CDN (fast, but a few seconds behind). With the note, the site reads straight from Sanity (`sanityFresh`), so what you just saved is there at once.
+- **The form reads its own fields** (`FormData`) instead of holding every field in `useState`. Only the lists (steps, ingredients) need state, because their length and order change. Counting and saving read the form the same way (`readForm`), so the count can't disagree with what's sent.
+- **The ingredient amounts are shown exactly.** `formatAmount` rounds (0.15 → «0,2»), which is right on the recipe page but would quietly change your amounts every time you saved.
+- **The photo is sent before the other changes,** so a new focus point lands on the new photo, not the old one.
+- **The hotspot is written as one object,** built from the old one. A Sanity patch runs its parts in its own order, so writing `x` and `y` one by one could make a hotspot without its `_type`.
+- **`DELETE` also deletes the Studio's draft** of the recipe, in one transaction, or the draft would be left behind.
+- **The quick way stays quick.** `/ny-oppskrift` was never turned into the full form; a second button goes on to it instead.
+
+**Things we ran into (and the fixes)**
+- **The build warning didn't go away** with Firebase out of the main file: the main file was over 500 kB *before* Firebase too (React, React Router, Sanity's client). The goal was to get back to that size, and it is.
+- **A bare `/` in a field's `pattern` breaks the whole pattern.** Browsers read `pattern` with strict rules (the `v` flag), and an invalid pattern is quietly ignored, so «abc» got through. Written `\/`, it works. Found only by testing in the browser.
+- **The jump bar made the recipe page scroll sideways on phones.** A grid column is as wide as its widest content unless told otherwise. `grid-cols-[minmax(0,1fr)]` lets it shrink, and the bar got shorter names (it still wraps on the smallest phones rather than being cut off).
+- **Changing the portions in «Rediger» left the portion stepper on the old number.** `RecipeView`'s `key` now includes the portions, so it starts afresh.
+- **Opening the editor fetched the recipes twice in development.** React's StrictMode runs every effect twice on purpose; the real build fetches once. Not a bug.
+- **Enter in an ingredient field saved the whole form** (a browser's default in a form). Now it moves to the next line.
+- **Two `w-…` classes on one element collide** (`w-full` from a shared style and `w-44`), and which wins depends on Tailwind, not the order you write them. The shared style was split into a base without a size (`fieldBaseClass`).
+- **`useBlocker` asks at the moment you click,** so it reads a `ref` (the newest value), not state from an older render.
+- **`setSearchParams` with a function** should build a new list (`new URLSearchParams(current)`), not change the one it's given.
+
+**Limits to know about**
+- **A draft is kept in one browser only,** and without a new photo (a file is too big for `localStorage`).
+- **Old photos stay in Sanity's media library,** both replaced ones and those of deleted recipes. They can be deleted in the Studio's media browser.
+- **The site and the Studio don't know about each other's unsaved work.** `PATCH` changes the published recipe; an open draft in the Studio would overwrite it when published.
+- **The focus point can only be chosen with a mouse or a finger.** Without, the middle is used, and the Studio can still set it.
+- **Visitors see only finished recipes** on the overview: at the time of writing, 3 of 9.
+
+**Testing:** `npm test` (325 tests; the new rules in `src/admin/` have their own). `npm run test:api` (42 checks, with `vercel dev`, or online with `API_URL=…`): new checks for the focus point and `DELETE`. In the browser, every step was tried at phone and desktop width; the login and the API were replaced by stand-ins in the test browser (so nothing was written to Sanity), and you checked the real thing with `vercel dev`.
+
+## 31. Clean-up after the admin mode
+
+*14 November, by Claude on request ("refactor the code if needed"). Nothing you see changed.*
+
+5c was built in many small steps, and some things were written more than once. Tidied up before writing these docs:
+
+- **One place for the calls to the API: `src/admin/api.ts`.** "Send, and if it fails, read the API's error message" was written out in four places (the new recipe, saving, deleting, the photo). Now there are four small functions, `createRecipe`, `updateRecipe`, `deleteRecipe` and `uploadPhoto`, and one `send` they share. It also turns the browser's English «Failed to fetch» into «Fikk ikke kontakt med serveren». An app one day could use the same four calls.
+- **`RecipeEditor.tsx` from 600 to about 420 lines.** Reading the form (`readForm.ts`), jumping to a field (`jumpTo.ts`), the «Mangler» box (`MissingList.tsx`) and the draft notice (`DraftNotice.tsx`) are their own files. `readForm` now takes a `FormData` instead of the page's `<form>`, so it can be tested without a browser (`readForm.test.ts`).
+- **`routes.tsx`:** the same `shouldRevalidate` was written twice; now it's one function, `notForSearchChanges`.
+- **`NewRecipePage`:** the page frame (width and heading) was written three times; now it's `Frame`.
+- **`LoginPage`** logs in and out with `session.ts`, like the admin bar and the editor, instead of its own copy.
+- **`scripts/check-api.mjs`:** four copies of "send, then read the answer" became one `call()`.
+- **Not touched:** the API files in `api/` (short and clear, and mostly written by you).
+
+Checked afterwards: the type check, lint, Prettier, the 325 tests, the build, and the browser tests from every 5c step again.

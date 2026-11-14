@@ -1,7 +1,8 @@
 import { readRecipes } from "./toRecipe";
 import type { SkippedRecipe } from "./toRecipe";
 import type { Recipe } from "./types";
-import { sanity } from "./sanityClient";
+import { sanity, sanityFresh } from "./sanityClient";
+import { hasLoginHint } from "../auth/loginHint";
 import { recipesQuery } from "./sanityQuery";
 
 // The data layer: the only file that knows where the recipes come from: Sanity, the CMS
@@ -28,9 +29,13 @@ async function fetchRecipes(): Promise<{
   recipes: Recipe[];
   skipped: SkippedRecipe[];
 }> {
+  // Logged in: straight from Sanity, so what you just saved is there.
+  // A visitor: the CDN, which is faster but may be a few seconds behind.
+  const client = hasLoginHint() ? sanityFresh : sanity;
+
   let answer: unknown;
   try {
-    answer = await sanity.fetch(recipesQuery);
+    answer = await client.fetch(recipesQuery);
   } catch (error) {
     // The real reason, for you in the console. The page only needs to know "couldn't fetch".
     console.error("Kunne ikke hente oppskriftene fra Sanity:", error);

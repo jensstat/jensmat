@@ -16,7 +16,9 @@ One per address. A page puts components together and holds the state for that pa
 | `PizzaCalculatorPage` | `/pizza` | Holds the pizza `settings` in state, and draws the fields, the result and the method. See [02](02-pizza-calculator.md) |
 | `RecipeListPage` | `/oppskrifter` | The overview: "Hva med…?" (on the right from lg), search, the filter panel, meal chips, the chosen filters, grid/list toggle, recipe cards. Holds `view`, `day` and `suggestion` in state; the search and the filters are in the address. See [03](03-recipes.md), section 6 |
 | `RecipePage` | `/oppskrifter/:id` | One recipe: a side panel for the ingredients on desktop; on phones the ingredients in the page, a section bar and cooking mode. See [03](03-recipes.md), section 5 |
-| `DataCheckPage` | `/oppskrifter/datasjekk` | The Datasjekk: every recipe and what it's missing. Not in the menu. Rules in `recipes/completeness.ts` |
+| `DataCheckPage` | `/oppskrifter/datasjekk` | The Datasjekk: every recipe and what it's missing. In the admin bar, not in the menu. Rules in `recipes/completeness.ts`. Logged in: «Rediger» links, also to each missing field |
+| `NewRecipePage` | `/ny-oppskrift` | The admin's quick way to post: a title and maybe a photo, «Lagre» or «Lagre og fyll ut resten». What «Lagre» does is `admin/newRecipeAction.ts`. Checks the real login (`useUser`). Loaded with `lazy` |
+| `LoginPage` | `/logg-inn` | «Logg inn med Google», then your name, user id and «Logg ut» (`auth/session.ts`). Loaded with `lazy` |
 | `NotFoundPage` | everything else | "Fant ikke siden". Props: `title?`, `message?`. Also used by `RecipePage` for unknown recipes |
 
 ---
@@ -24,11 +26,21 @@ One per address. A page puts components together and holds the state for that pa
 ## Shared on every page
 
 ### `Header`
-The logo and the menu. **No props.**
+The logo and the menu, and the admin bar on top when you're logged in (`useLoginHint`). **No props.**
 - Uses `NavLink`, which knows whether it points to the current page, and then gets a black underline and `aria-current` (for screen readers).
 - `end` on "Hjem" stops it from being active on every page (every address starts with `/`).
 - On phones, the logo and menu are stacked; from `md:`, they're side by side.
 - **Measures its own height** (`ResizeObserver`) into the CSS variable `--header-height`, so things that stick under it know where to stop: the recipe page's section bar (phones) and ingredient panel (desktop).
+
+### `AdminBar`
+A thin dark bar at the very top, only for the admin: `Admin · + Ny oppskrift · Datasjekk · Logg ut`. Inside `Header`, so it sticks with it and is counted in `--header-height`. «Logg ut» uses `auth/session.ts`, which loads Firebase only then. **No props.**
+
+### `Notice` (and `useNotice`)
+A short message at the bottom of the screen («Lagret ✓», ««Laksewrap» er slettet»), with `role="status"` so screen readers read it. `useNotice(initial?, seconds = 3)` gives `[message, show]`; the message disappears by itself.
+
+| Prop | Type |
+|---|---|
+| `message` | text |
 
 ### `Footer`
 "© year Jens matnettside". **No props.** The year is worked out once, outside the component.
@@ -206,7 +218,12 @@ The photo (16:9). Without a photo: a lower placeholder (5:2) in the panel colour
 | `alt` | text (the title) |
 
 ### `RecipeActions`
-"Skriv ut" (opens the print dialog) and "Kopier lenke" (copies the address, then says "Lenke kopiert" for 2 seconds). **No props.** Holds its own state for "copied". Hidden when printing.
+"Skriv ut" (opens the print dialog) and "Kopier lenke" (copies the address, then says "Lenke kopiert" for 2 seconds), plus «Rediger» for the admin. Holds its own state for "copied". Hidden when printing.
+
+| Prop | Type | |
+|---|---|---|
+| `onEdit?` | `() => void` | given only to the admin: shows «Rediger» |
+| `hasDraft?` | boolean | «Rediger (utkast)»: a draft is waiting in this browser |
 
 ### `RecipeMeta`
 One line: a clock icon with the time, a plate icon with the portions, four bars with the difficulty (filled up to the level), then `LabelList`. Draws nothing at all (not even its margin) when there's nothing to show.
@@ -236,11 +253,14 @@ Small, soft, rounded labels in the panel colour: "Fisk", "Rask". Shows nothing f
 | `onServingsChange` | `(servings: number) => void` | |
 
 ### `RecipeSectionNav`
-**Phones only** (`lg:hidden`). A bar that sticks under the header (`top-[var(--header-height)]`, measured by `Header`) with one button per part of the recipe («Ingredienser», «Slik gjør du», «Tips»): tap to scroll there, and the part you're reading is dark (`aria-current`). Nothing is shown for fewer than two parts.
+A bar that sticks under the header (`top-[var(--header-height)]`, measured by `Header`) with one button per part («Ingredienser», «Slik gjør du», «Tips»): tap to scroll there, and the part you're reading is dark (`aria-current`). Nothing is shown for fewer than two parts. **Phones only** on the recipe page; «Rediger» uses it on every screen size for the parts of the form. The buttons wrap onto two rows rather than being cut off.
 
 | Prop | Type | |
 |---|---|---|
 | `sections` | `RecipeSection[]` | from `recipeSections(recipe)` in `display.ts` |
+| `label?` | text | what screen readers call the bar |
+| `everywhere?` | boolean | on every screen size, not only phones |
+| `compact?` | boolean | smaller buttons, so more fit on one row |
 
 ### `KeepScreenOn` (and `useWakeLock`)
 The «Behold skjermen på» switch above the steps (`role="switch"`, `aria-checked`). `useWakeLock()` works like `useState(false)`, but while it's `true` the browser is asked to keep the screen on (`navigator.wakeLock`), again when the page becomes visible, and lets go on cleanup. Not shown where the browser can't do it. No props.
@@ -271,11 +291,39 @@ The steps: a 50×50 gold square with the number in serif, a dotted line, and the
 
 ---
 
+## The admin mode (`src/admin/`)
+
+Only for the admin, and never downloaded by visitors: the editor is loaded with `React.lazy` when «Rediger» is pressed. The fields start with the recipe's values (`defaultValue`) and are read with `FormData` when counting and saving (`readForm.ts`); only the lists hold state.
+
+### `RecipeEditor`
+«Rediger»: the whole recipe as a form, in the recipe page's main column. Counts the changes («Lagre 3 endringer»), saves only those (photo first, then `PATCH`), and deletes. Asks before unsaved changes are lost (`useBlocker`, `beforeunload`), keeps a draft (`draft.ts`), offers «Logg inn igjen». Inside, `EditorForm` is the form; `RecipeEditor` around it offers a waiting draft (`DraftNotice`) and starts the form afresh with it (`key`).
+
+| Prop | Type | |
+|---|---|---|
+| `recipe` | `Recipe` | the saved recipe |
+| `onClose` | `() => void` | back to the page (after «Lagre», «Avbryt») |
+| `onSaved` | `() => void` | «Lagret ✓» |
+| `startAt?` | text | a field to jump to (`?rediger=cuisine`) |
+
+### The parts of the form
+| Component | What it is | Props |
+|---|---|---|
+| `PhotoField` | «Bytt bilde» with a preview, and tap the photo to choose its focus point (a gold dot) | `recipe`, `onChange` |
+| `DetailsFields` | Porsjoner, Tid, the four dropdowns and the three groups of checkboxes, from the fixed lists in `types.ts` | `recipe` |
+| `IngredientsField` | The ingredient lines (↑ ↓ Fjern, Enter for the next line), name and unit suggestions, «Lim inn liste» | `ingredients`, `onChange` |
+| `StepsField` | The steps (↑ ↓ Fjern, «+ Legg til steg»), boxes that grow with the text | `steps`, `onChange` |
+| `MissingList` | «Mangler 3 av 9»: tap to jump to the field, ticked off when filled in | `missing`, `filled` |
+| `DraftNotice` | «Du har et utkast …» with «Gjenopprett» and «Forkast» | `savedAt`, `onRestore`, `onDiscard` |
+
+`onChange` tells the editor to count the changes again after a list changes (adding a step isn't a key press). The shared look is in `editorStyles.ts`.
+
+---
+
 ## Which component uses which
 
 ```
 App
-├── Header
+├── Header ── AdminBar (the admin)
 ├── HomePage
 ├── PizzaCalculatorPage
 │   ├── FieldGroup
@@ -291,9 +339,13 @@ App
 │   ├── CategoryChips, ActiveFilters, SortSelect, ViewToggle
 │   └── RecipeCard (× each recipe) ── CardPhoto
 ├── DataCheckPage
-├── RecipePage
+├── NewRecipePage, LoginPage (lazy)
+├── RecipePage (holds «Lagret ✓»: Notice)
 │   ├── RecipeView (in the same file; holds the portions)
 │   │   ├── RecipeImage, RecipeActions, RecipeMeta ── LabelList
+│   │   ├── RecipeEditor (the admin, ?rediger; React.lazy)
+│   │   │   ├── DraftNotice, RecipeSectionNav (everywhere), MissingList
+│   │   │   └── PhotoField, DetailsFields, IngredientsField, StepsField
 │   │   ├── RecipeSectionNav (phones)
 │   │   ├── KeepScreenOn, StepList (tick off steps)
 │   │   └── IngredientsPanel (side panel on desktop; in the page on phones and paper)

@@ -116,6 +116,10 @@ It's one rule in `src/index.css`:
 | **Secondary button** | the same, but white with a black line; black on hover | "Pizzakalkulator →" |
 | **Label/tag** | `border border-black px-2 py-1 text-xs uppercase` | "FISK", "RASK" |
 | **Focus (keyboard)** | red ring or outline | fields, buttons, tags |
+| **The admin's things** | dark (`bg-ink`), small (`text-xs font-mono`), above or apart from the visitor's page | the admin bar, «Lagre» in «Rediger» |
+| **A short message** | a dark pill at the bottom, `rounded-full bg-ink text-white`, gone after a few seconds | «Lagret ✓» (`Notice`) |
+| **A note in a form** | `border-l-4` + `bg-panel` (gold: what's missing; dark: a draft) | «Mangler 3 av 9», «Du har et utkast …» |
+| **Something that can't be undone** | red line and text, far from the main button, and it asks first | «Slett oppskrift» |
 
 ---
 

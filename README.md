@@ -4,6 +4,7 @@ A personal food website, built to learn React while making something useful:
 
 - **Pizzakalkulator** (`/pizza`): choose pizza type, number, rise time and temperature, and get grams, a method and clock times.
 - **Oppskrifter** (`/oppskrifter`): an overview of my recipes, with a suggestion for the day, search, a filter panel (meal, main ingredient, time, difficulty, cuisine, with/without ingredients …) and grid/list view, and a page per recipe with portions, ingredients and steps. A "Datasjekk" (`/oppskrifter/datasjekk`) shows which recipes are missing information.
+- **The admin mode** (only for me, after logging in at `/logg-inn`): post a recipe quickly from the phone (a title and a photo), and edit everything with «Rediger» on the recipe page. The recipes are stored in Sanity, written through the site's own API in `api/` on Vercel.
 
 The site's text is in Norwegian. Code, comments and documentation are in English.
 
@@ -24,10 +25,12 @@ npm run dev      # start the dev server, usually http://localhost:5173
 | `npm test` | Runs all the tests once |
 | `npm run test:watch` | Runs the tests again every time you save |
 | `npm run lint` | Finds common mistakes in the code |
-| `npm run format` | Formats all the code in `src/` the same way (Prettier): line breaks, quotes, commas |
+| `npm run format` | Formats all the code in `src/`, `api/` and `scripts/` the same way (Prettier): line breaks, quotes, commas |
 | `npm run format:check` | Only checks the formatting, without changing anything |
 | `npm run build` | Checks the TypeScript types, then builds the finished site into `dist/` |
 | `npm run preview` | Shows the built site locally |
+| `vercel dev` | Runs the site **and** the API (`api/`) together, at http://localhost:3000. Needed for logging in and saving |
+| `npm run test:api` | Tests the API for real (with `vercel dev` running, or online with `API_URL=…`). Makes test recipes and deletes them again |
 
 **Before every commit:** `npm run format`, `npm test` and `npm run build`. If they pass, the code is formatted, the calculations are right and the types fit together.
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   areSimilarNames,
   completenessReport,
+  missingFields,
   missingInfo,
   similarIngredientNames,
 } from "./completeness";
@@ -19,6 +20,17 @@ const complete = makeRecipe({
   cuisine: "Norsk",
   themes: [],
   ingredients: [{ name: "laks" }],
+});
+
+describe("missingFields", () => {
+  it("names the field each missing thing is about", () => {
+    expect(
+      missingFields({ ...complete, cuisine: undefined, image: undefined }),
+    ).toEqual([
+      { label: "Bilde", field: "image" },
+      { label: "Kjøkken", field: "cuisine" },
+    ]);
+  });
 });
 
 describe("missingInfo", () => {

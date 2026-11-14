@@ -1,6 +1,5 @@
-import { signInWithPopup, signOut } from "firebase/auth";
 import { useState } from "react";
-import { auth, googleLogin } from "../auth/firebase";
+import { logIn, logOut } from "../auth/session";
 import { useUser } from "../auth/useUser";
 import Container from "../components/Container";
 
@@ -9,11 +8,12 @@ function LoginPage() {
   const user = useUser();
   const [error, setError] = useState("");
 
-  // Opens Google's login window. No setUser: useUser hears the change
-  async function logIn() {
+  // Opens Google's login window (auth/session.ts, shared with the admin bar and
+  // the editor). No setUser: useUser hears the change
+  async function startLogIn() {
     setError("");
     try {
-      await signInWithPopup(auth, googleLogin);
+      await logIn();
     } catch {
       setError("Innloggingen ble avbrutt. Prøv igjen.");
     }
@@ -35,7 +35,7 @@ function LoginPage() {
               <span className="text-neutral-500">Bruker-id: {user.uid}</span>
             </p>
             <button
-              onClick={() => signOut(auth)}
+              onClick={() => logOut()}
               className="mt-6 border border-black px-4 py-2 hover:bg-black hover:text-white"
             >
               Logg ut
@@ -43,7 +43,7 @@ function LoginPage() {
           </div>
         ) : (
           <button
-            onClick={logIn}
+            onClick={startLogIn}
             className="mt-6 border border-black px-4 py-2 hover:bg-black hover:text-white"
           >
             Logg inn med Google

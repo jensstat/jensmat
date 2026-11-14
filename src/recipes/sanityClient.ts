@@ -8,3 +8,7 @@ export const sanity = createClient({
   apiVersion: "2025-02-19", // "behave as on this day", so changes at Sanity can't break the site
   useCdn: true, // fast copies near the visitor; a new recipe may take a few seconds to show
 });
+
+// The same connection, but straight from Sanity, without the CDN: always the newest,
+// a little slower. Used while you're logged in (recipes.ts), so a change shows up at once.
+export const sanityFresh = sanity.withConfig({ useCdn: false });

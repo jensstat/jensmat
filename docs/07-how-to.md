@@ -62,9 +62,31 @@ Add the value to its list in `src/recipes/types.ts` (`categories`, `proteins`, `
 
 ---
 
+## … post a recipe quickly (from the phone)
+
+**«+ Ny oppskrift»** in the admin bar (or `/ny-oppskrift`): write the title, add a photo if you have one (the phone offers the camera or the library), and press **«Lagre»**. It's published at once, as «Uferdig» (hidden from visitors until it has ingredients). That's all: posting from the phone should take seconds. Fill in the rest later with «Rediger».
+
+Want to go on right away? **«Lagre og fyll ut resten»** saves and opens «Rediger».
+
+---
+
+## … edit or delete a recipe
+
+Logged in, press **«Rediger»** on the recipe (or a «Rediger» link on the Datasjekk). Everything is a form; **«Lagre N endringer»** sends only what you changed.
+- **«Mangler»** at the top lists what the Datasjekk misses; tap one to go to it.
+- **The photo:** «Bytt bilde», and tap the photo to choose what always stays in view.
+- **Ingredients:** Enter goes to the next line; «Lim inn liste» splits a pasted list into lines.
+- **«Slett oppskrift»** is at the bottom, and asks first. The photo stays in Sanity's media library.
+- **If the browser crashes,** «Rediger (utkast)» → «Gjenopprett» brings back what you'd written (without a new photo).
+- Locally, run `vercel dev` (not `npm run dev`): only it runs `api/`.
+
+---
+
 ## … log in as the admin
 
-Go to `/logg-inn` (not in the menu, so bookmark it) and log in with Google. You stay logged in after a reload. Only your Google account gets through the API's lock: `api/_auth.ts` checks that the token's user id is `ADMIN_UID`. To call the API from the site, use `adminFetch` from `src/auth/adminFetch.ts` instead of `fetch`. Locally, run `vercel dev` (not `npm run dev`), because only it runs `api/`.
+Go to `/logg-inn` (not in the menu, so bookmark it) and log in with Google. You stay logged in after a reload, and the admin bar shows on top of every page; «Logg ut» is there. Only your Google account gets through the API's lock: `api/_auth.ts` checks that the token's user id is `ADMIN_UID`. Locally, run `vercel dev` (not `npm run dev`), because only it runs `api/`.
+
+**To call the API from the site,** use the functions in `src/admin/api.ts` (`createRecipe`, `updateRecipe`, `deleteRecipe`, `uploadPhoto`). They send your login (`adminFetch`) and turn the API's error message into an `Error`.
 
 **If the login stops working online:** check that Vercel's Environment Variables have `ADMIN_UID` and `VITE_FIREBASE_PROJECT_ID` (then Redeploy), and that the site's address is under Authorized domains in Firebase (Authentication → Settings).
 
@@ -75,6 +97,16 @@ Go to `/logg-inn` (not in the menu, so bookmark it) and log in with Google. You 
 Add a line to `editable` in `api/_changes.ts`, with a check (`text`, `wholeNumber`, `oneOf(list)` …), and a test in `api/_changes.test.ts`. Anything not in `editable` is refused, on purpose. Then `npm test`, and `npm run test:api` with `vercel dev` running.
 
 ---
+
+## … add a field to «Rediger»
+
+A new field on the recipe goes through the same path as the others:
+1. **`types.ts`**: the field on `Recipe` (optional), and in `toRecipe.ts` and `sanityQuery.ts`, as for any new field.
+2. **The API:** a line in `editable` in `api/_changes.ts` (see above).
+3. **The rule:** in `src/admin/recipeChanges.ts`, add it to `EditValues` and to the right list (`textFields`, `numberFields`, `choiceFields` or `listFields`), with a test.
+4. **Reading it:** one line in `src/admin/readForm.ts` (`read("myField")`).
+5. **The field:** an `<input name="myField" id="edit-myField" defaultValue={…} />` in `RecipeEditor` (where the starting values are `initial`) or `DetailsFields` (where they're `recipe`). The `name` must match step 4.
+6. **The Datasjekk** (if it's worth filling in): a check in `recipes/completeness.ts` with `field: "myField"`, and its element id in `fieldElement` in `src/admin/jumpTo.ts`, so «Mangler» can jump to it.
 
 ## … add a filter group
 

@@ -6,6 +6,7 @@ import {
   countWithOption,
   filterGroups,
   filterRecipes,
+  shownRecipes,
   filtersFromParams,
   filterLink,
   filtersToParams,
@@ -755,5 +756,18 @@ describe("filterLink (a label on the recipe page → the filtered overview)", ()
     expect(filtersFromParams(params, recipes).chosen).toEqual({
       protein: ["Fisk"],
     });
+  });
+});
+
+describe("shownRecipes", () => {
+  const done = makeRecipe({ id: "ferdig", ingredients: [{ name: "egg" }] });
+  const unfinished = makeRecipe({ id: "uferdig" });
+
+  it("hides «Uferdig» recipes from visitors", () => {
+    expect(shownRecipes([done, unfinished], false)).toEqual([done]);
+  });
+
+  it("shows everything to the admin", () => {
+    expect(shownRecipes([done, unfinished], true)).toEqual([done, unfinished]);
   });
 });

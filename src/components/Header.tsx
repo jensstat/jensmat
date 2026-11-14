@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Link, NavLink } from "react-router";
+import { useLoginHint } from "../auth/loginHint";
+import AdminBar from "./AdminBar";
 
 // The menu: the text to show and the address each link goes to.
 const navLinks = [
@@ -10,6 +12,8 @@ const navLinks = [
 
 function Header() {
   const headerRef = useRef<HTMLElement>(null);
+  // Logged in on this browser: the admin bar on top (auth/loginHint.ts)
+  const isAdmin = useLoginHint();
 
   // The header's height as a CSS variable, --header-height, so things that stick just under
   // it (the recipe page's section bar on phones) know where to stop. Measured, not written
@@ -35,6 +39,8 @@ function Header() {
       ref={headerRef}
       className="sticky top-0 z-10 bg-white border-b border-black print:hidden"
     >
+      {/* Inside the header, so it sticks with it, and is counted in --header-height */}
+      {isAdmin && <AdminBar />}
       {/* The inner div holds the content and has the same width as <main> and the footer,
           so everything lines up. On phones the logo and menu stack (flex-col),
           from md and up they sit side by side (md:flex-row). */}

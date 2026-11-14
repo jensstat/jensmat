@@ -1,7 +1,9 @@
 import { Link, useLoaderData } from "react-router";
+import { useLoginHint } from "../auth/loginHint";
 import {
   checks,
   completenessReport,
+  missingFields,
   similarIngredientNames,
 } from "../recipes/completeness";
 import type { dataCheckLoader } from "../loaders";
@@ -12,6 +14,8 @@ import type { dataCheckLoader } from "../loaders";
 function DataCheckPage() {
   // Fetched by the loader before the page is shown (loaders.ts)
   const { recipes, skipped } = useLoaderData<typeof dataCheckLoader>();
+  // Logged in: «Rediger» on each recipe, and each missing thing links to its field
+  const canEdit = useLoginHint();
   const report = completenessReport(recipes);
   // "tomat" and "tomater": probably the same ingredient, written two ways
   const similarNames = similarIngredientNames(recipes);
@@ -84,17 +88,39 @@ function DataCheckPage() {
                 >
                   {recipe.title}
                 </Link>
-                <span className="text-sm text-ink/60">
+                <span className="flex items-baseline gap-4 text-sm text-ink/60">
                   {missing.length === 0
                     ? "✓ Ferdig"
                     : `Mangler ${missing.length}`}
+                  {canEdit && (
+                    <Link
+                      to={`/oppskrifter/${recipe.id}?rediger`}
+                      className="text-ink underline underline-offset-4 hover:text-gold"
+                    >
+                      Rediger
+                    </Link>
+                  )}
                 </span>
               </div>
-              {missing.length > 0 && (
-                <p className="mt-1 text-sm text-ink/70">
-                  {missing.join(" · ")}
-                </p>
-              )}
+              {missing.length > 0 &&
+                (canEdit ? (
+                  // Each one opens «Rediger» at that field (?rediger=cuisine)
+                  <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                    {missingFields(recipe).map(({ label, field }) => (
+                      <Link
+                        key={field}
+                        to={`/oppskrifter/${recipe.id}?rediger=${field}`}
+                        className="text-ink/70 underline decoration-ink/30 underline-offset-4 hover:text-gold"
+                      >
+                        {label}
+                      </Link>
+                    ))}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm text-ink/70">
+                    {missing.join(" · ")}
+                  </p>
+                ))}
             </li>
           ))}
         </ul>

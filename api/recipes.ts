@@ -93,9 +93,37 @@ export async function PATCH(request: Request) {
     return Response.json({ error: "Fant ikke oppskriften" }, { status: 404 });
   }
 
-  // 4. Change only what was sent. set and unset only if there's something
+  // 4. The focus point isn't a field of its own: it's the middle of the photo's
+  // hotspot (image.hotspot), so it needs a photo, and is written into the hotspot
+  const { imageFocus, ...set } = changes.set;
+  if (imageFocus) {
+    const image = await sanityWrite.fetch<{
+      hasPhoto: boolean;
+      hotspot: Record<string, unknown> | null;
+    } | null>(`*[_id == $id][0].image{ "hasPhoto": defined(asset), hotspot }`, {
+      id,
+    });
+    if (!image?.hasPhoto) {
+      return Response.json(
+        { error: "Oppskriften har ikke bilde" },
+        { status: 400 },
+      );
+    }
+    // The whole hotspot at once, built from the old one (the Studio's size of it is
+    // kept). Field by field wouldn't work: a patch runs its parts in Sanity's order,
+    // not ours, so a missing hotspot could be made without its _type
+    set["image.hotspot"] = {
+      _type: "sanity.imageHotspot",
+      width: 0.3,
+      height: 0.3,
+      ...image.hotspot,
+      ...imageFocus,
+    };
+  }
+
+  // 5. Change only what was sent. set and unset only if there's something
   const patch = sanityWrite.patch(id);
-  if (Object.keys(changes.set).length > 0) patch.set(changes.set);
+  if (Object.keys(set).length > 0) patch.set(set);
   if (changes.unset.length > 0) patch.unset(changes.unset);
   await patch.commit();
 
@@ -103,4 +131,27 @@ export async function PATCH(request: Request) {
     slug,
     changed: [...Object.keys(changes.set), ...changes.unset],
   });
+}
+
+// DELETE /api/recipes?slug=laksewrap: deletes the recipe, and its draft in the
+// Studio if there is one (or the draft would still be there, unpublished).
+// The photo stays in Sanity's media library, like a replaced photo (see 08).
+export async function DELETE(request: Request) {
+  if (!(await isAllowed(request))) {
+    return Response.json({ error: "Ikke tilgang" }, { status: 401 });
+  }
+
+  const slug = new URL(request.url).searchParams.get("slug");
+  if (!slug) {
+    return Response.json({ error: "Mangler slug" }, { status: 400 });
+  }
+
+  const id = await findRecipeId(slug);
+  if (!id) {
+    return Response.json({ error: "Fant ikke oppskriften" }, { status: 404 });
+  }
+
+  // A transaction: both or neither. Deleting a draft that doesn't exist is fine
+  await sanityWrite.transaction().delete(id).delete(`drafts.${id}`).commit();
+  return Response.json({ slug, deleted: true });
 }

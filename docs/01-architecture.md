@@ -19,10 +19,13 @@ src/routes.tsx        Every address, its page, and its loader (what it needs fir
    │                    /pizza             → PizzaCalculatorPage
    │                    /oppskrifter       → RecipeListPage (all recipes)        loader
    │                    /oppskrifter/:id   → RecipePage   (:id = "laksewrap")    loader
+   │                        ?rediger       → the same page, with «Rediger» open (the admin)
    │                    /oppskrifter/datasjekk → DataCheckPage (not in the menu) loader
-   │                    /logg-inn          → LoginPage    (not in the menu, the admin's login)
+   │                    /logg-inn          → LoginPage    (not in the menu)       lazy
+   │                    /ny-oppskrift      → NewRecipePage (the admin's quick post) lazy, action
    │                    *  (anything else) → NotFoundPage
    │                  If a loader fails: RouteErrorPage ("Kunne ikke hente oppskriftene").
+   │                  lazy: the page is its own file, downloaded the first time it's opened.
    ▼
 src/App.tsx           The frame that's the same on every page:
    │                    <Header />  →  <main> with the current page (<Outlet />)  →  <Footer />
@@ -48,13 +51,22 @@ src/
 │
 ├── pages/          ONE FILE PER ADDRESS. Puts a whole page together, and holds its state.
 │                   HomePage, PizzaCalculatorPage, RecipeListPage, RecipePage,
-│                   DataCheckPage, LoginPage, NotFoundPage, LoadingPage, RouteErrorPage
+│                   DataCheckPage, LoginPage, NewRecipePage, NotFoundPage, LoadingPage,
+│                   RouteErrorPage
+│
+├── admin/          THE ADMIN MODE (task 5c). «Rediger» (RecipeEditor and its fields), what
+│                   «Lagre» on /ny-oppskrift does (newRecipeAction), the calls to the API
+│                   (api.ts), and the rules behind them: recipeChanges, readForm,
+│                   ingredientLines, draft, photoSize (tests next to each). Only loaded for
+│                   the admin, so visitors never download it
 │
 ├── auth/           THE LOGIN (Firebase, Google). firebase.ts (the connection), useUser.ts
-│                   (who is logged in), adminFetch.ts (fetch with your login, for the API)
+│                   (who is logged in), adminFetch.ts (fetch with your login), session.ts
+│                   (log in/out without loading Firebase up front), loginHint.ts (the note
+│                   "someone has logged in here", which the public pages read)
 │
 ├── components/     UI BUILDING BLOCKS. Get data through props, report changes through onChange.
-│   │               Header, Footer, Container, the input fields, ResultPanel, Instructions,
+│   │               Header, AdminBar, Footer, Container, Notice, the input fields, ResultPanel, Instructions,
 │   │               icons.tsx (✕, ✓ …) and focusRing.ts (the keyboard focus ring)
 │   └── recipe/     Building blocks used only by recipes: IngredientList, StepList,
 │                   RecipeCard, SearchField, FilterPanel …
@@ -107,7 +119,12 @@ Think of the code as three layers, where each layer only **uses** the layers bel
 | All pizza settings (`settings`) | `PizzaCalculatorPage` | Both the fields **and** the result need it, so it lives in the page above them |
 | The baking time (`bakeTime`) | `Instructions` | Only the method needs it |
 | The chosen portions (`servings`) | `RecipeView` (in `RecipePage`) | Both the desktop panel and the phone menu show it |
-| The overview's view and filters (`view`, `filters`) | `RecipeListPage` | The search, the filter panel, the chips, the toggle, the count and the cards all depend on them. (Task 5 moves `filters` into the address) |
+| The overview's view (`view`) | `RecipeListPage` (and `localStorage`) | The toggle and the cards depend on it; remembered in the browser |
+| The search, the filters and the order | The address (`?sok=laks&maltid=Middag`) | So reload, back and a shared link keep them |
+| Whether «Rediger» is open | The address (`?rediger`) | So a reload stays in the editor, and the Datasjekk can link to a field (`?rediger=cuisine`) |
+| The editor's fields | The form itself (read with `FormData`) | Only the lists (`StepsField`, `IngredientsField`) hold state, since their length and order change |
+| The draft of «Rediger» | `localStorage` (`utkast:<slug>`) | Survives a crash or a closed tab (`admin/draft.ts`) |
+| "Someone has logged in here" | `localStorage` (`innlogget`), read with `useLoginHint` | The public pages can show the admin links without loading Firebase (`auth/loginHint.ts`) |
 | Which filter sections are open, "Vis alle" (`open`, `showAll`) | `FilterGroupSection` | Only that section cares |
 | Which page is shown | The address bar (React Router) | So the back button, bookmarks and reload work |
 
@@ -130,3 +147,28 @@ Everything else (grams, steps, labels, the filtered recipes, the counts in the f
 | **Prettier** | Formats the code the same way everywhere (`npm run format`). `src/`, `api/` and `scripts/`; the docs are left as written | `.prettierrc.json` (Prettier's defaults), `.prettierignore` |
 
 Fonts (Anton and IBM Plex Mono) are loaded from Google Fonts in `index.html`.
+
+---
+
+## 5. The admin mode in one picture
+
+```
+You (phone or Mac)                    The site (browser)                      Vercel                 Sanity
+──────────────────                    ──────────────────                      ──────                 ──────
+Log in at /logg-inn ───────────────►  Firebase (Google) gives a token,
+                                      and the note "innlogget" is written
+«+ Ny oppskrift» (admin bar) ──────►  /ny-oppskrift → newRecipeAction ──┐
+«Rediger» on a recipe ─────────────►  RecipeEditor → readForm →         │
+                                      only the changes ─────────────────┤
+                                                                         ▼
+                                      admin/api.ts → adminFetch ──► api/ (checks the token:
+                                      (Bearer <token>)                  only ADMIN_UID) ──────► writes, with
+                                                                                                the write token
+                                      The page reads again, straight
+                                      from Sanity (not the CDN) ◄──────────────────────────────── published at once
+```
+
+- **Two kinds of "logged in":** the note in the browser only decides what's *shown* (the admin bar, «Rediger», fresh data). The API's lock decides what's *allowed*, and it checks the real token. Faking the note shows the buttons, but saving fails.
+- **Visitors never download** the editor, the admin pages or Firebase: they're separate files, loaded only when used.
+- **The Studio still works** as a backup, on the same data.
+

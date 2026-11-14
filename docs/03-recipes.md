@@ -64,15 +64,16 @@ interface Ingredient {
 
 ### Incomplete recipes: only the title is required
 
-A recipe can be posted half-done, for example quickly from the phone with just a title and a photo, and filled in later. So:
+A recipe can be posted half-done, for example quickly from the phone with just a title and a photo, and filled in later. That's what **«Ny oppskrift»** (`/ny-oppskrift`, in the admin bar) is for: the quick way to post, on purpose only a title and maybe a photo. The rest is filled in with **«Rediger»** on the recipe, whenever you have time (see [07](07-how-to.md)). So:
 
 - **Required:** `title`, plus `id` and `createdAt`, which are technical (a CMS makes them).
 - **Lists are always there, but may be empty:** `tags`, `ingredients` and `steps` are `[]` when there's nothing yet. Then the code can always write `recipe.steps.map(...)` without checking first. Every recipe goes through one translation, `toRecipe` (section 3), which turns a missing list into `[]`, in one place.
 - **Everything else is optional,** and every part of the site only shows what's there: no "undefined min" on the cards, no portion selector without `servings`, no "Slik gjør du" without steps, no ingredient panel without ingredients.
 - **"Uferdig" (incomplete)** is worked out, not stored: `isIncomplete(recipe)` in `types.ts` is "no ingredients yet". The card gets an "Uferdig" label, and the recipe page says "Denne oppskriften er ikke ferdig ennå". To change what counts as incomplete, change that one function.
+- **Visitors don't see "Uferdig" recipes** on the overview (`shownRecipes` in `filter.ts`): only recipes they can cook. You see them all when you're logged in. A direct link to one still works.
 - **The example:** "Fiskesuppe" in `data.ts` has only a title.
 - **Missing information and the filter:** a recipe without e.g. a cuisine is shown as normal, but hidden while you filter on cuisine (we can't know if it fits). Each filter group says what information it needs (`hasInfo` in `filter.ts`).
-- **The Datasjekk** at `/oppskrifter/datasjekk` (not in the menu) lists every recipe and what it's missing, the most first. The rules are in `recipes/completeness.ts`. When the CMS comes, the same list can be shown there as warnings.
+- **The Datasjekk** at `/oppskrifter/datasjekk` (in the admin bar, not in the menu) lists every recipe and what it's missing, the most first. The rules are in `recipes/completeness.ts`; each check also names its field (`field: "cuisine"`). The Studio shows the same list, and so does «Rediger» («Mangler 3 av 9»). Logged in, each missing thing on the Datasjekk opens «Rediger» at that field.
 
 ### Why it's built like this
 
@@ -336,6 +337,8 @@ seasons?: Season[]; // missing = not filled in yet; [] = all year
 | Incomplete recipes (only a title required, "Uferdig" label) | ✅ done |
 | The filter panel (meal type, main ingredient, time, difficulty, cuisine, "Passer til", diet, with and without ingredients) | ✅ done (`filterGroups`, `FilterPanel`) |
 | Datasjekk: which recipes are missing what | ✅ done (`/oppskrifter/datasjekk`) |
+| A CMS (Sanity), the API and the login | ✅ done (tasks 6, 5a, 5b) |
+| Post and edit on the site itself: quick posting and «Rediger» (the admin mode) | ✅ done (task 5c, [09](09-history.md) section 30) |
 | Photos | add `image` to a recipe, with the file in `public/images/recipes/`. Without one, a calm placeholder is shown |
 | CMS / phone app | see below |
 

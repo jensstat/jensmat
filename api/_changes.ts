@@ -45,6 +45,16 @@ const someOf =
       ? [...new Set(value)]
       : undefined;
 
+// The photo's focus point (the hotspot's middle): { x, y }, each from 0 to 1,
+// measured from the top left corner. Only x and y are kept
+const focusPoint: Check = (value) => {
+  if (typeof value !== "object" || value === null) return undefined;
+  const { x, y } = value as Record<string, unknown>;
+  const inside = (n: unknown) =>
+    typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 1;
+  return inside(x) && inside(y) ? { x, y } : undefined;
+};
+
 // The steps: a list of texts. Empty steps are left out
 const stepList: Check = (value) => {
   if (!Array.isArray(value)) return undefined;
@@ -107,6 +117,14 @@ const editable: Record<string, Check> = {
   occasions: someOf(occasions),
   steps: stepList,
   ingredients: ingredientList,
+  // Not a field of its own in Sanity: recipes.ts puts it in image.hotspot
+  imageFocus: focusPoint,
+};
+
+// Fields that can be changed, but never removed (null)
+const cannotRemove: Record<string, string> = {
+  title: "Tittelen kan ikke fjernes",
+  imageFocus: "Fokuspunktet kan ikke fjernes",
 };
 
 // What Sanity should do: fields to set, and fields to remove (null)
@@ -132,7 +150,9 @@ export function readChanges(body: unknown): Changes | { error: string } {
     const check = editable[field];
 
     if (value === null) {
-      if (field === "title") return { error: "Tittelen kan ikke fjernes" };
+      if (Object.hasOwn(cannotRemove, field)) {
+        return { error: cannotRemove[field] };
+      }
       changes.unset.push(field);
       continue;
     }

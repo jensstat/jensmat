@@ -105,6 +105,27 @@ A function whose name starts with `use` and that uses other hooks is a **hook** 
 
 ---
 
+### `React.lazy` + `<Suspense>`: a component in its own file
+`lazy(() => import("./RecipeEditor"))` makes a component that's downloaded the first time it's drawn. `<Suspense fallback={…}>` around it shows something meanwhile. Visitors who never press «Rediger» never download it.
+📁 `RecipePage.tsx` (the editor). For whole pages, React Router's `lazy` on a route does the same (`routes.tsx`).
+
+### `useSyncExternalStore`: following something outside React
+For a value that lives outside React and can change (here `localStorage`): give it a way to *subscribe* to changes and a way to *read* the value now, and the component draws again when it changes.
+```ts
+useSyncExternalStore(subscribe, hasLoginHint) // true/false, kept up to date
+```
+📁 `auth/loginHint.ts` (`useLoginHint`: the admin bar appears the moment you log in).
+
+### `useCallback`: the same function every render
+A function written inside a component is a new function every render. Passed on as a prop that an effect depends on, the effect would run every time. `useCallback(fn, [deps])` keeps the same function until the deps change.
+📁 `RecipeEditor.tsx` (`recount`, given to the list fields), `useNotice.ts`.
+
+### Forms without `useState` per field: `FormData`
+Fields can keep their own value (`defaultValue`), and the form is read when needed: `new FormData(form)`, then `get("title")`, or `getAll("steps")` for several fields with the same `name` (a list). A `<input type="file">` gives a `File`.
+📁 `admin/readForm.ts` (the whole editor), `admin/newRecipeAction.ts`.
+
+---
+
 ## React Router
 
 | Piece | What it does | 📁 |
@@ -117,7 +138,14 @@ A function whose name starts with `use` and that uses other hooks is a **hook** 
 | `useLoaderData<typeof loader>()` | Reads what the loader returned, with the right type | the recipe pages |
 | `useNavigation()` | `state` is `"loading"` while the next page's loader waits ("Laster…") | `App.tsx` |
 | `errorElement` + `useRouteError()` | Shown instead of the page when a loader throws | `routes.tsx`, `RouteErrorPage.tsx` |
-| `useRevalidator()` | `revalidate()` runs the loaders again ("Prøv igjen") | `RouteErrorPage.tsx` |
+| `useRevalidator()` | `revalidate()` runs the loaders again ("Prøv igjen", and after «Lagre» so the page shows what was saved) | `RouteErrorPage.tsx`, `RecipeEditor.tsx` |
+| `lazy` on a route | The page (and what only it uses, like Firebase) is its own file, downloaded when the address is first opened | `routes.tsx` (`/logg-inn`, `/ny-oppskrift`) |
+| `action` + `<Form method="post">` | The loader's sibling: runs when the form is sent. Returns `redirect(…)` to go on, or data for the page | `admin/newRecipeAction.ts`, `NewRecipePage.tsx` |
+| `useActionData()` | What the action returned (an error message) | `NewRecipePage.tsx` |
+| `useNavigation().formData` | What's being sent right now, so the pressed button can say «Lagrer …» | `NewRecipePage.tsx` |
+| `useSearchParams()` | Reads and writes the `?…` part. `{ replace: true }` doesn't add a step to the history; `state` keeps the link state | `RecipeListPage.tsx`, `RecipePage.tsx` (`?rediger`) |
+| `shouldRevalidate` | Decides whether a loader runs again; here not when only the `?…` part changed | `routes.tsx` |
+| `useBlocker(fn)` | Stops a move to another page while `fn` says so, and lets you ask first (`proceed` / `reset`) | `RecipeEditor.tsx` |
 | `<ScrollRestoration />` | A new page starts at the top; back goes to where you were | `App.tsx` |
 | `<Link to>` | A link that changes page without reloading the site | `HomePage.tsx`, `RecipePage.tsx` |
 | `<NavLink>` | A `Link` that knows whether it's the current page (`isActive`) | `Header.tsx` |
@@ -181,3 +209,9 @@ Things that were hard or surprising along the way. Add your own.
 - **`row-span` + a `1fr` row keeps a grid calm.** When one item spans several rows and is taller than them, the extra height goes to the `1fr` row instead of spreading out the others (the top of the overview).
 - **`w-fit` makes a box as wide as its widest child.** Put the search and the chips in one `w-fit` box, and the search ends where the chips end.
 - **`scroll-mt-…` keeps a heading out from under sticky bars** when you jump to it with `scrollIntoView`.
+- **A grid column is as wide as its widest content** unless it's `minmax(0, 1fr)`. A row of buttons made the recipe page scroll sideways on phones until the grid got `grid-cols-[minmax(0,1fr)]`.
+- **A bare `/` inside `[…]` breaks a field's `pattern`,** and the browser then quietly ignores it. Browsers read `pattern` with strict rules; write `\/`. Only a test in the browser showed it.
+- **Two classes for the same thing (`w-full` and `w-44`) on one element:** which wins depends on Tailwind's order, not yours. Keep sizes out of shared styles.
+- **Rounding is for showing, not for editing.** `formatAmount` (0.15 → «0,2») in a field would have changed the amounts every time they were saved.
+- **In development, effects run twice** (React's StrictMode, on purpose, to catch missing cleanups). Two requests in the Network tab can be one in the real build.
+- **A hint isn't proof.** The login note in `localStorage` only decides what's *shown*; the server checks the real token before anything is *written*.
