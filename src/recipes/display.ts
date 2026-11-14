@@ -36,9 +36,18 @@ export function formatAmount(amount: number): string {
 }
 
 // Amount and unit together: "½ pose", "300 g", "4" (no unit), "" (no amount).
-export function formatQuantity(amount?: number, unit?: string): string {
+// With a max, a range: "200–300 g", "½–1 ts". If both round to the same text
+// (scaled down a lot), just the one number
+export function formatQuantity(
+  amount?: number,
+  unit?: string,
+  amountMax?: number,
+): string {
   if (amount === undefined) return "";
-  return unit ? `${formatAmount(amount)} ${unit}` : formatAmount(amount);
+  const low = formatAmount(amount);
+  const high = amountMax === undefined ? low : formatAmount(amountMax);
+  const number = high === low ? low : `${low}–${high}`;
+  return unit ? `${number} ${unit}` : number;
 }
 
 // Minutes as readable time: 30 → "30 min", 60 → "1 t", 75 → "1 t 15 min".

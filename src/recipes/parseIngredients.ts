@@ -49,11 +49,16 @@ const fractions: Record<string, number> = {
   "⅛": 1 / 8,
 };
 
-// The amount at the start of a line: "2", "1,5", "1.5", "½", "1 ½", "1½" or "1/2".
-// It must be followed by a space, a letter or the end of the line, so a range
-// ("2-3 fedd") or a number glued to something else isn't read as an amount.
-const amountPattern =
-  /^(\d+\/\d+|\d+(?:[.,]\d+)?(?:\s?[½¼¾⅓⅔⅛])?|[½¼¾⅓⅔⅛])(?=\s|\p{L}|$)/u;
+// One number: "2", "1,5", "1.5", "½", "1 ½", "1½" or "1/2"
+const numberPattern = String.raw`\d+\/\d+|\d+(?:[.,]\d+)?(?:\s?[½¼¾⅓⅔⅛])?|[½¼¾⅓⅔⅛]`;
+
+// The amount at the start of a line: one number, or a range of two with a dash
+// between ("2-3 fedd", "200 – 300 g"). It must be followed by a space, a letter or
+// the end of the line, so a number glued to something else isn't read as an amount.
+const amountPattern = new RegExp(
+  String.raw`^((?:${numberPattern})(?:\s*[-–]\s*(?:${numberPattern}))?)(?=\s|\p{L}|$)`,
+  "u",
+);
 
 // Bullets and checkboxes from web pages and notes: "- ", "• ", "* ", "[ ] ", "☐ "
 const bulletPattern = /^(?:[-–•*·▪◦]|\[[ xX]?\]|[☐☑▢])\s*/;
@@ -74,6 +79,28 @@ export function toAmount(text: string): number | undefined {
     amount = (whole === "" ? 0 : Number(whole)) + fraction;
   }
   return Number.isFinite(amount) && amount > 0 ? amount : undefined;
+}
+
+// An amount that may be a range: the amount, and the top of the range if there is one
+export interface AmountRange {
+  amount: number;
+  amountMax?: number;
+}
+
+// "300" → { amount: 300 }, "200-300" or "200 – 300" → { amount: 200, amountMax: 300 },
+// "½-1" → { amount: 0.5, amountMax: 1 }. "2-2" is just 2.
+// undefined if a part can't be read, or the range is backwards ("300-200"):
+// better to ask than to guess which number was meant.
+// Also used by the amount field in «Rediger» (src/admin/ingredientLines.ts).
+export function toAmountRange(text: string): AmountRange | undefined {
+  const parts = text.split(/\s*[-–]\s*/);
+  if (parts.length > 2) return undefined;
+  const amount = toAmount(parts[0].trim());
+  if (amount === undefined) return undefined;
+  if (parts.length === 1) return { amount };
+  const amountMax = toAmount(parts[1].trim());
+  if (amountMax === undefined || amountMax < amount) return undefined;
+  return amountMax === amount ? { amount } : { amount, amountMax };
 }
 
 // "løk, finhakket" → name "løk", note "finhakket". Only the first comma counts,
@@ -102,13 +129,13 @@ export function parseIngredientLine(line: string): Ingredient | undefined {
   if (text === "") return undefined;
 
   let rest = text;
-  let amount: number | undefined;
+  let range: AmountRange | undefined;
   let unit: string | undefined;
 
   const amountMatch = rest.match(amountPattern);
   if (amountMatch) {
-    amount = toAmount(amountMatch[1]);
-    if (amount !== undefined) {
+    range = toAmountRange(amountMatch[1]);
+    if (range !== undefined) {
       rest = rest.slice(amountMatch[0].length).trim();
       // The unit: the next word, if it's a known unit ("dl", "stk." → "stk").
       // Also works glued to the amount: "200g smør".
@@ -126,7 +153,7 @@ export function parseIngredientLine(line: string): Ingredient | undefined {
   if (name === "") return { name: cleanName(text) };
 
   return {
-    ...(amount !== undefined && { amount }),
+    ...range,
     ...(unit && { unit }),
     name,
     ...(note && { note }),

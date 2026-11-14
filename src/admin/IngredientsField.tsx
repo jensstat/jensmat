@@ -2,13 +2,20 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { parseIngredientList, units } from "../recipes/parseIngredients";
 import { getAllRecipes } from "../recipes/recipes";
 import type { Ingredient } from "../recipes/types";
+import { moveItem } from "./dragSort";
 import {
+  dragHandleClass,
   fieldBaseClass,
   fieldClass,
   labelClass,
   smallButtonClass,
 } from "./editorStyles";
-import { toValues, type IngredientValues } from "./ingredientLines";
+import {
+  amountProblem,
+  toValues,
+  type IngredientValues,
+} from "./ingredientLines";
+import { useDragSort } from "./useDragSort";
 
 interface IngredientsFieldProps {
   ingredients: Ingredient[];
@@ -24,12 +31,6 @@ interface EditLine extends IngredientValues {
 // form is "ingredient-" + the part: RecipeEditor reads them with getAll, one list per part
 const parts = ["amount", "unit", "name", "note", "group"] as const;
 type Part = (typeof parts)[number];
-
-// What the amount field accepts: numbers, comma, dot, / and the fraction signs.
-// Checked by the browser before «Lagre». The / needs a \ in front (written \\ here):
-// browsers read patterns with strict rules, where a bare / inside [...] makes the
-// whole pattern invalid, and then it's quietly ignored
-const amountPattern = "[0-9.,\\/ ½¼¾⅓⅔⅛]*";
 
 const placeholders: Record<Part, string> = {
   amount: "Mengde",
@@ -56,6 +57,10 @@ function IngredientsField({ ingredients, onChange }: IngredientsFieldProps) {
   // Every ingredient name used in any recipe, as suggestions in the name field,
   // so "tomat" and "tomater" don't both happen (like the Studio's suggestions)
   const names = useIngredientNames();
+  // Drag a line by ⠿ into a new place (the same as in StepsField)
+  const drag = useDragSort(lines.length, (from, to) =>
+    setLines(moveItem(lines, from, to)),
+  );
 
   // After every change to the list: count the changes again, and move the cursor.
   // An effect, because a new line's field must exist before it can get the cursor
@@ -87,10 +92,7 @@ function IngredientsField({ ingredients, onChange }: IngredientsFieldProps) {
   }
 
   function move(index: number, by: -1 | 1) {
-    const copy = [...lines];
-    const [line] = copy.splice(index, 1);
-    copy.splice(index + by, 0, line);
-    setLines(copy);
+    setLines(moveItem(lines, index, index + by));
   }
 
   const emptyLine = { amount: "", unit: "", name: "", note: "", group: "" };
@@ -122,7 +124,8 @@ function IngredientsField({ ingredients, onChange }: IngredientsFieldProps) {
     <fieldset>
       <legend className={labelClass}>Ingredienser</legend>
       <p className="mt-1 text-sm text-ink/60">
-        Bare navnet må fylles ut. Mengde: «2», «1,5», «½» eller «1/2».
+        Bare navnet må fylles ut. Mengde: «2», «1,5», «½», «1/2», eller et spenn
+        som «200-300».
       </p>
 
       <datalist id="ingredient-names">
@@ -143,7 +146,12 @@ function IngredientsField({ ingredients, onChange }: IngredientsFieldProps) {
 
       <ol className="mt-3 space-y-4">
         {lines.map((line, index) => (
-          <li key={line.id} className="border-b border-ink/10 pb-4">
+          <li
+            key={line.id}
+            ref={drag.itemRef(index)}
+            style={drag.itemStyle(index)}
+            className="border-b border-ink/10 pb-4"
+          >
             {/* Phones: amount and unit side by side, the rest on their own rows.
                 From sm: amount, unit, name and note on one row */}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-[6.5rem_6rem_1fr_1fr]">
@@ -162,16 +170,23 @@ function IngredientsField({ ingredients, onChange }: IngredientsFieldProps) {
                         : undefined
                   }
                   value={line[part]}
-                  onChange={(event) =>
-                    change(line.id, part, event.target.value)
-                  }
+                  onChange={(event) => {
+                    // The amount is checked by the same reader that saves it
+                    // ("2", "½", "200-300"). A message here stops «Lagre», and
+                    // the browser shows it at the field
+                    if (part === "amount") {
+                      event.target.setCustomValidity(
+                        amountProblem(event.target.value),
+                      );
+                    }
+                    change(line.id, part, event.target.value);
+                  }}
                   placeholder={placeholders[part]}
                   aria-label={`${placeholders[part]}, linje ${index + 1}`}
                   // The name is required: the browser stops «Lagre» and points to an empty one
                   required={part === "name"}
-                  // Only numbers, comma, dot, / and the fraction signs
-                  pattern={part === "amount" ? amountPattern : undefined}
-                  inputMode={part === "amount" ? "decimal" : undefined}
+                  // No inputMode="decimal" on the amount: the phone's number
+                  // pad has no dash, and a range needs one ("200-300")
                   className={`${fieldBaseClass} w-full min-w-0 ${
                     part === "name" || part === "note"
                       ? "col-span-2 sm:col-span-1"
@@ -181,6 +196,15 @@ function IngredientsField({ ingredients, onChange }: IngredientsFieldProps) {
               ))}
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
+              {/* Drag to move. Hidden from screen readers: ↑ ↓ do the same */}
+              <span
+                {...drag.handleProps(index)}
+                aria-hidden="true"
+                title="Dra for å flytte"
+                className={dragHandleClass}
+              >
+                ⠿
+              </span>
               <input
                 name="ingredient-group"
                 value={line.group}

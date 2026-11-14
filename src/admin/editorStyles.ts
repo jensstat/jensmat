@@ -11,6 +11,12 @@ export const fieldClass = `mt-2 block w-full ${fieldBaseClass}`;
 export const smallButtonClass =
   "border border-ink/30 px-2 py-1 text-sm hover:border-ink disabled:opacity-30";
 
+// The handle (⠿) to drag a line into a new order (useDragSort). touch-none: a finger
+// on it drags the line instead of scrolling the page; select-none: no text selection
+// or iPhone pop-up on a long press. Big enough to hit with a finger
+export const dragHandleClass =
+  "flex h-9 w-9 shrink-0 cursor-grab touch-none select-none items-center justify-center border border-ink/30 text-lg leading-none hover:border-ink active:cursor-grabbing";
+
 // Text boxes grow with the text, so a long step is shown in full instead of
 // scrolling inside a small box (field-sizing: content; in newer browsers, others
 // keep the fixed size given by rows). min-h: never smaller than about 3 lines

@@ -37,6 +37,15 @@ describe("formatQuantity", () => {
     expect(formatQuantity(4)).toBe("4");
     expect(formatQuantity(undefined, "ss")).toBe("");
   });
+
+  it("shows a range with a dash, and one number when there's no range", () => {
+    expect(formatQuantity(200, "g", 300)).toBe("200–300 g");
+    expect(formatQuantity(0.5, "ts", 1)).toBe("½–1 ts");
+    expect(formatQuantity(2, undefined, 3)).toBe("2–3");
+    expect(formatQuantity(300, "g")).toBe("300 g");
+    // Both ends round to the same text: just the one number
+    expect(formatQuantity(1, "ss", 1.02)).toBe("1 ss");
+  });
 });
 
 describe("formatMinutes", () => {

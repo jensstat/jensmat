@@ -107,8 +107,16 @@ export function toIngredient(raw: unknown): Ingredient | undefined {
   if (!isObject(raw)) return undefined;
   const name = text(raw.name);
   if (name === undefined) return undefined;
+  const amount = positiveNumber(raw.amount);
+  const amountMax = positiveNumber(raw.amountMax);
   return withoutMissing({
-    amount: positiveNumber(raw.amount),
+    amount,
+    // Only a real range: there's an amount, and the max is above it.
+    // "–300 g" or "300–200 g" is left as just the amount
+    amountMax:
+      amount !== undefined && amountMax !== undefined && amountMax > amount
+        ? amountMax
+        : undefined,
     unit: text(raw.unit),
     name,
     note: text(raw.note),

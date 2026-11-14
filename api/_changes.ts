@@ -97,6 +97,18 @@ function ingredientLine(raw: unknown): object | undefined {
     if (value === undefined) return undefined;
     clean[field] = value;
   }
+  // The top of a range ("200–300 g"): only with an amount, and above it
+  if (line.amountMax !== undefined && line.amountMax !== null) {
+    const amountMax = positiveNumber(line.amountMax);
+    if (
+      typeof amountMax !== "number" ||
+      typeof clean.amount !== "number" ||
+      amountMax <= clean.amount
+    ) {
+      return undefined;
+    }
+    clean.amountMax = amountMax;
+  }
   return clean;
 }
 

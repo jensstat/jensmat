@@ -1,7 +1,7 @@
 // The ingredient lines in «Rediger»: from an Ingredient to the text in the fields,
 // and back. Pure, so it can be tested (ingredientLines.test.ts).
 
-import { toAmount } from "../recipes/parseIngredients";
+import { toAmountRange } from "../recipes/parseIngredients";
 import type { Ingredient } from "../recipes/types";
 
 // One line as the fields hold it: everything is text, "" = empty
@@ -37,10 +37,31 @@ export function amountText(amount?: number): string {
   return String(amount).replace(".", ",");
 }
 
+// The amount field's text, with a range written with a plain dash, the one you'd
+// type: { amount: 200, amountMax: 300 } → "200-300"
+export function rangeText(amount?: number, amountMax?: number): string {
+  if (amount === undefined) return "";
+  if (amountMax === undefined) return amountText(amount);
+  return `${amountText(amount)}-${amountText(amountMax)}`;
+}
+
+// What's wrong with the text in an amount field, as a message for the browser to
+// show at «Lagre» (setCustomValidity in IngredientsField), or "" if it's fine.
+// Empty is fine: "salt" has no amount
+export function amountProblem(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed === "" || toAmountRange(trimmed)) return "";
+  const parts = trimmed.split(/\s*[-–]\s*/);
+  if (parts.length === 2 && toAmountRange(`${parts[1]}-${parts[0]}`)) {
+    return "Det minste tallet først: «200-300»";
+  }
+  return "Skriv et tall («2», «1,5», «½») eller to med strek mellom («200-300»)";
+}
+
 // An ingredient → the text in its fields
 export function toValues(ingredient: Ingredient): IngredientValues {
   return {
-    amount: amountText(ingredient.amount),
+    amount: rangeText(ingredient.amount, ingredient.amountMax),
     unit: ingredient.unit ?? "",
     name: ingredient.name,
     note: ingredient.note ?? "",
@@ -48,18 +69,18 @@ export function toValues(ingredient: Ingredient): IngredientValues {
   };
 }
 
-// The fields → an ingredient, read like the pasted lines (toAmount: "1,5", "½", "1/2").
+// The fields → an ingredient, read like the pasted lines ("1,5", "½", "1/2", "200-300").
 // undefined without a name (the name is the only required part, like in the Studio).
 // Empty parts are left out, not set to "" (the same shape as the recipes from Sanity)
 export function fromValues(values: IngredientValues): Ingredient | undefined {
   const name = values.name.trim();
   if (name === "") return undefined;
-  const amount = toAmount(values.amount.trim());
+  const range = toAmountRange(values.amount.trim());
   const unit = values.unit.trim();
   const note = values.note.trim();
   const group = values.group.trim();
   return {
-    ...(amount !== undefined && { amount }),
+    ...range,
     ...(unit && { unit }),
     name,
     ...(note && { note }),
@@ -74,12 +95,9 @@ export function sameIngredients(a: Ingredient[], b: Ingredient[]): boolean {
     a.length === b.length &&
     a.every((line, index) => {
       const other = b[index];
-      const sameAmount =
-        line.amount === undefined || other.amount === undefined
-          ? line.amount === other.amount
-          : Math.abs(line.amount - other.amount) < 1e-9;
       return (
-        sameAmount &&
+        sameNumber(line.amount, other.amount) &&
+        sameNumber(line.amountMax, other.amountMax) &&
         line.unit === other.unit &&
         line.name === other.name &&
         line.note === other.note &&
@@ -87,4 +105,9 @@ export function sameIngredients(a: Ingredient[], b: Ingredient[]): boolean {
       );
     })
   );
+}
+
+// Two amounts that are both missing, or equal with the tiny margin
+function sameNumber(a?: number, b?: number): boolean {
+  return a === undefined || b === undefined ? a === b : Math.abs(a - b) < 1e-9;
 }

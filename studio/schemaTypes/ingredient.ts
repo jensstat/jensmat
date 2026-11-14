@@ -17,6 +17,19 @@ export const ingredient = defineType({
       validation: (rule) => rule.positive(),
     }),
     defineField({
+      name: 'amountMax',
+      title: 'Mengde, opp til',
+      type: 'number',
+      description: 'Valgfritt, for et spenn: «200–300 g» → Mengde 200, opp til 300.',
+      validation: (rule) =>
+        rule.positive().custom((amountMax, context) => {
+          if (amountMax === undefined) return true
+          const amount = (context.parent as {amount?: number} | undefined)?.amount
+          if (amount === undefined) return 'Fyll ut Mengde først'
+          return amountMax > amount || 'Må være større enn Mengde'
+        }),
+    }),
+    defineField({
       name: 'unit',
       title: 'Enhet',
       type: 'string',
@@ -45,10 +58,18 @@ export const ingredient = defineType({
   ],
   // How one line looks in the list in the Studio: "2 dl melk", with the note and group under
   preview: {
-    select: {amount: 'amount', unit: 'unit', name: 'name', note: 'note', group: 'group'},
-    prepare({amount, unit, name, note, group}) {
+    select: {
+      amount: 'amount',
+      amountMax: 'amountMax',
+      unit: 'unit',
+      name: 'name',
+      note: 'note',
+      group: 'group',
+    },
+    prepare({amount, amountMax, unit, name, note, group}) {
+      const quantity = amount && amountMax ? `${amount}–${amountMax}` : amount
       return {
-        title: [amount, unit, name].filter(Boolean).join(' ') || 'Ingrediens uten navn',
+        title: [quantity, unit, name].filter(Boolean).join(' ') || 'Ingrediens uten navn',
         subtitle: [note, group && `Gruppe: ${group}`].filter(Boolean).join(' · '),
       }
     },

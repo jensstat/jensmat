@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseIngredientLine, parseIngredientList } from "./parseIngredients";
+import {
+  parseIngredientLine,
+  parseIngredientList,
+  toAmountRange,
+} from "./parseIngredients";
 
 describe("parseIngredientLine", () => {
   it("reads amount, unit and name", () => {
@@ -90,9 +94,30 @@ describe("parseIngredientLine", () => {
     });
   });
 
-  it("never invents a number: a range or a word amount stays in the name", () => {
+  it("reads a range: two numbers with a dash between", () => {
     expect(parseIngredientLine("2-3 fedd hvitløk")).toEqual({
-      name: "2-3 fedd hvitløk",
+      amount: 2,
+      amountMax: 3,
+      unit: "fedd",
+      name: "hvitløk",
+    });
+    expect(parseIngredientLine("200 – 300 g salsiccia")).toEqual({
+      amount: 200,
+      amountMax: 300,
+      unit: "g",
+      name: "salsiccia",
+    });
+    expect(parseIngredientLine("½-1 ts chili")).toEqual({
+      amount: 0.5,
+      amountMax: 1,
+      unit: "ts",
+      name: "chili",
+    });
+  });
+
+  it("never invents a number: a backwards range or a word amount stays in the name", () => {
+    expect(parseIngredientLine("3-2 fedd hvitløk")).toEqual({
+      name: "3-2 fedd hvitløk",
     });
     expect(parseIngredientLine("en klype salt")).toEqual({
       name: "en klype salt",
@@ -137,5 +162,23 @@ describe("parseIngredientList", () => {
 
   it("gives an empty list for an empty paste", () => {
     expect(parseIngredientList("")).toEqual([]);
+  });
+});
+
+describe("toAmountRange", () => {
+  it("reads one number or a range", () => {
+    expect(toAmountRange("300")).toEqual({ amount: 300 });
+    expect(toAmountRange("200-300")).toEqual({ amount: 200, amountMax: 300 });
+    expect(toAmountRange("200 – 300")).toEqual({ amount: 200, amountMax: 300 });
+    expect(toAmountRange("1 ½-2")).toEqual({ amount: 1.5, amountMax: 2 });
+    expect(toAmountRange("2-2")).toEqual({ amount: 2 });
+  });
+
+  it("refuses what it can't be sure of", () => {
+    expect(toAmountRange("300-200")).toBeUndefined();
+    expect(toAmountRange("-300")).toBeUndefined();
+    expect(toAmountRange("200-")).toBeUndefined();
+    expect(toAmountRange("1-2-3")).toBeUndefined();
+    expect(toAmountRange("")).toBeUndefined();
   });
 });

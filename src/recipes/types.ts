@@ -95,6 +95,9 @@ export type Difficulty = (typeof difficulties)[number];
 
 export interface Ingredient {
   amount?: number; // optional: "salt og pepper" has no amount
+  // optional: the top of a range. "200–300 g" → amount 200, amountMax 300.
+  // Two numbers, not the text "200-300", so both can be scaled with the portions
+  amountMax?: number;
   unit?: string; // optional: "3 egg" has no unit. "g", "dl", "ss" …
   name: string; // kept clean ("løk"), so it can be searched and used in a shopping list
   note?: string; // "finhakket", "romtemperert" … shown after the name

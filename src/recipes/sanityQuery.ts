@@ -36,7 +36,7 @@ export const recipeFields = `
   occasions,
   servings,
   minutes,
-  ingredients[]{ amount, unit, name, note, group },
+  ingredients[]{ amount, amountMax, unit, name, note, group },
   steps,
   tips,
   source,

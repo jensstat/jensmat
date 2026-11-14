@@ -25,11 +25,15 @@ function IngredientList({ ingredients, scale = 1 }: IngredientListProps) {
           )}
           <ul className="text-base lg:text-lg">
             {group.ingredients.map((ingredient, index) => {
+              // Both ends of a range are scaled: 200–300 g for 2 → 400–600 g for 4
               const quantity = formatQuantity(
                 ingredient.amount === undefined
                   ? undefined
                   : ingredient.amount * scale,
                 ingredient.unit,
+                ingredient.amountMax === undefined
+                  ? undefined
+                  : ingredient.amountMax * scale,
               );
               return (
                 // index as key: names aren't unique (the same mustard can appear twice),

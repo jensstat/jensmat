@@ -98,11 +98,26 @@ describe("readChanges", () => {
     expect(milk._key).not.toBe(salt._key);
   });
 
+  it("keeps a range: the amount and the top of it", () => {
+    const result = readChanges({
+      ingredients: [
+        { amount: 200, amountMax: 300, unit: "g", name: "salsiccia" },
+        { amount: 2, amountMax: null, name: "egg" },
+      ],
+    });
+    if ("error" in result) throw new Error(result.error);
+    const [sausage, eggs] = result.set.ingredients as Record<string, unknown>[];
+    expect(sausage).toMatchObject({ amount: 200, amountMax: 300 });
+    expect(eggs).not.toHaveProperty("amountMax");
+  });
+
   it("refuses the whole list if one ingredient line is wrong", () => {
     for (const ingredients of [
       [{ name: "melk" }, { amount: 2 }], // no name
       [{ name: "melk", amount: -1 }], // a wrong amount
       [{ name: "melk", unit: 3 }], // a unit that isn't text
+      [{ name: "salsiccia", amountMax: 300 }], // a range top without an amount
+      [{ name: "salsiccia", amount: 300, amountMax: 200 }], // a backwards range
       ["melk"], // not an object
     ]) {
       expect(readChanges({ ingredients })).toEqual({
