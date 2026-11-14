@@ -141,3 +141,25 @@ export function stepClock(bakeAt: Date, minutesBeforeBake: number) {
   const weekday = at.toLocaleDateString("nb-NO", { weekday: "short" });
   return `${weekday} ${time}`;
 }
+
+// How long after the baking time «Form og stek» still counts as going on
+const bakingMinutes = 30;
+
+// Which step is going on right now (its place in the list), for «Nå» in the method.
+// A step goes on from its start until the next one starts; the last one, «Form og stek»,
+// until half an hour after the baking time. undefined before the first step has
+// started, and after the baking is done. Exact minutes, not the rounded clock times.
+export function currentStep(
+  steps: Step[],
+  bakeAt: Date,
+  now: Date,
+): number | undefined {
+  const minutesLeft = (bakeAt.getTime() - now.getTime()) / 60_000;
+  if (minutesLeft < -bakingMinutes) return undefined;
+  // The steps are in time order, so the last one that has started is the current one
+  let current: number | undefined;
+  steps.forEach((step, index) => {
+    if (step.minutesBeforeBake >= minutesLeft) current = index;
+  });
+  return current;
+}

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { bakeTimeOn, formatHours, makeSteps, stepClock } from "./method";
+import {
+  bakeTimeOn,
+  currentStep,
+  formatHours,
+  makeSteps,
+  stepClock,
+} from "./method";
 
 // The non-breaking space that formatHours puts between number and unit.
 const nbsp = String.fromCharCode(160);
@@ -79,5 +85,32 @@ describe("clock times", () => {
   it("gives no baking time for an empty or invalid field", () => {
     expect(bakeTimeOn(day, "")).toBeNull();
     expect(bakeTimeOn(day, "kl seks")).toBeNull();
+  });
+});
+
+describe("currentStep («Nå»)", () => {
+  // The house recipe baked at 18:00: «Bland og elt lett» at 14:50, «Første heving»
+  // at 15:30, «Del i 2» at 17:00, «Varm ovnen» at 17:15, «Form og stek» at 18:00
+  const steps = makeSteps(house);
+  const at = (time: string) => bakeTimeOn(day, time)!;
+  const titleAt = (time: string) => {
+    const index = currentStep(steps, sixPm, at(time));
+    return index === undefined ? undefined : steps[index].title;
+  };
+
+  it("is nothing before the first step", () => {
+    expect(titleAt("14:00")).toBeUndefined();
+  });
+
+  it("is the step that has started, until the next one starts", () => {
+    expect(titleAt("14:55")).toBe("Bland og elt lett");
+    expect(titleAt("16:30")).toBe("Første heving");
+    expect(titleAt("17:20")).toBe("Varm ovnen");
+  });
+
+  it("is «Form og stek» from the baking time, for half an hour", () => {
+    expect(titleAt("18:00")).toBe("Form og stek");
+    expect(titleAt("18:25")).toBe("Form og stek");
+    expect(titleAt("18:45")).toBeUndefined();
   });
 });
