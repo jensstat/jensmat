@@ -472,3 +472,44 @@ The goal from task 5: **post and edit recipes on the site itself**, on the phone
 - **Not touched:** the API files in `api/` (short and clear, and mostly written by you).
 
 Checked afterwards: the type check, lint, Prettier, the 325 tests, the build, and the browser tests from every 5c step again.
+
+## 32. The site as an app, and the pizza calculator's cooking mode (task 5d)
+
+*14 November, evening. A tutorial at first (the manifest, the icon), then built by Claude on request. Tried on your iPhone along the way.*
+
+**The app (PWA)**
+
+A *Progressive Web App* is the normal site plus a few files that tell the phone "this can be an app". Add it to the home screen, and it opens full screen, with its own icon, like an app from the App Store, but it's still the same site, updated with every push.
+
+| File | What it does |
+|---|---|
+| `public/manifest.webmanifest` | The *web app manifest*: the name («Jens matnettside», «Matnettside» under the icon), where it opens (`/oppskrifter`), `display: "standalone"` (no address bar), the colours, the icon |
+| `public/icon-512.png` | The icon: one square PNG, 512×512, the favicon on white. For now it's Vite's lightning bolt (the favicon that came with the project); see [07](07-how-to.md) to change it |
+| `index.html` | `<link rel="manifest">`, `<link rel="apple-touch-icon">` (the iPhone ignores the manifest's icons), `theme-color`, `apple-mobile-web-app-title`, `apple-mobile-web-app-status-bar-style` |
+| `src/index.css` | `@custom-variant standalone`: a Tailwind variant for "running as an app" |
+| `src/components/Footer.tsx` | «Logg inn» on every page (the app has no address bar to type `/logg-inn`) |
+
+**Decided along the way**
+- **One PNG instead of four.** Phones shrink a 512×512 picture well; a script making every size wasn't worth it for an icon changed once. No "maskable" icon for Android, which then puts it on a white shape, fine with a white background.
+- **`status-bar-style: default`:** a white status bar with the page *below* it. The page never goes under the clock or the notch, so no safe-area work was needed at the top.
+- **No share target.** «Del → Matnettside» from the Photos app would have been the nicest part, but iPhones still don't support it for web apps (only Android does). Quick posting is from inside the app instead.
+- **Offline (a service worker) was skipped** (5d.5). Wi-Fi is there in the kitchen, the admin mode needs the internet anyway, and a service worker is the part of a PWA that most easily goes wrong (old versions that stay). See "Maybe later" in [10](10-tasks.md).
+- **A «Logg inn» link in the footer, everywhere.** First planned only inside the app; but a way in is useful on a computer too. You come back to the page you were on (`state.from`, only addresses on the site), and `/logg-inn` has «Tilbake» when you're already logged in, since the app has no back button.
+
+**Things we ran into**
+- **Google's pop-up and the iPhone.** An iPhone only allows a pop-up straight after a tap. The clean-up in section 31 had made the login load Firebase *after* the tap (`session.ts`), which can get the pop-up blocked. Now `LoginPage` and «Logg inn igjen» call `signInWithPopup` directly again, with nothing in between, and `session.ts` only logs out. The login worked in the app on your iPhone.
+- **The rounded corners.** In the app, the page reaches into the screen's rounded corners, and the footer text was cut by the curve. `standalone:pb-7 max-md:standalone:px-7` gives the footer and the editor's «Lagre» bar more room, only in the app on a phone.
+- **An installed app has its own storage,** separate from Safari: its own login, its own login note and drafts.
+- **A test fooled by time zones.** The test browser's clock was an hour behind Node's, so «NÅ» seemed to pick the wrong step. The code was right; the test compared two clocks.
+
+**The pizza calculator: like the recipe page, in its own look**
+
+The page was almost four screens tall on a phone, with the grams and the method at the bottom, under eleven fields you rarely touch. Now, on phones:
+- **The result comes first,** with **«Antall pizzaer» as − 2 + buttons** inside it (`CountStepper`): change the number and see the grams, no scrolling, no keyboard. Then the method, then the other settings («Juster deigen»). The order in the code is the phone order; on desktop, grid placement puts the settings back on the left, and it looks as before.
+- **A jump bar** (`PizzaSectionNav`): `RESULTAT · FREMGANGSMÅTE · JUSTER DEIGEN`, square, mono, black and white. It shares the logic of the recipe page's bar (`components/sectionScroll.ts`), not its look.
+- **Tick off while weighing:** tap «MEL 451 g» when it's in the bowl. The grams now have a Norwegian decimal comma («4,5 g»).
+- **Cooking mode in the method:** «Behold skjermen på» (the recipe page's switch, with a `look="pizza"`), tap a number to tick off a step, and **«NÅ»** on the step that's going on, from the clock times. `currentStep` in `pizza/method.ts` (with tests): the step that has started and whose next one hasn't; «Form og stek» for half an hour after the baking time. It follows the clock only, and assumes the baking is today.
+
+**Testing:** 328 tests (`currentStep` is new). In the browser at phone and desktop width; on your iPhone in the app.
+
+**A user guide** for using the site, for visitors and the admin, on a phone and a computer: [11](11-user-guide.md).

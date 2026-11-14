@@ -13,7 +13,7 @@ One per address. A page puts components together and holds the state for that pa
 | Page | Address | What it does |
 |---|---|---|
 | `HomePage` | `/` | Big heading, subtitle, and two buttons: "Oppskrifter" and "Pizzakalkulator" |
-| `PizzaCalculatorPage` | `/pizza` | Holds the pizza `settings` in state, and draws the fields, the result and the method. See [02](02-pizza-calculator.md) |
+| `PizzaCalculatorPage` | `/pizza` | Holds the pizza `settings` in state, and draws the result, the method and the fields. On phones in that order (with `PizzaSectionNav`); on desktop the fields on the left (grid placement). See [02](02-pizza-calculator.md) |
 | `RecipeListPage` | `/oppskrifter` | The overview: "Hva med…?" (on the right from lg), search, the filter panel, meal chips, the chosen filters, grid/list toggle, recipe cards. Holds `view`, `day` and `suggestion` in state; the search and the filters are in the address. See [03](03-recipes.md), section 6 |
 | `RecipePage` | `/oppskrifter/:id` | One recipe: a side panel for the ingredients on desktop; on phones the ingredients in the page, a section bar and cooking mode. See [03](03-recipes.md), section 5 |
 | `DataCheckPage` | `/oppskrifter/datasjekk` | The Datasjekk: every recipe and what it's missing. In the admin bar, not in the menu. Rules in `recipes/completeness.ts`. Logged in: «Rediger» links, also to each missing field |
@@ -43,7 +43,7 @@ A short message at the bottom of the screen («Lagret ✓», ««Laksewrap» er 
 | `message` | text |
 
 ### `Footer`
-"© year Jens matnettside". **No props.** The year is worked out once, outside the component.
+"© year Jens matnettside", and **«Logg inn»** on the right when you're not logged in (the way in for the admin, also in the app, which has no address bar). The link remembers the page you're on (`state.from`), so the login brings you back. In the app on a phone it has more room at the bottom and the sides (`standalone:`), clear of the rounded screen corners. **No props.** The year is worked out once, outside the component.
 
 ### `Container`
 The shared page width: centred, `max-w-7xl`, with the same side padding as the header, so content lines up with the logo.
@@ -113,17 +113,30 @@ Clickable tags where exactly one is chosen, like "Hjemmeoppskrift / Forum-basert
 ## The pizza results
 
 ### `ResultPanel`
-The grams per ingredient. **Phones:** a black box. **Desktop:** a list with lines, like the fields. (The `lg:` classes "undo" the black box.)
+The grams per ingredient, with «Antall pizzaer» (`CountStepper`) at the top. **Phones:** a black box, first on the page. **Desktop:** a list with lines, like the fields. (The `lg:` classes "undo" the black box.) Each line is a button: tap it when that ingredient is weighed (✓, crossed out). The ticks are in `WeighList` (in the same file), which starts afresh when the grams change (`key`). Grams with a Norwegian comma («4,5 g»).
 
 | Prop | Type | |
 |---|---|---|
 | `rows` | `ResultRow[]` | `{ label, grams }`, from `calculateDough` (the type is in `pizza/calculateDough.ts`) |
-| `pizzaCount`, `ballWeight` | number | for "2 x 372 g" |
+| `pizzaCount`, `ballWeight` | number | the stepper's number, and «à 372 g» |
+| `onPizzaCountChange` | `(pizzaCount: number) => void` | − and + |
+
+### `CountStepper`
+"[−] 2 [+] pizzaer": a number with two buttons, no keyboard on a phone. The pizza look (square, mono); `border-current`, so it works in the black box and on white.
+
+| Prop | Type |
+|---|---|
+| `value`, `min`, `max` | number |
+| `onChange` | `(value: number) => void` |
+| `unit` | text («pizzaer») |
+
+### `PizzaSectionNav`
+**Phones only.** The pizza page's jump bar under the header: `RESULTAT · FREMGANGSMÅTE · JUSTER DEIGEN`, square, mono, black and white; the part you're reading is black. Shares `useActiveSection` and `scrollToSection` with `RecipeSectionNav` (`components/sectionScroll.ts`), not its look. **No props.**
 
 If `rows` is empty, it shows "Fyll inn alle feltene".
 
 ### `Instructions`
-The method, with the time field "Stekes kl." and clock times. Holds **its own** state for the baking time, since nothing else needs it. The steps themselves come from `pizza/method.ts`.
+The method, with the time field "Stekes kl." and clock times, and a cooking mode: «Behold skjermen på» (`KeepScreenOn look="pizza"`), tap a step's number to tick it off, and **«NÅ»** on the step going on now (`currentStep` in `pizza/method.ts`, with the clock read every 30 seconds by `useNow`). Holds **its own** state for the baking time, since nothing else needs it. The steps themselves come from `pizza/method.ts`.
 
 | Prop | Type | |
 |---|---|---|
@@ -263,7 +276,7 @@ A bar that sticks under the header (`top-[var(--header-height)]`, measured by `H
 | `compact?` | boolean | smaller buttons, so more fit on one row |
 
 ### `KeepScreenOn` (and `useWakeLock`)
-The «Behold skjermen på» switch above the steps (`role="switch"`, `aria-checked`). `useWakeLock()` works like `useState(false)`, but while it's `true` the browser is asked to keep the screen on (`navigator.wakeLock`), again when the page becomes visible, and lets go on cleanup. Not shown where the browser can't do it. No props.
+The «Behold skjermen på» switch above the steps (`role="switch"`, `aria-checked`). Also on the pizza calculator, with `look="pizza"` (square, black line, mono). `useWakeLock()` works like `useState(false)`, but while it's `true` the browser is asked to keep the screen on (`navigator.wakeLock`), again when the page becomes visible, and lets go on cleanup. Not shown where the browser can't do it. No props.
 
 ### `PortionStepper`
 "[−] [2] [+] porsjoner": a white number box between two square buttons. Controlled: the page holds the number. The buttons are disabled at `min` and `max`, and screen readers hear the new number (`aria-live`).
@@ -330,8 +343,9 @@ App
 │   │   ├── NumberField ──┐
 │   │   ├── SelectField ──┼── FieldCard
 │   │   └── ChoiceTags    │  (same layout, own code)
-│   ├── ResultPanel
-│   └── Instructions
+│   ├── PizzaSectionNav (phones)
+│   ├── ResultPanel ── CountStepper, WeighList
+│   └── Instructions ── KeepScreenOn (look="pizza")
 ├── RecipeListPage (holds view, day and suggestion; the filters are in the address)
 │   ├── RecipeSuggestion / PizzaSuggestion ── SuggestionBox
 │   ├── SearchField

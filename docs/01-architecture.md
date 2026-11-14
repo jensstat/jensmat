@@ -83,6 +83,8 @@ api/                THE SERVER. Runs on Vercel, never in the browser, so it may 
                     script key (POST_SECRET). Each file is an address (recipes.ts → /api/recipes,
                     photo.ts → /api/photo); files starting with _ are helpers (_sanity, _auth,
                     _slug, _changes). Uses only types.ts from src/. Own tsconfig.api.json.
+public/             Served as they are: favicon.svg, and the app's manifest.webmanifest and
+                    icon-512.png (the site on the phone's home screen, task 5d)
 scripts/            check-api.mjs: npm run test:api, which tests the API for real
 studio/             Sanity Studio, the editing tool (own package.json)
 ```

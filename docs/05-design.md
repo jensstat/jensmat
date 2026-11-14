@@ -128,6 +128,12 @@ It's one rule in `src/index.css`:
 - **Tap areas at least about 40px tall.** The menu links have `py-2` for that reason.
 - **No sideways scrolling.** Check at 360px wide. Large headings get smaller sizes on phones (`text-5xl sm:text-7xl …`).
 - **Buttons full width** on phones when there's room for only one per line.
+- **The most used first on phones.** The pizza calculator shows the result before the settings; the recipe page the ingredients before the steps. On desktop, columns put them side by side again.
+- **A jump bar under the header** on long pages: the recipe page and «Rediger» (soft, round buttons in the panel colour), the pizza calculator (square, mono, uppercase, black and white: its own look).
+- **In the app (`standalone:`),** the page reaches into the phone's rounded corners and the home line at the bottom. Things at the very bottom (the footer, «Lagre» in «Rediger») get more room there: `standalone:pb-7 max-md:standalone:px-7`.
+
+### The app icon
+`public/icon-512.png`: **a square PNG, 512×512, with a solid background** (an iPhone turns see-through parts black) and **about 15 % room around the logo**. The same file is the iPhone's `apple-touch-icon` and the manifest's icon. Today: the favicon (Vite's lightning bolt) on white, until there's an icon of your own.
 
 ---
 

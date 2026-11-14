@@ -120,6 +120,10 @@ useSyncExternalStore(subscribe, hasLoginHint) // true/false, kept up to date
 A function written inside a component is a new function every render. Passed on as a prop that an effect depends on, the effect would run every time. `useCallback(fn, [deps])` keeps the same function until the deps change.
 📁 `RecipeEditor.tsx` (`recount`, given to the list fields), `useNotice.ts`.
 
+### Your own Tailwind variant: `@custom-variant`
+Like `md:` or `hover:`, but your own: one line in `index.css`, and `standalone:pb-7` means "only when running as an app from the home screen". It's a media query underneath, `@media (display-mode: standalone)`. Variants can be stacked: `max-md:standalone:px-7` = an app *and* a narrow screen.
+📁 `index.css`, `Footer.tsx`, `RecipeEditor.tsx` (the «Lagre» bar).
+
 ### Forms without `useState` per field: `FormData`
 Fields can keep their own value (`defaultValue`), and the form is read when needed: `new FormData(form)`, then `get("title")`, or `getAll("steps")` for several fields with the same `name` (a list). A `<input type="file">` gives a `File`.
 📁 `admin/readForm.ts` (the whole editor), `admin/newRecipeAction.ts`.
@@ -214,4 +218,7 @@ Things that were hard or surprising along the way. Add your own.
 - **Two classes for the same thing (`w-full` and `w-44`) on one element:** which wins depends on Tailwind's order, not yours. Keep sizes out of shared styles.
 - **Rounding is for showing, not for editing.** `formatAmount` (0.15 → «0,2») in a field would have changed the amounts every time they were saved.
 - **In development, effects run twice** (React's StrictMode, on purpose, to catch missing cleanups). Two requests in the Network tab can be one in the real build.
+- **An iPhone only allows a pop-up straight after a tap.** Anything slow in between (like `await import(…)` to load Firebase) can get Google's login window blocked. Start the pop-up first, in the click handler itself.
+- **Two clocks in a test.** The test browser and Node were in different time zones, so «NÅ» seemed to pick the wrong step. Compare times from the same clock.
+- **The app on the home screen is "another browser".** Its own login, its own `localStorage`, no address bar and no back button: a way in (the footer's «Logg inn») and a way back («Tilbake») have to be on the page.
 - **A hint isn't proof.** The login note in `localStorage` only decides what's *shown*; the server checks the real token before anything is *written*.

@@ -1,6 +1,6 @@
 # 02 – The pizza calculator
 
-The calculator lives at `/pizza`. You choose settings on the left, and get grams, a method and clock times on the right.
+The calculator lives at `/pizza`. On a computer, you choose settings on the left, and get grams, a method and clock times on the right. **On a phone, the result comes first** (with − + for the number of pizzas), then the method, then the settings («Juster deigen»), with a jump bar under the header. How to use it: [11](11-user-guide.md), section 3.
 
 ---
 
@@ -13,8 +13,9 @@ The calculator lives at `/pizza`. You choose settings on the left, and get grams
 | `pizza/calculateDough.ts` | knowledge | Settings → grams per ingredient |
 | `pizza/yeast.ts` | knowledge | Rise time + temperature → how much yeast (the forum's yeast chart) |
 | `pizza/method.ts` | knowledge | The steps of the method, and their clock times |
-| `components/ResultPanel.tsx` | component | Shows the grams |
-| `components/Instructions.tsx` | component | Shows the method, with the "Stekes kl." (bake at) time field |
+| `components/ResultPanel.tsx` | component | Shows the grams, with «Antall pizzaer» (− 2 +, `CountStepper`) at the top, and lines to tick off while weighing |
+| `components/Instructions.tsx` | component | Shows the method, with the "Stekes kl." (bake at) time field and the cooking mode: «Behold skjermen på», tick off steps, «NÅ» |
+| `components/PizzaSectionNav.tsx` | component | Phones: the jump bar (Resultat · Fremgangsmåte · Juster deigen). Shares its logic with the recipe page's (`components/sectionScroll.ts`) |
 | `pizza/*.test.ts` | tests | Check the three knowledge files |
 
 ---
@@ -30,7 +31,7 @@ PizzaCalculatorPage   settings = useState(defaults)
      ▼                         │
   NumberField / SelectField / ChoiceTags   (you type or click)
      │
-     ├──▶ calculateDough(settings) ──▶ rows ──▶ ResultPanel     (grams)
+     ├──▶ calculateDough(settings) ──▶ rows ──▶ ResultPanel     (grams, and − + for pizzaCount)
      └──▶ settings ─────────────────────────▶ Instructions     (method)
                                                   └─ makeSteps(…), stepClock(…)
 ```
@@ -47,6 +48,8 @@ const update = (changes: Partial<PizzaSettings>) =>
 ```
 
 It copies all the old values (`...prev`), then puts the changed ones on top (`...changes`). It always makes a **new** object, because React only notices a change when it gets a new object.
+
+**The number of pizzas** is changed in the result (`ResultPanel`'s − + buttons), not among the fields: it's what you change most, so it sits next to what it changes. It's still `settings.pizzaCount`, through `onPizzaCountChange={(pizzaCount) => update({ pizzaCount })}`.
 
 **Choosing a pizza type** does the same thing with several fields at once: `update({ pizzaStyle, ...pizzaStyles[pizzaStyle].values })` saves the type *and* copies in its hydration, salt, sugar, oil and ball weight.
 
@@ -153,6 +156,15 @@ Each step knows **how many minutes before baking** it starts (`minutesBeforeBake
 
 Steps on an earlier day (long rises) get the weekday in front, for example "søn. 17:50".
 
+### Cooking mode and «NÅ»
+
+Like the recipe page, the method has a cooking mode: **«Behold skjermen på»** (the same switch, `KeepScreenOn look="pizza"`), and **tap a step's number** to tick it off (only kept while the page is open; new settings start afresh). The grams in the result can be ticked off too, while weighing.
+
+**«NÅ»** marks the step that's going on right now: `currentStep(steps, bakeAt, now)` in `method.ts` gives the step that has started and whose next one hasn't, or nothing before the first step. «Form og stek» keeps it for 30 minutes after the baking time. `Instructions` reads the clock every 30 seconds (`useNow`), so it moves on by itself.
+
+- **It follows the clock, not you.** Started late? «NÅ» is ahead of you.
+- **It assumes the baking is today** (`bakeTimeOn(today, …)`). For a long rise started the day before, it counts from today's time, and can be on the wrong step. Choosing the day is under "Maybe later" in [10](10-tasks.md).
+
 ---
 
 ## 6. The tests
@@ -163,6 +175,6 @@ Steps on an earlier day (long rises) get the weekday in front, for example "søn
 |---|---|
 | `yeast.test.ts` | That the chart is typed in correctly (every row and column must fall, so a misread number fails). That the chart's own values come back exactly. That the house recipe gives 3 g |
 | `calculateDough.test.ts` | That the default settings give the house recipe. That every pizza type adds up to pizzas × ball weight. That empty fields give no result |
-| `method.test.ts` | The clock times above. That the steps are always in time order. The fridge step, and the one-pizza text |
+| `method.test.ts` | The clock times above. That the steps are always in time order. The fridge step, and the one-pizza text. «NÅ» (`currentStep`): nothing before the first step, the right step in between, «Form og stek» for half an hour |
 
 **If a test fails after a change:** either the change broke something, or the behaviour was *meant* to change and the test needs updating. The test's name tells you which rule was broken.

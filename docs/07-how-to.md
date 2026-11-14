@@ -84,7 +84,7 @@ Logged in, press **«Rediger»** on the recipe (or a «Rediger» link on the Dat
 
 ## … log in as the admin
 
-Go to `/logg-inn` (not in the menu, so bookmark it) and log in with Google. You stay logged in after a reload, and the admin bar shows on top of every page; «Logg ut» is there. Only your Google account gets through the API's lock: `api/_auth.ts` checks that the token's user id is `ADMIN_UID`. Locally, run `vercel dev` (not `npm run dev`), because only it runs `api/`.
+Press **«Logg inn»** in the footer (on every page, also in the app), or go to `/logg-inn`, and log in with Google. You come back to the page you were on. You stay logged in after a reload, and the admin bar shows on top of every page; «Logg ut» is there. Only your Google account gets through the API's lock: `api/_auth.ts` checks that the token's user id is `ADMIN_UID`. Locally, run `vercel dev` (not `npm run dev`), because only it runs `api/`.
 
 **To call the API from the site,** use the functions in `src/admin/api.ts` (`createRecipe`, `updateRecipe`, `deleteRecipe`, `uploadPhoto`). They send your login (`adminFetch`) and turn the API's error message into an `Error`.
 
@@ -141,6 +141,24 @@ describe("formatMinutes", () => {
 - **Recipes in tests:** use `makeRecipe({ … })` from `recipes/testRecipe.ts`, and give only the fields the test is about. Then the tests don't break when `data.ts` changes.
 
 **Is the test useful?** Break the code on purpose and check that the test fails. A test that never fails doesn't protect anything.
+
+---
+
+## … install the site as an app on the phone
+
+iPhone: open the site in **Safari** → **Del** → **«Legg til på Hjem-skjerm»** (with «Open as Web App» on) → «Legg til». Android: Chrome's menu → «Installer app». Then log in once inside the app (it has its own storage). Step by step, and what to expect: [11](11-user-guide.md), section 4.
+
+**After a push,** the app shows the new version when it's opened again: swipe it away completely first. Only changes to the manifest or the `<head>` of `index.html` (the icon, the name, the start page) need the app removed and added again.
+
+---
+
+## … change the app icon
+
+1. Make **a square PNG, 512×512**, with **a solid background** (not see-through: an iPhone turns that black) and **about 15 % room** around the logo. Any drawing tool can export it (Figma, Canva, Preview).
+2. Replace `public/icon-512.png` with it (the same name). For the browser tab, replace `public/favicon.svg` too (or point the `<link rel="icon">` in `index.html` to a PNG).
+3. Push. On the phone, **remove the app from the home screen and add it again**: the iPhone keeps the old icon.
+
+To change the name under the icon: `short_name` in `public/manifest.webmanifest` and `apple-mobile-web-app-title` in `index.html` (both, about 12 letters at most).
 
 ---
 

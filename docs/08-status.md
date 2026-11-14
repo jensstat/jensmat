@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 14 November 2026 (evening). Type check, lint, Prettier, 325 tests and the build all pass. The recipes come from Sanity, and the site is online (Vercel), with its own API (`api/`), a login (Google via Firebase) and **the admin mode** (task 5c): quick posting at `/ny-oppskrift`, «Rediger» on the recipe page, the admin bar. `npm run test:api` has 42 checks. Every 5c step was tried in the browser at phone and desktop width, with stand-ins for the login and the API, and checked by you with `vercel dev` and the real login. The main JavaScript file is back to its size before Firebase (about 507 kB).*
+*Last checked: 14 November 2026 (late evening). Type check, lint, Prettier, 328 tests and the build all pass. **The site works as an app** on the iPhone's home screen (task 5d), including the login inside the app, and the pizza calculator has a cooking mode. Before that, the same evening: The recipes come from Sanity, and the site is online (Vercel), with its own API (`api/`), a login (Google via Firebase) and **the admin mode** (task 5c): quick posting at `/ny-oppskrift`, «Rediger» on the recipe page, the admin bar. `npm run test:api` has 42 checks. Every 5c step was tried in the browser at phone and desktop width, with stand-ins for the login and the API, and checked by you with `vercel dev` and the real login. The main JavaScript file is back to its size before Firebase (about 507 kB).*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -13,14 +13,15 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Part | Address | Status |
 |---|---|---|
 | Front page | `/` | ✅ Heading, subtitle, two buttons |
-| Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises. Always opens with the house recipe; «Husoppskriften» puts it back after a change |
+| Pizza calculator | `/pizza` | ✅ Pizza types, grams, yeast from the forum chart, method with clock times, fridge rises. Always opens with the house recipe; «Husoppskriften» puts it back after a change. On phones the result comes first (− + for the number of pizzas), with a jump bar. Tick off the grams while weighing, and a cooking mode in the method: «Behold skjermen på», tick off steps, «NÅ» from the clock |
+| The app (PWA) | the home screen | ✅ Add to the home screen (iPhone: Safari → Del → «Legg til på Hjem-skjerm»): its own icon, full screen, opens at the recipes. Always the newest version. Its own login, separate from Safari. Not offline. See [11](11-user-guide.md), section 4 |
 | Recipe overview | `/oppskrifter` | ✅ Visitors only see finished recipes; you see all, «Uferdig» marked. Recipe cards (three views, the chosen one remembered), search (title, description, ingredients), "Hva med…?" (pizza on Fridays; on the right from lg), meal chips, a filter panel (meal, main ingredient, time, difficulty, cuisine, "Passer til", diet, with/without ingredients) with counts, the chosen filters as chips, sorting (Nyeste, A–Å, Raskest), grid/list view, a message when nothing matches. The search and the filters are kept in the address, so reload, back and a shared link keep them |
 | Datasjekk | `/oppskrifter/datasjekk` | ✅ In the admin bar, not in the menu. Every recipe and what it's missing (photo, cuisine …), the most first; recipes that couldn't be read; ingredient names that are almost the same. Logged in: «Rediger» on each recipe, and each missing thing opens the editor at that field |
 | Recipes from Sanity | | ✅ The site reads published recipes from Sanity with GROQ (`sanityClient.ts`, `sanityQuery.ts`), through `toRecipe`. Drafts don't show. Photos come in the right size from Sanity's image service, with the hotspot kept in view |
 | Sanity Studio | `studio/`, online at `*.sanity.studio` | ✅ The editing tool, also on the phone: post a recipe with only a title and a photo, fill it in later. Only the title and slug are required; missing fields are warnings. Tabs, templates («Ny middag», «Ny dessert»), ingredient names to pick from, «Lim inn liste» (paste a whole ingredient list), and the Datasjekk in the left column |
 | The site online | Vercel | ✅ Published from GitHub; `vercel.json` sends every page address to `index.html` (not `/api/…`, Vite's `/@…` or files with a dot) |
 | The API | `/api/recipes`, `/api/photo` | ✅ Server functions on Vercel (task 5a): create a recipe (`POST`), change it field by field (`PATCH`, also the photo's focus point), delete it (`DELETE`), add a photo. Behind a lock: your Firebase login (`ADMIN_UID`), or the script key (`POST_SECRET`) for `npm run test:api`. The write token and the script key are only in `.env.local` and Vercel's Environment Variables (Production only, Sensitive). Run locally with `vercel dev` (port 3000). See [09](09-history.md), section 28 |
-| The login | `/logg-inn` | ✅ Not in the menu. Log in with Google (Firebase Auth, task 5b), stays logged in after a reload. «Logg ut» in the admin bar. The API only lets in your user id. Firebase is only downloaded on the admin's pages. See [09](09-history.md), section 29 |
+| The login | `/logg-inn` | ✅ «Logg inn» in the footer on every page (also in the app), back to the page you were on afterwards. Not in the menu. Log in with Google (Firebase Auth, task 5b), stays logged in after a reload. «Logg ut» in the admin bar. The API only lets in your user id. Firebase is only downloaded on the admin's pages. See [09](09-history.md), section 29 |
 | Quick posting | `/ny-oppskrift` | ✅ The admin's quick way to post (task 5c), made for the phone: a title and maybe a photo (shrunk in the browser). «Lagre» → the recipe, «Lagre og fyll ut resten» → «Rediger». See [09](09-history.md), section 30 |
 | «Rediger» | `/oppskrifter/:id?rediger` | ✅ The whole recipe as a form, only for the admin. Sends only the changes; «Mangler», a jump bar, name suggestions, «Lim inn liste», the photo's focus point, «Slett oppskrift». Asks before unsaved changes are lost, keeps a draft in the browser, «Logg inn igjen» if the login runs out |
 | The admin bar | every page | ✅ Only when logged in: `Admin · + Ny oppskrift · Datasjekk · Logg ut`, on top of the header |
@@ -30,7 +31,7 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | Unknown addresses | anything else | ✅ "Fant ikke siden" |
 | Menu | | ✅ Shows the current page; the back button and reload work |
 | API tests | `npm run test:api` | ✅ 42 checks against the running API (`vercel dev`, or online with `API_URL=https://…`): the lock, creating, the free address, what's refused, the photo, `PATCH` and every kind of field, the focus point, `DELETE`. Uses its own titles and deletes what it made |
-| Tests | `npm test` | ✅ 325 tests: the admin mode's rules (`recipeChanges`, `readForm`, ingredient lines, drafts, photo sizes), the API's rules (`toSlug`, `nextFreeSlug`, `readChanges`), yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, sorting, pasted ingredient lists, the recipe page's labels and sections, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
+| Tests | `npm test` | ✅ 328 tests: «NÅ» in the pizza method (`currentStep`), the admin mode's rules (`recipeChanges`, `readForm`, ingredient lines, drafts, photo sizes), the API's rules (`toSlug`, `nextFreeSlug`, `readChanges`), yeast chart, dough maths, method, text formatting, search and every filter group, the counts, "Hva med…?", the Datasjekk, similar ingredient names, sorting, pasted ingredient lists, the recipe page's labels and sections, incomplete recipes, the border (`toRecipe`), the data layer, Sanity photos, and a check of every recipe in `data.ts` (the tests use `data.ts` instead of Sanity) |
 
 ---
 
@@ -92,6 +93,12 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 **21. A draft from «Rediger» is kept in one browser only,** and without a new photo. It's a safety net for crashes, not a way to move work between the phone and the Mac.
 
 **22. Most recipes are hidden from visitors right now.** Only finished recipes (with ingredients) are shown on the overview, and at the time of writing that's 3 of 9. Fill them in from the Datasjekk.
+
+**23. «NÅ» on the pizza calculator assumes the baking is today.** For a long rise started the day before, it counts from today's «Stekes kl.», and can be on the wrong step. The clock times (with the weekday) are right.
+
+**24. The app icon is Vite's logo** (the favicon that came with `npm create vite`). Replace `public/icon-512.png` and `public/favicon.svg` when you have your own ([07](07-how-to.md)).
+
+**25. Not possible on the iPhone:** sharing a photo *to* the app from the Photos app (Safari doesn't support a *share target* for web apps). Post from inside the app.
 
 ---
 

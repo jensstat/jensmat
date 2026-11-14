@@ -2,9 +2,10 @@
 
 A personal food website, built to learn React while making something useful:
 
-- **Pizzakalkulator** (`/pizza`): choose pizza type, number, rise time and temperature, and get grams, a method and clock times.
+- **Pizzakalkulator** (`/pizza`): choose pizza type, number, rise time and temperature, and get grams, a method and clock times, with a cooking mode (tick off what's weighed and done, «NÅ» on the current step, keep the screen on).
 - **Oppskrifter** (`/oppskrifter`): an overview of my recipes, with a suggestion for the day, search, a filter panel (meal, main ingredient, time, difficulty, cuisine, with/without ingredients …) and grid/list view, and a page per recipe with portions, ingredients and steps. A "Datasjekk" (`/oppskrifter/datasjekk`) shows which recipes are missing information.
-- **The admin mode** (only for me, after logging in at `/logg-inn`): post a recipe quickly from the phone (a title and a photo), and edit everything with «Rediger» on the recipe page. The recipes are stored in Sanity, written through the site's own API in `api/` on Vercel.
+- **An app on the phone:** add the site to the home screen (Safari → Del → «Legg til på Hjem-skjerm»), and it opens like an app. See the [user guide](docs/11-user-guide.md).
+- **The admin mode** (only for me, after «Logg inn» at the bottom of the page): post a recipe quickly from the phone (a title and a photo), and edit everything with «Rediger» on the recipe page. The recipes are stored in Sanity, written through the site's own API in `api/` on Vercel.
 
 The site's text is in Norwegian. Code, comments and documentation are in English.
 
@@ -54,6 +55,7 @@ Everything is in [`docs/`](docs/). Each file stands on its own, so read the one 
 | [08 – Status](docs/08-status.md) | see what works, what's missing, known issues, and what's next |
 | [09 – History](docs/09-history.md) | see what was built when, and **why** the code was refactored |
 | [10 – Tasks](docs/10-tasks.md) | see **what to do next**, and how to start a new working session |
+| [11 – User guide](docs/11-user-guide.md) | **use** the site: find and cook recipes, the pizza calculator, the app on the phone, and the admin mode |
 
 **New to the project, or lost track?** Read 01, then 09, then 08. That's about 15 minutes.
 
