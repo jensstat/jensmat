@@ -6,7 +6,9 @@ import {
   type FormEvent,
 } from "react";
 import { useBlocker, useNavigate, useRevalidator } from "react-router";
-import { logIn } from "../auth/session";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleLogin } from "../auth/firebase";
+import { setLoginHint } from "../auth/loginHint";
 import RecipeSectionNav from "../components/recipe/RecipeSectionNav";
 import { missingFields } from "../recipes/completeness";
 import type { Recipe } from "../recipes/types";
@@ -204,7 +206,10 @@ function EditorForm({
   // Google's login window, then back to the form as it was: press «Lagre» again
   async function logInAgain() {
     try {
-      await logIn();
+      // Directly after the tap, with nothing in between (see auth/session.ts).
+      // Firebase is already loaded here: the editor needs it to save
+      await signInWithPopup(auth, googleLogin);
+      setLoginHint(true);
       setNeedsLogin(false);
       setError("Logget inn igjen. Trykk «Lagre» på nytt.");
     } catch {

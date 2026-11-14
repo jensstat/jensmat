@@ -1,5 +1,6 @@
+import { signInWithPopup, signOut } from "firebase/auth";
 import { useState } from "react";
-import { logIn, logOut } from "../auth/session";
+import { auth, googleLogin } from "../auth/firebase";
 import { useUser } from "../auth/useUser";
 import Container from "../components/Container";
 
@@ -8,12 +9,13 @@ function LoginPage() {
   const user = useUser();
   const [error, setError] = useState("");
 
-  // Opens Google's login window (auth/session.ts, shared with the admin bar and
-  // the editor). No setUser: useUser hears the change
-  async function startLogIn() {
+  // Opens Google's login window. No setUser: useUser hears the change.
+  // signInWithPopup is the first thing that happens after the tap, with nothing
+  // in between: an iPhone may block a pop-up that comes later (see auth/session.ts)
+  async function logIn() {
     setError("");
     try {
-      await logIn();
+      await signInWithPopup(auth, googleLogin);
     } catch {
       setError("Innloggingen ble avbrutt. Prøv igjen.");
     }
@@ -35,7 +37,7 @@ function LoginPage() {
               <span className="text-neutral-500">Bruker-id: {user.uid}</span>
             </p>
             <button
-              onClick={() => logOut()}
+              onClick={() => signOut(auth)}
               className="mt-6 border border-black px-4 py-2 hover:bg-black hover:text-white"
             >
               Logg ut
@@ -43,7 +45,7 @@ function LoginPage() {
           </div>
         ) : (
           <button
-            onClick={startLogIn}
+            onClick={logIn}
             className="mt-6 border border-black px-4 py-2 hover:bg-black hover:text-white"
           >
             Logg inn med Google

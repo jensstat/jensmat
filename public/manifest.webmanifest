@@ -1,0 +1,14 @@
+{
+  "name": "Jens matnettside",
+  "short_name": "Matnettside",
+  "description": "Oppskrifter og pizzakalkulator",
+  "lang": "nb",
+  "start_url": "/oppskrifter",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
