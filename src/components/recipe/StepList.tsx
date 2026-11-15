@@ -4,7 +4,7 @@ interface StepListProps {
   steps: string[];
 }
 
-// The steps, like Gladkokken: a 50×50 (3.125rem) gold square with the number in serif, a dotted line,
+// The steps, like Gladkokken: a 40×40 gold square with the number in serif, a dotted line,
 // then the text below in a large, airy size, so you can find your place again while cooking.
 //
 // Tick off while cooking: the square is a button. Pressed, it shows ✓ and the step turns grey,
@@ -21,19 +21,19 @@ function StepList({ steps }: StepListProps) {
   }
 
   return (
-    <ol className="space-y-12">
+    <ol className="space-y-8">
       {steps.map((step, index) => {
         const isDone = done.includes(index);
         return (
           <li key={index}>
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4">
               {/* aria-pressed: screen readers say "toggle button, pressed / not pressed" */}
               <button
                 type="button"
                 onClick={() => toggle(index)}
                 aria-pressed={isDone}
                 aria-label={`Steg ${index + 1} ferdig`}
-                className={`flex h-[3.125rem] w-[3.125rem] shrink-0 items-center justify-center font-serif text-[2.125rem] leading-none font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold print:bg-gold print:text-white ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center font-serif text-2xl leading-none font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold print:bg-gold print:text-white ${
                   isDone ? "bg-ink/10 text-ink/50" : "bg-gold text-white"
                 }`}
               >
@@ -46,7 +46,7 @@ function StepList({ steps }: StepListProps) {
             </div>
             {/* 16/24 on phones, 18/32 on desktop: the same sizes as Gladkokken */}
             <p
-              className={`mt-5 text-base leading-6 transition-colors lg:text-lg lg:leading-8 ${
+              className={`mt-3 text-base leading-6 transition-colors lg:text-lg lg:leading-8 ${
                 isDone ? "text-ink/40 print:text-ink" : ""
               }`}
             >

@@ -2,7 +2,7 @@
 
 Where the project stands: what works, what's missing, and known issues. **Update this file when something changes.**
 
-*Last checked: 14 November 2026 (late evening). Type check, lint, Prettier, 328 tests and the build all pass. **The site works as an app** on the iPhone's home screen (task 5d), including the login inside the app, and the pizza calculator has a cooking mode. Before that, the same evening: The recipes come from Sanity, and the site is online (Vercel), with its own API (`api/`), a login (Google via Firebase) and **the admin mode** (task 5c): quick posting at `/ny-oppskrift`, «Rediger» on the recipe page, the admin bar. `npm run test:api` has 42 checks. Every 5c step was tried in the browser at phone and desktop width, with stand-ins for the login and the API, and checked by you with `vercel dev` and the real login. The main JavaScript file is back to its size before Firebase (about 507 kB).*
+*Last checked: 14 November 2026 (night). Type check, lint, Prettier, 347 tests and the build all pass, after amount ranges and «Lim inn alle stegene» + dragging (section 33 in [09](09-history.md)). Before that, 14 November (late evening): **The site works as an app** on the iPhone's home screen (task 5d), including the login inside the app, and the pizza calculator has a cooking mode. Before that, the same evening: The recipes come from Sanity, and the site is online (Vercel), with its own API (`api/`), a login (Google via Firebase) and **the admin mode** (task 5c): quick posting at `/ny-oppskrift`, «Rediger» on the recipe page, the admin bar. `npm run test:api` has 42 checks. Every 5c step was tried in the browser at phone and desktop width, with stand-ins for the login and the API, and checked by you with `vercel dev` and the real login. The main JavaScript file is back to its size before Firebase (about 507 kB).*
 
 **What to do next is in [10 – Tasks](10-tasks.md).** This file is about what works and what's known to be wrong.
 
@@ -23,7 +23,7 @@ Where the project stands: what works, what's missing, and known issues. **Update
 | The API | `/api/recipes`, `/api/photo` | ✅ Server functions on Vercel (task 5a): create a recipe (`POST`), change it field by field (`PATCH`, also the photo's focus point), delete it (`DELETE`), add a photo. Behind a lock: your Firebase login (`ADMIN_UID`), or the script key (`POST_SECRET`) for `npm run test:api`. The write token and the script key are only in `.env.local` and Vercel's Environment Variables (Production only, Sensitive). Run locally with `vercel dev` (port 3000). See [09](09-history.md), section 28 |
 | The login | `/logg-inn` | ✅ «Logg inn» in the footer on every page (also in the app), back to the page you were on afterwards. Not in the menu. Log in with Google (Firebase Auth, task 5b), stays logged in after a reload. «Logg ut» in the admin bar. The API only lets in your user id. Firebase is only downloaded on the admin's pages. See [09](09-history.md), section 29 |
 | Quick posting | `/ny-oppskrift` | ✅ The admin's quick way to post (task 5c), made for the phone: a title and maybe a photo (shrunk in the browser). «Lagre» → the recipe, «Lagre og fyll ut resten» → «Rediger». See [09](09-history.md), section 30 |
-| «Rediger» | `/oppskrifter/:id?rediger` | ✅ The whole recipe as a form, only for the admin. Sends only the changes; «Mangler», a jump bar, name suggestions, «Lim inn liste», the photo's focus point, «Slett oppskrift». Asks before unsaved changes are lost, keeps a draft in the browser, «Logg inn igjen» if the login runs out |
+| «Rediger» | `/oppskrifter/:id?rediger` | ✅ The whole recipe as a form, only for the admin. Sends only the changes; «Mangler», a jump bar, name suggestions, «Lim inn liste», amount ranges («200-300»), «Lim inn alle stegene», drag by ⠿ to reorder, the photo's focus point, «Slett oppskrift». Asks before unsaved changes are lost, keeps a draft in the browser, «Logg inn igjen» if the login runs out |
 | The admin bar | every page | ✅ Only when logged in: `Admin · + Ny oppskrift · Datasjekk · Logg ut`, on top of the header |
 | Loading and errors | | ✅ Each recipe page loads its data first ("Laster…"), and "Kunne ikke hente oppskriftene" + "Prøv igjen" if it fails. Every recipe is checked at the border (`toRecipe`) |
 | Incomplete recipes | | ✅ Only the title is required. Cards and recipe pages show only what's filled in, and "Uferdig" until there are ingredients |
@@ -99,6 +99,10 @@ The outer `<div>` has `bg-gray-50`. It isn't visible (every page has a white bac
 **24. The app icon is Vite's logo** (the favicon that came with `npm create vite`). Replace `public/icon-512.png` and `public/favicon.svg` when you have your own ([07](07-how-to.md)).
 
 **25. Not possible on the iPhone:** sharing a photo *to* the app from the Photos app (Safari doesn't support a *share target* for web apps). Post from inside the app.
+
+**26. Dragging (⠿) is only tested with a mouse.** It's built for a finger (pointer events, `touch-none`), but was tried in a test browser only. If the page scrolls instead of the line moving on the iPhone, that's the bug to report.
+
+**27. Ranges need the new API and Studio.** Until the push reaches Vercel, saving a range in «Rediger» is refused («Ugyldig verdi for «ingredients»»). The Studio shows «Mengde, opp til» only after `sanity deploy` (or locally with `npm run dev` in `studio/`).
 
 ---
 

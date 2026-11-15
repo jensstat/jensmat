@@ -226,7 +226,7 @@ A refactor before the next tasks, so the code is easy to come back to. Nothing c
 *Step 1 (wrapping the list) shown as a tutorial; the rest coded by Claude on request.*
 - **Wrap, not replace:** an own input on the `ingredients` array (`components: {input: IngredientListInput}` in `recipe.ts`). It draws Sanity's own list with `props.renderDefault(props)` (add, drag, delete, edit still work) and adds a «Lim inn liste» box under it. *Why:* unlike the name input, the list does a lot we want to keep. Props type: `ArrayOfObjectsInputProps`. (Sanity UI 4: `Stack` takes `gap`, not `space`.)
 - **The reading is a pure function in `src/recipes/parseIngredients.ts`** (`parseIngredientLine`, `parseIngredientList`, with tests), like `cleanName`: no Sanity in it, so a future `/ny-oppskrift` form can use it too. Rules: amount (decimal comma, `½`, `1 ½`, `1/2`) → a known unit → the **first comma** splits name and note (`Løk, finhakket`), a bracket moves to the note, names through `cleanName`, bullets removed, `Til sausen:` = group for the lines after.
-- **Never invent a number:** a range (`2-3 fedd`), a word amount (`en klype`) or `0` leaves the whole line as the name, to fix by hand. A wrong amount is easy to miss; a messy name shows up (and "Like ingrediensnavn" catches some).
+- **Never invent a number:** a range (`2-3 fedd`), a word amount (`en klype`) or `0` leaves the whole line as the name, to fix by hand. A wrong amount is easy to miss; a messy name shows up (and "Like ingrediensnavn" catches some). *(Changed in section 33: a range is now read, as `amount` + `amountMax`.)*
 - **Adding the lines with patches:** each line gets `_type: 'ingredient'` and its own `_key`, then `setIfMissing([])` + `insert(items, 'after', [-1])`: added at the end, nothing replaced. The box empties afterwards, so a second click can't add the lines twice.
 - Not done: splitting on ` / ` on one line, and number words ("en", "to").
 
@@ -513,3 +513,36 @@ The page was almost four screens tall on a phone, with the grams and the method 
 **Testing:** 328 tests (`currentStep` is new). In the browser at phone and desktop width; on your iPhone in the app.
 
 **A user guide** for using the site, for visitors and the admin, on a phone and a computer: [11](11-user-guide.md).
+
+## 33. Amount ranges, all the steps at once, and dragging
+
+*14 November, night. Two wishes from testing the site; built by Claude on request ("just summarize").*
+
+**Amount ranges: «200–300 g salsiccia»**
+
+Recipes aren't always exact. A range could have been the text "200-300", but text can't be multiplied when the portions change, and a future app or shopping list would have to pick it apart. So an ingredient got a **second number**: `amountMax`. `{ amount: 200, amountMax: 300, unit: "g" }` is shown as «200–300 g», and 4 portions of a 2-portion recipe give «400–600 g». Without `amountMax`, everything is as before.
+
+| Where | What changed |
+|---|---|
+| `recipes/types.ts`, `toRecipe.ts`, `sanityQuery.ts` | The new optional field. `toRecipe` keeps it only when there's an amount and the max is above it |
+| `recipes/display.ts` | `formatQuantity(amount, unit, amountMax)`: «200–300 g», «½–1 ts»; one number if both ends round to the same text |
+| `components/recipe/IngredientList.tsx` | Scales both ends |
+| `recipes/parseIngredients.ts` | `toAmountRange` ("200-300", "200 – 300", "½-1"). «Lim inn liste» now reads `2-3 fedd hvitløk`, which it used to leave in the name on purpose (section 19's "never invent a number"). A backwards range (`3-2`) still stays in the name |
+| `admin/ingredientLines.ts`, `IngredientsField.tsx` | The field shows «200-300» (a plain dash, the one you type). `amountProblem` gives the message at «Lagre» (`setCustomValidity`), replacing the `pattern`, so the field is checked by the same reader that saves it. `inputMode="decimal"` is gone: the number pad has no dash |
+| `api/_changes.ts` | `amountMax` allowed on an ingredient line, only with an `amount` and above it (tests) |
+| `studio/schemaTypes/ingredient.ts` | The field «Mengde, opp til», with the same rule, and «200–300 g» in the list's preview |
+
+**«Lim inn alle stegene»**
+
+A box under the steps for the whole method at once. `admin/splitSteps.ts` (with tests) tries three ways a method is usually written: **numbered** lines («1.», «2)», «Steg 3», at least two of them; the numbers are removed, and lines without a number belong to the step above), **paragraphs** (a blank line between the steps; the lines inside are joined), or else **one step per line**. A bare number needs a `.`, `)` or `:` after it, so «200 g ost …» isn't taken for step 200. The steps are added after the ones there are, and an empty step is dropped.
+
+**Dragging steps and ingredients into a new order**
+
+A **⠿** handle on each step and each ingredient line, shared by both lists: `admin/useDragSort.ts`. The ideas:
+- **Pointer events** cover a finger, a mouse and a pen; `setPointerCapture` keeps the moves coming to the handle; `touch-none` stops the phone from scrolling the page instead.
+- **Nothing in the list changes while dragging.** The dragged line follows the finger with a `transform`, and the lines it passes slide aside (`makeRoom`). At the let-go, the new order and the end of the drag happen in the same redraw, so nothing jumps.
+- **Measured on the page, not the screen,** so the page can scroll under the finger: near the top (below the sticky header) or bottom, it scrolls by itself, faster the closer you are.
+- The maths is pure and tested (`admin/dragSort.ts`: `moveItem`, `dropIndex`, `makeRoom`), and ↑ ↓ use `moveItem` too. ↑ ↓ stay, for small moves and for screen readers (the handle is hidden from them).
+
+**Testing:** 347 tests. In a test browser at phone width: dragging an ingredient and a step with the mouse, pasting numbered steps, and the amount field's messages. **Not yet on the iPhone with a finger** (issue 26 in [08](08-status.md)).
+

@@ -75,7 +75,9 @@ Want to go on right away? **«Lagre og fyll ut resten»** saves and opens «Redi
 Logged in, press **«Rediger»** on the recipe (or a «Rediger» link on the Datasjekk). Everything is a form; **«Lagre N endringer»** sends only what you changed.
 - **«Mangler»** at the top lists what the Datasjekk misses; tap one to go to it.
 - **The photo:** «Bytt bilde», and tap the photo to choose what always stays in view.
-- **Ingredients:** Enter goes to the next line; «Lim inn liste» splits a pasted list into lines.
+- **Ingredients:** Enter goes to the next line; «Lim inn liste» splits a pasted list into lines. An amount can be a range: «200-300».
+- **Steps:** «Lim inn alle stegene» takes the whole method at once (a blank line between the steps, or numbered: «1.», «2)», «Steg 3»).
+- **Order:** drag a step or an ingredient by **⠿**, or use ↑ ↓.
 - **«Slett oppskrift»** is at the bottom, and asks first. The photo stays in Sanity's media library.
 - **If the browser crashes,** «Rediger (utkast)» → «Gjenopprett» brings back what you'd written (without a new photo).
 - Locally, run `vercel dev` (not `npm run dev`): only it runs `api/`.

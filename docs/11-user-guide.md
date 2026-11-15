@@ -107,8 +107,9 @@ Open the recipe, and press **«Rediger»** (next to «Skriv ut»). The recipe be
 - **«Mangler 3 av 9»** at the top lists what's still missing. Tap one to go straight to it. It's ticked off as you fill it in.
 - **The bar at the top** jumps between «Bilde», «Detaljer», «Ingredienser» and «Steg».
 - **The photo:** «Bytt bilde» for a new one. **Tap the photo** to choose what always stays in view when it's cut to fit the cards (a gold dot).
-- **Ingredients:** one line each. Amounts like «2», «1,5», «½» or «1/2». **Enter** goes to the next line, or makes a new one. The name field suggests names you've used before: pick one, so «tomat» and «tomater» don't both happen. **«Lim inn liste»** turns a pasted list into lines («2 dl melk», «Løk, finhakket»; a line ending in «:» becomes a group heading).
-- **Steps:** ↑ and ↓ move a step, «Fjern» removes it, «+ Legg til steg» adds one.
+- **Ingredients:** one line each. Amounts like «2», «1,5», «½» or «1/2», or a **range** like «200-300» when the recipe isn't exact (shown as «200–300 g», and both numbers change with «Porsjoner»). The smallest number first; otherwise «Lagre» says so. **Enter** goes to the next line, or makes a new one. The name field suggests names you've used before: pick one, so «tomat» and «tomater» don't both happen. **«Lim inn liste»** turns a pasted list into lines («2 dl melk», «Løk, finhakket»; a line ending in «:» becomes a group heading).
+- **Steps:** «Fjern» removes a step, «+ Legg til steg» adds one. **«Lim inn alle stegene»** takes the whole method in one box: put a blank line between the steps (or number them «1.», «2.» …, and the numbers are removed). The button says how many steps it found, and they're added after the ones already there.
+- **Changing the order** (steps and ingredients): hold **⠿** and drag the line to its new place; the page scrolls when you get near the top or bottom. **↑** and **↓** move one place at a time.
 - **An empty field is removed** from the recipe. The address never changes, even with a new title.
 - **«Lagre 3 endringer»** saves only what you changed, and says «Lagret ✓». **«Avbryt»** leaves without saving.
 - **«Slett oppskrift»** at the very bottom deletes the recipe for good (it asks first).

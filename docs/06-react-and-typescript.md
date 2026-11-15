@@ -124,6 +124,14 @@ A function written inside a component is a new function every render. Passed on 
 Like `md:` or `hover:`, but your own: one line in `index.css`, and `standalone:pb-7` means "only when running as an app from the home screen". It's a media query underneath, `@media (display-mode: standalone)`. Variants can be stacked: `max-md:standalone:px-7` = an app *and* a narrow screen.
 📁 `index.css`, `Footer.tsx`, `RecipeEditor.tsx` (the «Lagre» bar).
 
+### Pointer events: one way to follow a finger, a mouse or a pen
+`onPointerDown`, `onPointerMove`, `onPointerUp` work the same for all three. `event.currentTarget.setPointerCapture(event.pointerId)` sends every later move and the let-go to the same element, even when the finger has left it. The CSS `touch-action: none` (`touch-none`) on the handle tells the phone that a finger there is *not* scrolling the page.
+📁 `admin/useDragSort.ts` (drag a step or an ingredient by ⠿).
+
+### Your own message on a field: `setCustomValidity`
+`field.setCustomValidity("Det minste tallet først")` makes the field invalid, and the browser stops the form and shows the text at «Lagre», like with `required`. `setCustomValidity("")` makes it valid again. Unlike `pattern`, the check can be any code, so the field is checked by the same function that reads it when saving.
+📁 `admin/IngredientsField.tsx` (the amount, with `amountProblem` from `ingredientLines.ts`).
+
 ### Forms without `useState` per field: `FormData`
 Fields can keep their own value (`defaultValue`), and the form is read when needed: `new FormData(form)`, then `get("title")`, or `getAll("steps")` for several fields with the same `name` (a list). A `<input type="file">` gives a `File`.
 📁 `admin/readForm.ts` (the whole editor), `admin/newRecipeAction.ts`.
@@ -222,3 +230,6 @@ Things that were hard or surprising along the way. Add your own.
 - **Two clocks in a test.** The test browser and Node were in different time zones, so «NÅ» seemed to pick the wrong step. Compare times from the same clock.
 - **The app on the home screen is "another browser".** Its own login, its own `localStorage`, no address bar and no back button: a way in (the footer's «Logg inn») and a way back («Tilbake») have to be on the page.
 - **A hint isn't proof.** The login note in `localStorage` only decides what's *shown*; the server checks the real token before anything is *written*.
+- **Don't move things while they're being dragged.** Changing the list on every move makes React redraw and the lines jump under the finger. Leave the list alone, move the dragged line with a `transform`, and give the list its new order once, at the let-go (`useDragSort`).
+- **The phone's number pad has no dash.** `inputMode="decimal"` was taken off the amount field when it learned ranges («200-300»).
+- **A trailing newline is a blank line too.** `splitSteps` first read "one step per line" text as paragraphs, because the pasted text ended with an empty line; `trim()` first.

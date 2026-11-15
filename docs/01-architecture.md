@@ -57,7 +57,8 @@ src/
 ├── admin/          THE ADMIN MODE (task 5c). «Rediger» (RecipeEditor and its fields), what
 │                   «Lagre» on /ny-oppskrift does (newRecipeAction), the calls to the API
 │                   (api.ts), and the rules behind them: recipeChanges, readForm,
-│                   ingredientLines, draft, photoSize (tests next to each). Only loaded for
+│                   ingredientLines, splitSteps, dragSort, draft, photoSize (tests next to
+│                   each), and useDragSort (drag lines into a new order). Only loaded for
 │                   the admin, so visitors never download it
 │
 ├── auth/           THE LOGIN (Firebase, Google). firebase.ts (the connection), useUser.ts

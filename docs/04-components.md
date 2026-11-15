@@ -296,7 +296,7 @@ The ingredients **in groups** (see `groupIngredients`), one per line: "**300 g**
 | `scale?` | number | multiplies every amount. Default 1 |
 
 ### `StepList`
-The steps: a 50×50 gold square with the number in serif, a dotted line, and the text below (16px on phones, 18px on desktop). The square is a button: pressed, it shows ✓ and the step turns grey (cooking mode; kept only while the page is open).
+The steps: a 40×40 gold square with the number in serif, a dotted line, and the text below (16px on phones, 18px on desktop). The square is a button: pressed, it shows ✓ and the step turns grey (cooking mode; kept only while the page is open).
 
 | Prop | Type |
 |---|---|
@@ -323,10 +323,12 @@ Only for the admin, and never downloaded by visitors: the editor is loaded with 
 |---|---|---|
 | `PhotoField` | «Bytt bilde» with a preview, and tap the photo to choose its focus point (a gold dot) | `recipe`, `onChange` |
 | `DetailsFields` | Porsjoner, Tid, the four dropdowns and the three groups of checkboxes, from the fixed lists in `types.ts` | `recipe` |
-| `IngredientsField` | The ingredient lines (↑ ↓ Fjern, Enter for the next line), name and unit suggestions, «Lim inn liste» | `ingredients`, `onChange` |
-| `StepsField` | The steps (↑ ↓ Fjern, «+ Legg til steg»), boxes that grow with the text | `steps`, `onChange` |
+| `IngredientsField` | The ingredient lines (drag by ⠿, ↑ ↓ Fjern, Enter for the next line), name and unit suggestions, «Lim inn liste». The amount field takes a range («200-300») and says what's wrong at «Lagre» (`setCustomValidity` with `amountProblem`) | `ingredients`, `onChange` |
+| `StepsField` | The steps (drag by ⠿, ↑ ↓ Fjern, «+ Legg til steg»), boxes that grow with the text, «Lim inn alle stegene» (split by `splitSteps`) | `steps`, `onChange` |
 | `MissingList` | «Mangler 3 av 9»: tap to jump to the field, ticked off when filled in | `missing`, `filled` |
 | `DraftNotice` | «Du har et utkast …» with «Gjenopprett» and «Forkast» | `savedAt`, `onRestore`, `onDiscard` |
+
+**`useDragSort`** (`admin/useDragSort.ts`, a hook, not a component) is the dragging both lists share: `itemRef` and `itemStyle` on each `<li>`, `handleProps` on the ⠿ handle. Pointer events (finger, mouse and pen in one), the line follows the finger with a CSS `transform`, the lines it passes slide aside, and the list only gets its new order when it's let go. Near the top or bottom of the screen the page scrolls by itself. The maths (`moveItem`, `dropIndex`, `makeRoom`) is in `admin/dragSort.ts`, with tests; ↑ ↓ use `moveItem` too.
 
 `onChange` tells the editor to count the changes again after a list changes (adding a step isn't a key press). The shared look is in `editorStyles.ts`.
 

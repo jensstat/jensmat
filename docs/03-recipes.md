@@ -18,7 +18,7 @@ The recipes ("Oppskrifter") are the main part of the site going forward: all my 
 | `recipes/suggest.ts` (+ test) | knowledge | **"Hva med…?"**: `pickSuggestion(recipes, day, current)` and `isPizzaDay` |
 | `recipes/sort.ts` (+ test) | knowledge | **The order on the overview**: `sortRecipes(recipes, order)` (Nyeste, A–Å, Raskest) and `sortFromParams` |
 | `recipes/completeness.ts` (+ test) | knowledge | **The Datasjekk**: what each recipe is missing (`missingInfo`, `completenessReport`) |
-| `recipes/parseIngredients.ts` (+ test) | knowledge | **A pasted ingredient list → ingredient lines** (`parseIngredientList`), used by «Lim inn liste» in the Studio |
+| `recipes/parseIngredients.ts` (+ test) | knowledge | **A pasted ingredient list → ingredient lines** (`parseIngredientList`), used by «Lim inn liste» in the Studio and in «Rediger». Also `toAmountRange`: "200-300" → `{ amount: 200, amountMax: 300 }` |
 | `recipes/testRecipe.ts` | test | `makeRecipe({ … })`: a made-up recipe for the tests |
 | `recipes/data.test.ts` | test | Checks every recipe in `data.ts` (ids, dates, numbers) |
 | `pages/RecipeListPage.tsx` | page | **The overview** of all recipes, at `/oppskrifter` (section 6) |
@@ -55,6 +55,7 @@ interface Recipe {
 
 interface Ingredient {
   amount?: number;         // optional: "salt og pepper" has none
+  amountMax?: number;      // optional: the top of a range, "200–300 g" → amount 200, amountMax 300
   unit?: string;           // optional: "3 egg" has none
   name: string;            // kept clean: "løk", not "løk, finhakket"
   note?: string;           // "finhakket" … shown after the name in gray
@@ -80,6 +81,7 @@ A recipe can be posted half-done, for example quickly from the phone with just a
 | Decision | Why |
 |---|---|
 | **`amount` is a number**, not text like "3 dl" | So portions can be scaled: 2 → 4 portions is just "× 2" |
+| **A range is a second number, `amountMax`** (added 14 November), not the text "200-300" | Both ends can be scaled (200–300 g → 400–600 g), and an app or a shopping list gets numbers, not text to pick apart. Only kept when there's an `amount` and the max is above it (checked in `toRecipe`, the API and the Studio). Most ingredients have none, and then nothing changes |
 | **`protein` is its own field**, not a tag | A dish has *one* main ingredient. As a field it can't be forgotten (TypeScript checks), and it makes nice filter buttons |
 | **"Rask" (quick) isn't stored** | It's worked out: `isQuick(recipe)` is `minutes <= 30`. Then it can never be wrong if you change the time. No time means not quick |
 | **Time ranges aren't stored** | The filter's "Rask (inntil 30 min)", "Under 20 min", "20–40 min", "40–60 min", "Over 60 min" come from `minutes` (`isQuick` and `timeRangeOf` in `types.ts`). Nothing extra to fill in |
@@ -118,7 +120,7 @@ The ingredient options in the filter ("Har ingredienser", "Uten ingredienser") a
 
 **When are two things different ingredients?** When you'd buy them separately, or when someone might want one but not the other. `rødløk` and `løk` are two ingredients, and so are `hvitløk` and `løk`: "Uten løk" does **not** hide a recipe with only rødløk or hvitløk, because the filter compares whole names. Likewise `tomat` (fresh) and `hakkede tomater` (a can) are two products. If someone should be able to avoid both, tick both.
 
-**Pasting a whole list** (in the Studio, «Lim inn liste» under the ingredients): one ingredient per line. `2 dl melk` → amount, unit, name; `3 egg` → no unit (only known units like g, dl, ss, ts, stk, fedd, boks count); `Løk, finhakket` → name `løk`, note `finhakket` (the **first comma** splits name and note; a decimal comma in `1,5 dl` doesn't). `(400 g)` in the name moves to the note, names are lower-cased, and bullets are removed. A line ending in `:` (`Til sausen:`) is the group for the lines after it. **When a line can't be read for sure, the whole line becomes the name and no number is invented** (`2-3 fedd hvitløk`, `en klype salt`), so check the new lines and fix those by hand. The lines are added at the end of the list; nothing is replaced.
+**Pasting a whole list** (in the Studio, «Lim inn liste» under the ingredients): one ingredient per line. `2 dl melk` → amount, unit, name; `3 egg` → no unit (only known units like g, dl, ss, ts, stk, fedd, boks count); `Løk, finhakket` → name `løk`, note `finhakket` (the **first comma** splits name and note; a decimal comma in `1,5 dl` doesn't). `(400 g)` in the name moves to the note, names are lower-cased, and bullets are removed. A line ending in `:` (`Til sausen:`) is the group for the lines after it. **A range is read** (`2-3 fedd hvitløk` → 2–3 fedd, `200 – 300 g salsiccia`, `½-1 ts chili`). **When a line can't be read for sure, the whole line becomes the name and no number is invented** (`3-2 fedd hvitløk` is backwards, `en klype salt`), so check the new lines and fix those by hand. The lines are added at the end of the list; nothing is replaced.
 
 **To check:** the **Datasjekk** (on the site, and as «Datasjekk» in the Studio's left column, with the same rules) lists "Like ingrediensnavn": names that are probably the same thing, with the recipes that use each (`similarIngredientNames` in `completeness.ts`). Two names count as similar when they're the same without a Norwegian ending (`tomat`/`tomater`/`tomatene`, `paprika`/`paprikaer`, `pære`/`pærer`), or, for names of 5 letters or more, one letter apart (`kremfløte`/`kremfløde`). `løk` and `rødløk` aren't similar: they're two ingredients.
 
@@ -175,7 +177,7 @@ Pure functions that turn data into readable text. The recipe page uses them now,
 | Function | Example |
 |---|---|
 | `formatAmount(n)` | `0.5` → "½", `1.5` → "1 ½", `300` → "300", `1.2` → "1,2". Rounds "odd" numbers from scaling: `0.4999` → "½" |
-| `formatQuantity(amount, unit)` | `(0.5, "pose")` → "½ pose", `(4)` → "4", no amount → "" |
+| `formatQuantity(amount, unit, amountMax?)` | `(0.5, "pose")` → "½ pose", `(4)` → "4", no amount → "". A range: `(200, "g", 300)` → "200–300 g". If both ends round to the same text, one number |
 | `formatMinutes(n)` | `30` → "30 min", `60` → "1 t", `75` → "1 t 15 min" |
 | `recipeLabels(recipe)` | main ingredient + "Rask" if quick + the tags, e.g. `["Fisk", "Rask"]` |
 | `groupIngredients(list)` | the ingredients in groups for showing: ungrouped first, then "Til dippen" … |
@@ -227,7 +229,7 @@ Desktop (from lg:)                                        Phones
 
 **The line under the introduction** (`RecipeMeta`): time, portions and **difficulty** (with four small bars, filled up to the level: the place in `difficulties` in `types.ts`), then the labels from `recipeLabels` (`display.ts`): main ingredient, **cuisine**, "Rask", the tags and the themes ("Passer til"). Each part only when the recipe has it. **The labels are links** to the overview filtered on them («Italiensk» → `/oppskrifter?kjokken=Italiensk`, made by `filterLink` in `filter.ts`): each label knows its filter group. «Rask» links to «Rask (inntil 30 min)», a choice in «Tid» made from the same rule (`quickOption` and `isQuick` in `types.ts`), so the label and the filter always mean the same.
 
-**Portions:** `PortionStepper` changes `servings`. `IngredientsPanel` computes `scale = servings / baseServings` and passes it to `IngredientList`, which multiplies every amount: 2 → 4 portions turns 300 g into 600 g, and ½ løk into 1.
+**Portions:** `PortionStepper` changes `servings`. `IngredientsPanel` computes `scale = servings / baseServings` and passes it to `IngredientList`, which multiplies every amount: 2 → 4 portions turns 300 g into 600 g, and ½ løk into 1. A range scales at both ends: 200–300 g → 400–600 g.
 
 **Actions:** "Skriv ut" opens the browser's print dialog. "Kopier lenke" copies the address and shows "Lenke kopiert" for 2 seconds.
 

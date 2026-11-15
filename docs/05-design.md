@@ -157,7 +157,7 @@ Gladkokken uses the commercial fonts *eskorte* and *motiva-sans*. The closest fr
 | Title | 26px / 32px line | **44px** / 56px |
 | Introduction (light weight) | 18px / 28px | **22px** / 38px |
 | Steps and ingredients | 16px / 24px | **18px** / 32px |
-| Step number | 34px serif in a 50×50 square | same |
+| Step number | 24px serif in a 40×40 square (smaller than Gladkokken's 34px in 50×50, 15 November), 32px between the steps | same |
 
 ### Colours
 
